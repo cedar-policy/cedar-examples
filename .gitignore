@@ -10,3 +10,6 @@
 
 # Don't check IntelliJ module files
 *.iml
+
+# Don't check gradle build artifacts
+cedar-java-hello-world/.gradle/*

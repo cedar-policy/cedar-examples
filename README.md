@@ -1,11 +1,6 @@
-## My Project
+## Cedar Examples
 
-TODO: Fill this README out!
-
-Be sure to:
-
-* Change the title in this README
-* Edit your repository description on GitHub
+Build instructions for each example are inside their folders (for rust it's usually `cargo build`)
 
 ## Security
 
