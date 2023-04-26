@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"bob\"",
+    "action": "Action::\"ViewDocument\"",
+    "resource": "Document::\"alice_public\"",
+    "context": {}
+}
