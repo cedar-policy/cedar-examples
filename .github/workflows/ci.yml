@@ -33,14 +33,14 @@ jobs:
       - name: cargo rustc
         working-directory: ./cedar-rust-hello-world
         run: |
+             printf "\npath = \"../../cedar/cedar-policy\"" >> Cargo.toml
              cat Cargo.toml
-             echo "\npath = \"../../cedar/cedar-policy\"" >> Cargo.toml
              cargo --verbose rustc -- -D warnings -F unsafe-code
       - name: cargo test
         working-directory: ./cedar-rust-hello-world
         run: |
+             printf "\npath = \"../../cedar/cedar-policy\"" >> Cargo.toml
              cat Cargo.toml
-             echo "\npath = \"../../cedar/cedar-policy\"" >> Cargo.toml
              cargo test --verbose
         
   build_and_test_github_model_app:
