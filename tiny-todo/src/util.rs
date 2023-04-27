@@ -1,6 +1,6 @@
 use std::{ops::Deref, str::FromStr};
 
-use cedar::{ParseErrors, RestrictedExpression};
+use cedar_policy::{ParseErrors, RestrictedExpression};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Debug, Clone, Deserialize)]
@@ -86,14 +86,14 @@ where
 pub struct EntityUid(
     #[serde(serialize_with = "serialize_euid")]
     #[serde(deserialize_with = "deserialize_euid")]
-    cedar::EntityUid,
+    cedar_policy::EntityUid,
 );
 
 impl FromStr for EntityUid {
     type Err = ParseErrors;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let e: cedar::EntityUid = s.parse()?;
+        let e: cedar_policy::EntityUid = s.parse()?;
         Ok(e.into())
     }
 }
@@ -115,41 +115,41 @@ impl From<Vec<EntityUid>> for Lists {
     }
 }
 
-impl From<cedar::EntityUid> for EntityUid {
-    fn from(value: cedar::EntityUid) -> Self {
+impl From<cedar_policy::EntityUid> for EntityUid {
+    fn from(value: cedar_policy::EntityUid) -> Self {
         Self(value)
     }
 }
 
 impl Deref for EntityUid {
-    type Target = cedar::EntityUid;
+    type Target = cedar_policy::EntityUid;
 
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl From<EntityUid> for cedar::EntityUid {
+impl From<EntityUid> for cedar_policy::EntityUid {
     fn from(value: EntityUid) -> Self {
         value.0
     }
 }
 
-pub fn serialize_euid<S>(euid: &cedar::EntityUid, s: S) -> Result<S::Ok, S::Error>
+pub fn serialize_euid<S>(euid: &cedar_policy::EntityUid, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     s.serialize_str(&format!("{euid}"))
 }
 
-pub fn deserialize_euid<'de, D>(d: D) -> Result<cedar::EntityUid, D::Error>
+pub fn deserialize_euid<'de, D>(d: D) -> Result<cedar_policy::EntityUid, D::Error>
 where
     D: Deserializer<'de>,
 {
     struct Visitor;
 
     impl<'ide> serde::de::Visitor<'ide> for Visitor {
-        type Value = cedar::EntityUid;
+        type Value = cedar_policy::EntityUid;
 
         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
             write!(

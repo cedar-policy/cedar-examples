@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use cedar::{EntityTypeName, EvalResult, RestrictedExpression};
+use cedar_policy::{EntityTypeName, EvalResult, RestrictedExpression};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -101,7 +101,7 @@ impl<'a> TypedEntity<'a> for List {
             .attr(tasks_field)
             .ok_or(EntityDecodeError::MissingAttr(tasks_field))??
         {
-            cedar::EvalResult::Set(tasks) => Ok(tasks
+            cedar_policy::EvalResult::Set(tasks) => Ok(tasks
                 .iter()
                 .map(|v| v.try_into())
                 .collect::<Result<Vec<Task>, _>>()?),

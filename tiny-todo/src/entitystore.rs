@@ -4,7 +4,7 @@ use std::{
 };
 use thiserror::Error;
 
-use cedar::{
+use cedar_policy::{
     Entities, EntityId, EntityTypeName, EvalResult, EvaluationError, RestrictedExpression,
 };
 use serde::Deserialize;
@@ -43,8 +43,8 @@ impl Entity {
         self.uid.clone()
     }
 
-    pub fn as_entity(&self) -> cedar::Entity {
-        cedar::Entity::new(
+    pub fn as_entity(&self) -> cedar_policy::Entity {
+        cedar_policy::Entity::new(
             self.uid.clone().into(),
             self.attrs
                 .clone()
@@ -56,7 +56,7 @@ impl Entity {
     }
 
     pub fn attr(&self, attr: &str) -> Option<Result<EvalResult, EvaluationError>> {
-        cedar::Entity::new(
+        cedar_policy::Entity::new(
             self.uid().into(),
             self.attrs
                 .clone()
@@ -97,7 +97,7 @@ impl EntityStore {
         loop {
             let new_uid: EntityId = format!("{}", self.uid).parse().unwrap();
             self.uid += 1;
-            let euid = cedar::EntityUid::from_type_name_and_id(ty.clone(), new_uid).into();
+            let euid = cedar_policy::EntityUid::from_type_name_and_id(ty.clone(), new_uid).into();
             if !self.store.contains_key(&euid) {
                 return euid;
             }

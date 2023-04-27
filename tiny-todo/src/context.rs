@@ -1,9 +1,9 @@
 use itertools::Itertools;
 use std::path::Path;
 
-use cedar::{
+use cedar_policy::{
     Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
-    Schema, SchemaError, Validator,
+    Schema, SchemaError, Validator, ValidationMode,
 };
 use thiserror::Error;
 use tokio::sync::{
@@ -174,7 +174,7 @@ impl AppContext {
         let policy_src = std::fs::read_to_string(policies_path)?;
         let policies = policy_src.parse()?;
         let validator = Validator::new(schema);
-        let output = validator.validate(&policies);
+        let output = validator.validate(&policies, ValidationMode::Permissive);
         if output.validation_passed() {
             let authorizer = Authorizer::new();
             let (send, recv) = tokio::sync::mpsc::channel(100);
