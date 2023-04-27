@@ -1,9 +1,9 @@
 #![forbid(unsafe_code)]
-use cedar::PrincipalConstraint::{Any, Eq, In};
-use cedar::{
+use cedar_policy::PrincipalConstraint::{Any, Eq, In};
+use cedar_policy::{
     Answer, Authorizer, Context, Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid,
-    Policy, PolicyId, PolicySet, Query, RestrictedExpression, Schema, SlotId, Template,
-    ValidationResult, Validator,
+    Policy, PolicyId, PolicySet, Request, RestrictedExpression, Schema, SlotId, Template,
+    ValidationMode, ValidationResult, Validator,
 };
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
@@ -71,8 +71,8 @@ fn json_context() {
     let c = Context::from_json_value(v, None).unwrap();
 
     let (p, a, r) = create_p_a_r();
-    // create a query
-    let query: Query = Query::new(Some(p), Some(a), Some(r), c);
+    // create a request
+    let request: Request = Request::new(Some(p), Some(a), Some(r), c);
 
     // create a policy
     let s = r#"permit(
@@ -86,7 +86,7 @@ fn json_context() {
     let ps = PolicySet::from_str(s).expect("policy error");
 
     let entities = create_entities_json();
-    let ans = execute_query(&query, ps, entities);
+    let ans = execute_query(&request, ps, entities);
 
     print_answer(ans);
 }
@@ -116,7 +116,7 @@ fn entity_json() {
     );
     let c = Context::from_pairs(context2);
 
-    let query: Query = Query::new(Some(p), Some(a), Some(r), c);
+    let request: Request = Request::new(Some(p), Some(a), Some(r), c);
 
     // create a policy
     let s = "
@@ -137,7 +137,7 @@ fn entity_json() {
 
     let entities = create_entities_json();
 
-    let ans = execute_query(&query, p, entities);
+    let ans = execute_query(&request, p, entities);
 
     print_answer(ans);
 }
@@ -160,7 +160,7 @@ fn entity_objects() {
     );
 
     let c = Context::empty();
-    let query: Query = Query::new(Some(p), Some(a), Some(r), c);
+    let request: Request = Request::new(Some(p), Some(a), Some(r), c);
 
     // create a policy
     let c1 = "permit(
@@ -202,8 +202,7 @@ fn entity_objects() {
     let id2 = PolicyId::from_str("id2").unwrap();
 
     // instantiate the template
-    p.instantiate(id1.clone(), id2, v)
-        .expect("Instantiation failed!");
+    p.link(id1.clone(), id2, v).expect("Instantiation failed!");
 
     // create a principal and a resource entities to instantiate the template
     let mut v2 = HashMap::new();
@@ -221,10 +220,10 @@ fn entity_objects() {
     v2.insert(SlotId::resource(), entity4);
     let id3 = PolicyId::from_str("policy_id003").unwrap();
 
-    // instantiate the template (another instance)
-    p.instantiate(id1, id3, v2).expect("Instantiation failed!");
+    // link the template (another template-linked policy)
+    p.link(id1, id3, v2).expect("Linking failed!");
 
-    let ans = execute_query(&query, p, create_entities_obj());
+    let ans = execute_query(&request, p, create_entities_obj());
 
     print_answer(ans);
 }
@@ -327,9 +326,9 @@ fn print_answer(ans: Answer) {
 }
 
 /// This uses the waterford API to call the authorization engine.
-fn execute_query(query: &Query, policies: PolicySet, entities: Entities) -> Answer {
+fn execute_query(request: &Request, policies: PolicySet, entities: Entities) -> Answer {
     let authorizer = Authorizer::new();
-    authorizer.is_authorized(query, &policies, &entities)
+    authorizer.is_authorized(request, &policies, &entities)
 }
 
 fn validate() {
@@ -376,7 +375,7 @@ fn validate() {
     let schema = Schema::from_str(sc).unwrap();
     let validator = Validator::new(schema);
     // validate a policy with a type error:  10 > "hello"
-    let result = Validator::validate(&validator, &p);
+    let result = Validator::validate(&validator, &p, ValidationMode::default());
     if ValidationResult::validation_passed(&result) {
         println!("Validation Passed");
     } else {
