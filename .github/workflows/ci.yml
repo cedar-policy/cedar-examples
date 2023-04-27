@@ -32,10 +32,16 @@ jobs:
         run: cargo fmt --all --check
       - name: cargo rustc
         working-directory: ./cedar-rust-hello-world
-        run: cargo --verbose rustc -- -D warnings -F unsafe-code
+        run: |
+             cat Cargo.toml
+             echo "\npath = \"../../cedar/cedar-policy\"" >> Cargo.toml
+             cargo --verbose rustc -- -D warnings -F unsafe-code
       - name: cargo test
         working-directory: ./cedar-rust-hello-world
-        run: cargo test --verbose
+        run: |
+             cat Cargo.toml
+             echo "\npath = \"../../cedar/cedar-policy\"" >> Cargo.toml
+             cargo test --verbose
         
   build_and_test_github_model_app:
     name: Rust project - latest
