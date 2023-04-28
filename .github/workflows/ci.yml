@@ -63,7 +63,9 @@ jobs:
         run: cargo fmt --all --check
       - name: cargo rustc
         working-directory: ./cedar-github-model-app
-        run: cargo --verbose rustc -- -D warnings -F unsafe-code
+        run: |
+             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
+             cargo --verbose rustc -- -D warnings -F unsafe-code
       - name: cargo test
         working-directory: ./cedar-github-model-app
         run: cargo test --verbose

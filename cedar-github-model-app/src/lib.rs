@@ -1,10 +1,7 @@
-//! One-sentence summary of your crate.
-//!
-//! Followed by more detailed Markdown documentation of your crate.
 #![warn(missing_docs, missing_debug_implementations, rust_2018_idioms)]
 
-use cedar::*;
 use anyhow::{Context as _, Error, Result};
+use cedar_policy::*;
 use clap::{AppSettings, Args, Parser, Subcommand};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -136,7 +133,7 @@ impl From<Instance> for LiteralInstance {
 fn add_instances_to_set(path: impl AsRef<Path>, policy_set: &mut PolicySet) -> Result<()> {
     for instance in load_instance_file(path)? {
         let slotenv = create_slot_env(&instance.args)?;
-        policy_set.instantiate(
+        policy_set.link(
             PolicyId::from_str(&instance.template_id)?,
             PolicyId::from_str(&instance.instance_id)?,
             slotenv,
@@ -311,7 +308,7 @@ fn build_entities(file_name: Option<impl AsRef<Path>>) -> Entities {
     }
 }
 
-fn build_queries(entities: &Entities, num_queries: u32) -> Vec<Query> {
+fn build_queries(entities: &Entities, num_queries: u32) -> Vec<Request> {
     //Assumes we have user_0...user_max_user and repo_0...repo_max_repo
     let mut max_user = 0;
     loop {
@@ -346,7 +343,7 @@ fn build_queries(entities: &Entities, num_queries: u32) -> Vec<Query> {
     for _ in 0..num_queries {
         let u = ordinal / max_repo;
         let r = ordinal % max_repo;
-        let q = Query::new(
+        let q = Request::new(
             Some(EntityUid::from_type_name_and_id(
                 EntityTypeName::from_str("User").unwrap(),
                 EntityId::from_str(format!("user_{}", u).as_str()).unwrap(),
@@ -384,7 +381,7 @@ impl<'a> EntitySlice<'a> {
         &mut self,
         all_entities: &'a Entities,
         euid: EntityUid,
-        query: &Query,
+        query: &Request,
         dummy_entities: &mut Vec<Entity>,
     ) {
         if !self.entity_uids_in_slice.contains(&euid) {
@@ -396,7 +393,11 @@ impl<'a> EntitySlice<'a> {
             if !self.entity_uids_in_slice.contains(ancestor) {
                 //Only add repositories / repository groups if they are/belong to the resource in the query
                 if ancestor.type_name().to_string().eq("Repository") {
-                    if ancestor.id().to_string().eq(query.resource().id().as_ref()) {
+                    if ancestor
+                        .id()
+                        .to_string()
+                        .eq(query.resource().unwrap().id().as_ref())
+                    {
                         self.entity_slice.push(all_entities.get(ancestor).unwrap());
                         self.entity_uids_in_slice.insert(ancestor.clone());
                     } else {
@@ -415,7 +416,7 @@ impl<'a> EntitySlice<'a> {
                     if ancestor
                         .id()
                         .to_string()
-                        .contains(query.resource().id().as_ref())
+                        .contains(query.resource().unwrap().id().as_ref())
                     {
                         self.entity_slice.push(all_entities.get(ancestor).unwrap());
                         self.entity_uids_in_slice.insert(ancestor.clone());
@@ -443,7 +444,7 @@ impl<'a> EntitySlice<'a> {
     }
 }
 
-fn get_entity_slice_for_query(entities: &Entities, query: &Query) -> Entities {
+fn get_entity_slice_for_query(entities: &Entities, query: &Request) -> Entities {
     //For the permissions we're modeling, we need:
     //
     //If resource is a repo
@@ -470,7 +471,7 @@ fn get_entity_slice_for_query(entities: &Entities, query: &Query) -> Entities {
 
     let mut entity_slice = EntitySlice::new();
 
-    let action_str = query.action().to_string();
+    let action_str = query.action().unwrap().to_string();
 
     //We'll store dummy entities here so their lifetime lasts until we call Entities::new()
     let mut dummy_entities: Vec<Entity> = Vec::new();
@@ -483,19 +484,19 @@ fn get_entity_slice_for_query(entities: &Entities, query: &Query) -> Entities {
     } else {
         entity_slice.add_entity_and_ancestors(
             entities,
-            query.principal().clone(),
+            query.principal().unwrap().clone(),
             query,
             &mut dummy_entities,
         );
 
         entity_slice.add_entity_and_ancestors(
             entities,
-            query.resource().clone(),
+            query.resource().unwrap().clone(),
             query,
             &mut dummy_entities,
         );
 
-        let repo_name = query.resource().id().clone();
+        let repo_name = query.resource().unwrap().id().clone();
         // All of these are ancestors of _admins, so we don't need to add them directly
         entity_slice.add_entity_and_ancestors(
             entities,
@@ -602,13 +603,13 @@ fn benchmark_inner(
                 let ans = authorizer.is_authorized(q, &policies, &entity_slice);
                 if print_allows && ans.decision() == Decision::Allow {
                     println!("ALLOW");
-                    println!("Query: {:?}", q);
+                    println!("Request: {:?}", q);
                 }
             } else {
                 let ans = authorizer.is_authorized(q, &policies, &entities);
                 if print_allows && ans.decision() == Decision::Allow {
                     println!("ALLOW");
-                    println!("Query: {:?}", q);
+                    println!("Request: {:?}", q);
                 }
             }
             let auth_dur = auth_start.elapsed();
