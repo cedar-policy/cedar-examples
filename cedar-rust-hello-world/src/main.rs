@@ -180,11 +180,12 @@ fn entity_objects() {
 
     // add an inline policy to the policy set
     let mut p = PolicySet::from_str(c1).expect("policy error");
-    let t = Template::from_str(c2).unwrap();
+    let t = Template::parse(Some("policy01".to_string()), c2).unwrap();
+    
     let id1 = t.id().clone();
     // add a template to the policy set
     p.add_template(t).unwrap();
-
+    
     // create a principal and a resource entities to instantiate the template
     let mut v = HashMap::new();
     let entity1 = EntityUid::from_type_name_and_id(
@@ -282,7 +283,7 @@ fn create_entities_obj() -> Entities {
 fn create_entities_json() -> Entities {
     let e = r#"[
         {
-            "uid": {"__entity":{"type":"User","id":"alice"}},
+            "uid": {"type":"User","id":"alice"},
             "attrs": {
                 "age":17,
                 "ip_addr":{"__extn":{"fn":"ip", "arg":"10.0.1.101"}}
@@ -290,7 +291,7 @@ fn create_entities_json() -> Entities {
             "parents": []
         },
         {
-            "uid":{"__entity":{"type":"Action","id":"view"}},
+            "uid":{"type":"Action","id":"view"},
             "attrs": {},
             "parents": []
         },
@@ -335,40 +336,60 @@ fn validate() {
     println!("Example: Validating a Policy");
     // this policy has a type error, but parses.
     let src = r#"
-    "policy_id_00"
     permit(
         principal == User::"bob",
         action == Action::"view",
         resource == Album::"trip"
     )
     when { 
-        10 > "hello"  &&
+        
         principal.age > 18
 
     };
 "#;
     let sc = r#"
-        {
-            "entityTypes": [
-                {
-                    "name": "User",
-                    "memberOf": []
+    {
+        "": {
+            "entityTypes": {
+                "User": {
+                    "shape": {
+                        "type": "Record",
+                        "attributes": {
+                            "age": {
+                                "type": "Long",
+                                "name": "age"
+                            }
+                        }
+                    },
+                    "memberOfTypes": [
+                        "UserGroup"
+                    ]
                 },
-                {
-                    "name": "Album",
-                    "memberOf": []
+                
+                "UserGroup": {
+                    "memberOfTypes": []
+                },
+                
+                "Album": {
+                    "memberOfTypes": [
+                        "Album"
+                    ]
                 }
-            ],
-            "actions": [
-                {
-                    "name": "view",
+            },
+            "actions": {
+                "view": {
                     "appliesTo": {
-                      "resourceTypes": ["Album" ],
-                      "principalTypes": [ "User" ]
+                        "resourceTypes": [
+                            "Album"
+                        ],
+                        "principalTypes": [
+                            "User"
+                        ]
                     }
                 }
-            ]
+            }
         }
+    }
         "#;
 
     let p = PolicySet::from_str(src).unwrap();
