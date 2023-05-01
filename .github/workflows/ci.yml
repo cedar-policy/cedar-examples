@@ -68,7 +68,7 @@ jobs:
         working-directory: ./cedar-java/CedarJavaFFI
         run: cargo build
       - name: Build cedar-java-hello-world
-        working-directory: ./cedar-rust-hello-world
+        working-directory: ./cedar-java-hello-world
         run: ./gradlew build
 
   build_and_test_github_model_app:
