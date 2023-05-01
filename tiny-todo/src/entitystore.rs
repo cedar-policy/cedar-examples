@@ -1,95 +1,42 @@
-use std::{
-    collections::{HashMap, HashSet},
-    ops::Deref,
-};
+use std::collections::HashMap;
 use thiserror::Error;
 
-use cedar_policy::{
-    Entities, EntityId, EntityTypeName, EvalResult, EvaluationError, RestrictedExpression,
-};
-use serde::Deserialize;
+use cedar_policy::{Entities, Entity, EntityId, EntityTypeName, EvaluationError};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     context::Error,
-    util::{EntityUid, Expression},
-    APPLICATION,
+    objects::{Application, List, Team, User, UserOrTeam},
+    util::EntityUid,
 };
 
-#[derive(Debug, Clone, Deserialize)]
-pub struct Entity {
-    uid: EntityUid,
-    attrs: HashMap<String, Expression>,
-    parents: HashSet<EntityUid>,
-}
-
-impl Entity {
-    pub fn new(
-        uid: EntityUid,
-        attrs: HashMap<String, RestrictedExpression>,
-        mut parents: HashSet<EntityUid>,
-    ) -> Self {
-        let app = APPLICATION.parse().unwrap();
-        if app != uid {
-            parents.insert(app);
-        }
-        Self {
-            uid,
-            attrs: attrs.into_iter().map(|(k, v)| (k, v.into())).collect(),
-            parents,
-        }
-    }
-
-    pub fn uid(&self) -> EntityUid {
-        self.uid.clone()
-    }
-
-    pub fn as_entity(&self) -> cedar_policy::Entity {
-        cedar_policy::Entity::new(
-            self.uid.clone().into(),
-            self.attrs
-                .clone()
-                .into_iter()
-                .map(|(k, v)| (k, v.deref().clone()))
-                .collect(),
-            self.parents.clone().into_iter().map(|x| x.into()).collect(),
-        )
-    }
-
-    pub fn attr(&self, attr: &str) -> Option<Result<EvalResult, EvaluationError>> {
-        cedar_policy::Entity::new(
-            self.uid().into(),
-            self.attrs
-                .clone()
-                .into_iter()
-                .map(|(k, v)| (k, v.into()))
-                .collect(),
-            HashSet::new(),
-        )
-        .attr(attr)
-    }
-
-    pub fn add_parent(&mut self, p: EntityUid) {
-        self.parents.insert(p);
-    }
-
-    pub fn remove_parent(&mut self, p: &EntityUid) {
-        self.parents.remove(p);
-    }
-}
-
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct EntityStore {
-    store: HashMap<EntityUid, Entity>,
+    users: HashMap<EntityUid, User>,
+    teams: HashMap<EntityUid, Team>,
+    lists: HashMap<EntityUid, List>,
+    app: Application,
+    #[serde(skip)]
     uid: usize,
 }
 
 impl EntityStore {
     pub fn euids(&self) -> impl Iterator<Item = &EntityUid> {
-        self.store.keys()
+        self.users
+            .keys()
+            .chain(self.teams.keys())
+            .chain(self.lists.keys())
+            .chain(std::iter::once(self.app.euid()))
     }
 
     pub fn as_entities(&self) -> Entities {
-        Entities::from_entities(self.store.values().map(Entity::as_entity)).unwrap()
+        //Entities::from_entities(self.store.values().map(Entity::as_entity)).unwrap()
+        let users = self.users.values().map(|user| user.pack());
+        let teams = self.teams.values().map(|team| team.pack());
+        let lists = self.lists.values().map(|list| list.pack());
+        let app = std::iter::once(self.app.pack());
+        let all = users.chain(teams).chain(lists).chain(app);
+        Entities::from_entities(all).unwrap()
     }
 
     // Realistically you'd want to use something like a UUID here
@@ -98,38 +45,107 @@ impl EntityStore {
             let new_uid: EntityId = format!("{}", self.uid).parse().unwrap();
             self.uid += 1;
             let euid = cedar_policy::EntityUid::from_type_name_and_id(ty.clone(), new_uid).into();
-            if !self.store.contains_key(&euid) {
+            if !self.euid_exists(&euid) {
                 return euid;
             }
         }
     }
 
-    pub fn insert_entity(&mut self, e: Entity) {
-        self.store.insert(e.uid(), e);
+    fn euid_exists(&self, euid: &EntityUid) -> bool {
+        self.lists.contains_key(euid)
+            || self.teams.contains_key(euid)
+            || self.users.contains_key(euid)
+            || self.app.euid() == euid
+    }
+
+    pub fn insert_user(&mut self, e: User) {
+        self.users.insert(e.uid().clone(), e);
+    }
+
+    pub fn insert_team(&mut self, e: Team) {
+        self.teams.insert(e.uid().clone(), e);
+    }
+
+    pub fn insert_list(&mut self, e: List) {
+        self.lists.insert(e.uid().clone(), e);
     }
 
     pub fn delete_entity(&mut self, e: &EntityUid) -> Result<(), Error> {
-        self.store
-            .remove(e)
-            .ok_or_else(|| Error::NoSuchEntity(e.clone()))
-            .map(|_| ())
+        //     .ok_or_else(|| Error::NoSuchEntity(e.clone()))
+        if self.users.contains_key(e) {
+            self.users.remove(e);
+            Ok(())
+        } else if self.teams.contains_key(e) {
+            self.teams.remove(e);
+            Ok(())
+        } else if self.lists.contains_key(e) {
+            self.lists.remove(e);
+            Ok(())
+        } else {
+            Err(Error::NoSuchEntity(e.clone()))
+        }
     }
 
-    pub fn get(&self, euid: &EntityUid) -> Result<&Entity, Error> {
-        self.store
+    pub fn get_user(&self, euid: &EntityUid) -> Result<&User, Error> {
+        self.users
             .get(euid)
             .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
     }
 
-    pub fn get_mut(&mut self, euid: &EntityUid) -> Result<&mut Entity, Error> {
-        self.store
+    pub fn get_user_mut(&mut self, euid: &EntityUid) -> Result<&mut User, Error> {
+        self.users
+            .get_mut(euid)
+            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+    }
+
+    pub fn get_team(&self, euid: &EntityUid) -> Result<&Team, Error> {
+        self.teams
+            .get(euid)
+            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+    }
+
+    pub fn get_team_mut(&mut self, euid: &EntityUid) -> Result<&mut Team, Error> {
+        self.teams
+            .get_mut(euid)
+            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+    }
+
+    pub fn get_user_or_team_mut(&mut self, euid: &EntityUid) -> Result<&mut dyn UserOrTeam, Error> {
+        if self.users.contains_key(euid) {
+            let u = self.users.get_mut(euid).unwrap();
+            Ok(u)
+        } else if self.teams.contains_key(euid) {
+            let t = self.teams.get_mut(euid).unwrap();
+            Ok(t)
+        } else {
+            Err(Error::NoSuchEntity(euid.clone()))
+        }
+    }
+
+    pub fn get_list(&self, euid: &EntityUid) -> Result<&List, Error> {
+        self.lists
+            .get(euid)
+            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+    }
+
+    pub fn get_list_mut(&mut self, euid: &EntityUid) -> Result<&mut List, Error> {
+        self.lists
             .get_mut(euid)
             .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
     }
 }
 
-pub trait TypedEntity<'a>: Sized {
-    fn unpack(e: &'a Entity) -> Result<Self, EntityDecodeError>;
+pub trait TypedEntity: Sized {
+    //fn unpack(e: &'a Entity) -> Result<Self, EntityDecodeError>;
+    fn pack(&self) -> Entity;
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum EntityType {
+    List,
+    User,
+    Team,
+    Application,
 }
 
 #[derive(Debug, Clone, Error)]
