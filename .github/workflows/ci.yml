@@ -9,7 +9,7 @@ env:
 
 jobs:
   build_and_test_rust_hello_world:
-    name: Rust project - latest
+    name: rust-hello-world
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -40,7 +40,7 @@ jobs:
         run: cargo test --verbose
 
   build_and_test_github_model_app:
-    name: Rust project - latest
+    name: github-model-app
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -71,7 +71,7 @@ jobs:
         run: cargo test --verbose
 
   build_and_test_tiny_todo:
-    name: Rust project - latest
+    name: tiny-todo
     runs-on: ubuntu-latest
     strategy:
       matrix:
