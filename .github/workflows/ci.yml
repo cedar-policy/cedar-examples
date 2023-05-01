@@ -48,13 +48,6 @@ jobs:
     steps:
       - name: Checkout Cedar Examples
         uses: actions/checkout@v3
-      - name: Checkout cedar
-        uses: actions/checkout@v3
-        with:
-          repository: cedar-policy/cedar
-          ref: main
-          path: ./cedar
-          ssh-key: ${{ secrets.CEDAR }}
       - name: Checkout cedar-java
         uses: actions/checkout@v3
         with:
@@ -62,6 +55,13 @@ jobs:
           ref: main
           path: ./cedar-java
           ssh-key: ${{ secrets.CEDARJAVA }}
+      - name: Checkout cedar
+        uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar
+          ref: main
+          path: ./cedar-java/cedar
+          ssh-key: ${{ secrets.CEDAR }}
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: cargo build CedarJavaFFI
