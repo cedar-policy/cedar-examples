@@ -15,4 +15,3 @@ itertools = "0.10.5"
 
 [dependencies.cedar-policy]
 version = "2.0.0"
-path = "../../cedar/cedar-policy"
