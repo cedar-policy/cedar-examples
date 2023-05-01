@@ -1,1 +1,58 @@
-{"store":{"Team::\"Admin\"":{"uid":"Team::\"Admin\"","attrs":{},"parents":["Application::\"TinyTodo\""]},"User::\"andrew\"":{"uid":"User::\"andrew\"","attrs":{},"parents":["Team::\"Org11\"","Application::\"TinyTodo\""]},"Application::\"TinyTodo\"":{"uid":"Application::\"TinyTodo\"","attrs":{},"parents":[]},"User::\"aaron\"":{"uid":"User::\"aaron\"","attrs":{},"parents":["Team::\"Admin\"","Team::\"Org11\"","Application::\"TinyTodo\""]},"User::\"emina\"":{"uid":"User::\"emina\"","attrs":{},"parents":["Team::\"Admin\"","Application::\"TinyTodo\""]},"User::\"kesha\"":{"uid":"User::\"kesha\"","attrs":{},"parents":["Team::\"OrgA\"","Application::\"TinyTodo\""]},"Team::\"Org11\"":{"uid":"Team::\"Org11\"","attrs":{},"parents":["Team::\"OrgA\"","Application::\"TinyTodo\""]},"Team::\"OrgA\"":{"uid":"Team::\"OrgA\"","attrs":{},"parents":["Application::\"TinyTodo\""]}},"uid":0}
+{
+  "users": {
+    "User::\"kesha\"": {
+      "euid": "User::\"kesha\"",
+      "parents": [
+        "Application::\"TinyTodo\"",
+        "Team::\"temp\""
+      ]
+    },
+    "User::\"aaron\"": {
+      "euid": "User::\"aaron\"",
+      "parents": [
+        "Team::\"interns\"",
+        "Application::\"TinyTodo\""
+      ]
+    },
+    "User::\"emina\"": {
+      "euid": "User::\"emina\"",
+      "parents": [
+        "Application::\"TinyTodo\"",
+        "Team::\"admin\""
+      ]
+    },
+    "User::\"andrew\"": {
+      "euid": "User::\"andrew\"",
+      "parents": [
+        "Application::\"TinyTodo\"",
+        "Team::\"admin\"",
+        "Team::\"temp\""
+      ]
+    }
+  },
+  "teams": {
+    "Team::\"temp\"": {
+      "uid": "Team::\"temp\"",
+      "parents": [
+        "Application::\"TinyTodo\""
+      ]
+    },
+    "Team::\"Admin\"": {
+      "uid": "Team::\"Admin\"",
+      "parents": [
+        "Application::\"TinyTodo\""
+      ]
+    },
+    "Team::\"interns\"": {
+      "uid": "Team::\"interns\"",
+      "parents": [
+        "Application::\"TinyTodo\"",
+        "Team::\"temp\""
+      ]
+    }
+  },
+  "lists": {},
+  "app": {
+    "euid": "Application::\"TinyTodo\""
+  }
+}

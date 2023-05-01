@@ -1,3 +1,13 @@
+// forbid (
+//     principal in Team::"interns",
+//     action == Action::"CreateList",
+//     resource == Application::"TinyTodo"
+// );
+// permit (
+//     principal in Team::"admin",
+//     action,
+//     resource in Application::"TinyTodo"
+// );
 permit (
     principal,
     action in [Action::"CreateList", Action::"GetLists"],
@@ -31,9 +41,3 @@ permit (
     resource
 )
 when { principal in resource.editors };
-
-// permit (
-//    principal in Team::"Admin",
-//    action,
-//    resource in Application::"TinyTodo"
-// );

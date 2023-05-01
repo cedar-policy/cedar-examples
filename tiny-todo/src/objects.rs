@@ -1,54 +1,136 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
-use cedar_policy::{EntityTypeName, EvalResult, RestrictedExpression};
+use cedar_policy::{Entity, EntityTypeName, EvalResult, RestrictedExpression};
 use serde::{Deserialize, Serialize};
 
 use crate::{
     api::ShareRole,
-    entitystore::{Entity, EntityDecodeError, EntityStore, TypedEntity},
+    entitystore::{EntityDecodeError, EntityStore, TypedEntity},
     util::EntityUid,
+    APPLICATION,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct Application {
+    euid: EntityUid,
+}
+
+impl Application {
+    pub fn euid(&self) -> &EntityUid {
+        &self.euid
+    }
+}
+
+impl Default for Application {
+    fn default() -> Self {
+        Application {
+            euid: APPLICATION.parse().unwrap(),
+        }
+    }
+}
+
+impl TypedEntity for Application {
+    fn pack(&self) -> Entity {
+        Entity::new(
+            self.euid.clone().into(),
+            HashMap::default(),
+            HashSet::default(),
+        )
+    }
+}
+
+pub trait UserOrTeam {
+    fn add_parent(&mut self, parent: EntityUid);
+    fn remove_parent(&mut self, parent: &EntityUid);
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct User {
+    euid: EntityUid,
+    parents: HashSet<EntityUid>,
+}
+
+impl User {
+    pub fn uid(&self) -> &EntityUid {
+        &self.euid
+    }
+
+    pub fn new(euid: EntityUid) -> Self {
+        let parent = Application::default().euid().clone();
+        Self {
+            euid,
+            parents: [parent].into_iter().collect(),
+        }
+    }
+}
+
+impl TypedEntity for User {
+    fn pack(&self) -> Entity {
+        Entity::new(
+            self.euid.clone().into(),
+            HashMap::default(),
+            HashSet::default(),
+        )
+    }
+}
+
+impl UserOrTeam for User {
+    fn add_parent(&mut self, parent: EntityUid) {
+        self.parents.insert(parent);
+    }
+
+    fn remove_parent(&mut self, parent: &EntityUid) {
+        self.parents.remove(parent);
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Team {
     uid: EntityUid,
-    name: Option<String>,
-    owner: EntityUid,
+    parents: HashSet<EntityUid>,
 }
 
 impl Team {
-    pub fn new(euid: EntityUid, name: Option<String>, owner: EntityUid) -> Team {
+    pub fn new(euid: EntityUid) -> Team {
+        let parent = Application::default().euid().clone();
         Self {
             uid: euid,
-            name,
-            owner,
+            parents: [parent].into_iter().collect(),
         }
+    }
+
+    pub fn uid(&self) -> &EntityUid {
+        &self.uid
     }
 }
 
 impl From<Team> for Entity {
     fn from(team: Team) -> Entity {
-        let owner_tup = (
-            "owner".to_string(),
-            format!("{}", team.owner).parse().unwrap(),
-        );
-        let attrs = if let Some(name) = team.name {
-            [
-                owner_tup,
-                ("name".to_string(), RestrictedExpression::new_string(name)),
-            ]
-            .into_iter()
-            .collect()
-        } else {
-            [owner_tup].into_iter().collect()
-        };
-
-        let parents = HashSet::new();
-        Entity::new(team.uid, attrs, parents)
+        Entity::new(
+            team.uid.into(),
+            HashMap::default(),
+            team.parents.into_iter().map(|euid| euid.into()).collect(),
+        )
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+impl TypedEntity for Team {
+    fn pack(&self) -> Entity {
+        self.clone().into()
+    }
+}
+
+impl UserOrTeam for Team {
+    fn add_parent(&mut self, parent: EntityUid) {
+        self.parents.insert(parent);
+    }
+
+    fn remove_parent(&mut self, parent: &EntityUid) {
+        self.parents.remove(parent);
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct List {
     uid: EntityUid,
     owner: EntityUid,
@@ -60,82 +142,15 @@ pub struct List {
     editors: EntityUid,
 }
 
-impl<'a> TypedEntity<'a> for List {
-    fn unpack(entity: &'a Entity) -> Result<Self, EntityDecodeError> {
-        let owner_field = "owner";
-        let tasks_field = "tasks";
-        let name_field = "name";
-
-        let owner = match entity
-            .attr(owner_field)
-            .ok_or(EntityDecodeError::MissingAttr(owner_field))??
-        {
-            EvalResult::EntityUid(euid) => Ok(euid),
-            _ => Err(EntityDecodeError::WrongType(owner_field, "EntityUid")),
-        }?;
-
-        let name = get_string(
-            &entity
-                .attr(name_field)
-                .ok_or(EntityDecodeError::MissingAttr(name_field))??,
-            name_field,
-        )?
-        .clone();
-
-        let readers_field = "readers";
-        let editors_field = "editors";
-        let readers = decode_euid(
-            &entity
-                .attr(readers_field)
-                .ok_or(EntityDecodeError::MissingAttr(readers_field))??,
-            readers_field,
-        )?;
-        let editors = decode_euid(
-            &entity
-                .attr(editors_field)
-                .ok_or(EntityDecodeError::MissingAttr(editors_field))??,
-            editors_field,
-        )?;
-
-        let mut tasks = match entity
-            .attr(tasks_field)
-            .ok_or(EntityDecodeError::MissingAttr(tasks_field))??
-        {
-            cedar_policy::EvalResult::Set(tasks) => Ok(tasks
-                .iter()
-                .map(|v| v.try_into())
-                .collect::<Result<Vec<Task>, _>>()?),
-            _ => Err(EntityDecodeError::WrongType(tasks_field, "Set")),
-        }?;
-
-        tasks.sort();
-        Ok(Self {
-            name,
-            uid: entity.uid(),
-            owner: owner.into(),
-            tasks,
-            readers,
-            editors,
-        })
-    }
-}
-
-fn decode_euid(e: &EvalResult, field: &'static str) -> Result<EntityUid, EntityDecodeError> {
-    match e {
-        EvalResult::EntityUid(euid) => Ok(euid.clone().into()),
-        _ => Err(EntityDecodeError::WrongType(field, "Set of entity uids")),
-    }
-}
-
 impl List {
     pub fn new(store: &mut EntityStore, uid: EntityUid, owner: EntityUid, name: String) -> Self {
         let team_ty: EntityTypeName = "Team".parse().unwrap();
         let readers_uid = store.fresh_euid(team_ty.clone());
-        let readers = Team::new(readers_uid.clone(), None, uid.clone()).into();
+        let readers = Team::new(readers_uid.clone());
         let writers_uid = store.fresh_euid(team_ty);
-        let writers = Team::new(writers_uid.clone(), None, uid.clone()).into();
-        store.insert_entity(readers);
-        store.insert_entity(writers);
+        let writers = Team::new(writers_uid.clone());
+        store.insert_team(readers);
+        store.insert_team(writers);
         Self {
             uid,
             owner,
@@ -144,6 +159,10 @@ impl List {
             readers: readers_uid,
             editors: writers_uid,
         }
+    }
+
+    pub fn uid(&self) -> &EntityUid {
+        &self.uid
     }
 
     pub fn create_task(&mut self, description: String) -> i64 {
@@ -179,6 +198,12 @@ impl List {
     }
 }
 
+impl TypedEntity for List {
+    fn pack(&self) -> Entity {
+        self.clone().into()
+    }
+}
+
 impl From<List> for Entity {
     fn from(value: List) -> Self {
         let attrs = [
@@ -194,7 +219,7 @@ impl From<List> for Entity {
         .into_iter()
         .map(|(x, v)| (x.into(), v))
         .collect();
-        Entity::new(value.uid, attrs, HashSet::default())
+        Entity::new(value.uid.into(), attrs, HashSet::default())
     }
 }
 

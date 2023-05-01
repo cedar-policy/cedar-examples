@@ -16,7 +16,7 @@ use crate::{
         AddShare, CreateList, CreateTask, DeleteList, DeleteShare, DeleteTask, Empty, GetList,
         GetLists, UpdateList, UpdateTask,
     },
-    entitystore::{EntityDecodeError, EntityStore, TypedEntity},
+    entitystore::{EntityDecodeError, EntityStore},
     objects::List,
     util::{EntityUid, Lists},
 };
@@ -222,30 +222,27 @@ impl AppContext {
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
         let action = r#"Action::"EditShare""#.parse().unwrap();
         self.is_authorized(&r.uid, &action, &r.list)?;
-        let entity = self.entities.get(&r.list)?;
-        let list = <List as TypedEntity>::unpack(entity)?;
-        let team_uid = list.get_team(r.role);
-        let target_entity = self.entities.get_mut(&r.share_with)?;
-        target_entity.add_parent(team_uid.clone());
+        let list = self.entities.get_list(&r.list)?;
+        let team_uid = list.get_team(r.role).clone();
+        let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
+        target_entity.add_parent(team_uid);
         Ok(AppResponse::Unit(()))
     }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
         let action = r#"Action::"EditShare""#.parse().unwrap();
         self.is_authorized(&r.uid, &action, &r.list)?;
-        let entity = self.entities.get(&r.list)?;
-        let list = <List as TypedEntity>::unpack(entity)?;
-        let team_uid = list.get_team(r.role);
-        let target_entity = self.entities.get_mut(&r.unshare_with)?;
-        target_entity.remove_parent(team_uid);
+        let list = self.entities.get_list(&r.list)?;
+        let team_uid = list.get_team(r.role).clone();
+        let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
+        target_entity.remove_parent(&team_uid);
         Ok(AppResponse::Unit(()))
     }
 
     fn update_task(&mut self, r: UpdateTask) -> Result<AppResponse> {
-        let action: EntityUid = r#"Action::"ModifyTask""#.parse().unwrap();
+        let action: EntityUid = r#"Action::"UpdateTask""#.parse().unwrap();
         self.is_authorized(&r.uid, &action, &r.list)?;
-        let list_entity = self.entities.get_mut(&r.list)?;
-        let mut list = <List as TypedEntity>::unpack(list_entity)?;
+        let list = self.entities.get_list_mut(&r.list)?;
         let task = list
             .get_task_mut(r.task)
             .ok_or_else(|| Error::InvalidTaskId(r.list, r.task))?;
@@ -255,28 +252,23 @@ impl AppContext {
         if let Some(name) = r.description {
             task.set_name(name);
         }
-        *list_entity = list.into();
         Ok(AppResponse::Unit(()))
     }
 
     fn create_task(&mut self, r: CreateTask) -> Result<AppResponse> {
         let action: EntityUid = r#"Action::"CreateTask""#.parse().unwrap();
         self.is_authorized(&r.uid, &action, &r.list)?;
-        let list_entity = self.entities.get_mut(&r.list)?;
-        let mut list = <List as TypedEntity>::unpack(list_entity)?;
+        let list = self.entities.get_list_mut(&r.list)?;
         let task_id = list.create_task(r.description);
-        *list_entity = list.into();
         Ok(AppResponse::TaskId(task_id))
     }
 
     fn delete_task(&mut self, r: DeleteTask) -> Result<AppResponse> {
         let action = r#"Action::"DeleteTask""#.parse().unwrap();
         self.is_authorized(&r.uid, &action, &r.list)?;
-        let list_entity = self.entities.get_mut(&r.list)?;
-        let mut list = <List as TypedEntity>::unpack(list_entity)?;
+        let list = self.entities.get_list_mut(&r.list)?;
         list.delete_task(r.task)
             .ok_or_else(|| Error::InvalidTaskId(r.list, r.task))?;
-        *list_entity = list.into();
         Ok(AppResponse::Unit(()))
     }
 
@@ -307,7 +299,7 @@ impl AppContext {
         let type_name = "List".parse().unwrap();
         let euid = self.entities.fresh_euid(type_name);
         let l = List::new(&mut self.entities, euid.clone(), r.uid, r.name);
-        self.entities.insert_entity(l.into());
+        self.entities.insert_list(l);
 
         Ok(AppResponse::Euid(euid))
     }
@@ -315,17 +307,15 @@ impl AppContext {
     fn get_list(&self, r: GetList) -> Result<AppResponse> {
         let action = r#"Action::"GetList""#.parse().unwrap();
         self.is_authorized(&r.uid, &action, &r.list_id)?;
-        let list: List = <List as TypedEntity>::unpack(self.entities.get(&r.list_id)?)?;
+        let list = self.entities.get_list(&r.list_id)?.clone();
         Ok(AppResponse::GetList(Box::new(list)))
     }
 
     fn update_list(&mut self, r: UpdateList) -> Result<AppResponse> {
         let action = r#"Action::"UpdateList""#.parse().unwrap();
         self.is_authorized(&r.uid, &action, &r.list)?;
-        let entity = self.entities.get_mut(&r.list)?;
-        let mut list = <List as TypedEntity>::unpack(entity)?;
+        let list = self.entities.get_list_mut(&r.list)?;
         list.update_name(r.name);
-        *entity = list.into();
         Ok(AppResponse::Unit(()))
     }
 

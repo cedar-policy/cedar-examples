@@ -84,7 +84,7 @@ class Server:
     
 server = None
 # TODO : Change this when we release!
-server_binary_path = './build/private/cargo-target/release/tiny-todo-server'
+server_binary_path = './target/release/tiny-todo-server'
 
 
 # Setup our entities
