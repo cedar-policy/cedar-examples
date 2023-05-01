@@ -13,3 +13,5 @@
 
 # Don't check gradle build artifacts
 cedar-java-hello-world/.gradle/*
+cedar-java-hello-world/build/*
+cedar-java-hello-world/.jqwik-database
