@@ -181,11 +181,10 @@ fn entity_objects() {
     // add an inline policy to the policy set
     let mut p = PolicySet::from_str(c1).expect("policy error");
     let t = Template::parse(Some("policy01".to_string()), c2).unwrap();
-    
     let id1 = t.id().clone();
     // add a template to the policy set
     p.add_template(t).unwrap();
-    
+
     // create a principal and a resource entities to instantiate the template
     let mut v = HashMap::new();
     let entity1 = EntityUid::from_type_name_and_id(
