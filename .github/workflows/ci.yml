@@ -103,7 +103,7 @@ jobs:
         run: cargo test --verbose
 
   build_and_test_tiny_todo:
-    name: tiny-todo
+    name: tinytodo
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -122,13 +122,13 @@ jobs:
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: cargo fmt
-        working-directory: ./tiny-todo
+        working-directory: ./tinytodo
         run: cargo fmt --all --check
       - name: cargo rustc
-        working-directory: ./tiny-todo
+        working-directory: ./tinytodo
         run: |
              printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
              RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
       - name: cargo test
-        working-directory: ./tiny-todo
+        working-directory: ./tinytodo
         run: cargo test --verbose
