@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use thiserror::Error;
 
-use cedar_policy::{Entities, Entity, EntityId, EntityTypeName, EvaluationError};
+use cedar_policy::{Entities, EntityId, EntityTypeName, EvaluationError};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -30,11 +30,10 @@ impl EntityStore {
     }
 
     pub fn as_entities(&self) -> Entities {
-        //Entities::from_entities(self.store.values().map(Entity::as_entity)).unwrap()
-        let users = self.users.values().map(|user| user.pack());
-        let teams = self.teams.values().map(|team| team.pack());
-        let lists = self.lists.values().map(|list| list.pack());
-        let app = std::iter::once(self.app.pack());
+        let users = self.users.values().map(|user| user.clone().into());
+        let teams = self.teams.values().map(|team| team.clone().into());
+        let lists = self.lists.values().map(|list| list.clone().into());
+        let app = std::iter::once(self.app.clone().into());
         let all = users.chain(teams).chain(lists).chain(app);
         Entities::from_entities(all).unwrap()
     }
@@ -71,7 +70,6 @@ impl EntityStore {
     }
 
     pub fn delete_entity(&mut self, e: &EntityUid) -> Result<(), Error> {
-        //     .ok_or_else(|| Error::NoSuchEntity(e.clone()))
         if self.users.contains_key(e) {
             self.users.remove(e);
             Ok(())
@@ -133,11 +131,6 @@ impl EntityStore {
             .get_mut(euid)
             .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
     }
-}
-
-pub trait TypedEntity: Sized {
-    //fn unpack(e: &'a Entity) -> Result<Self, EntityDecodeError>;
-    fn pack(&self) -> Entity;
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]

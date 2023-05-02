@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     api::ShareRole,
-    entitystore::{EntityDecodeError, EntityStore, TypedEntity},
+    entitystore::{EntityDecodeError, EntityStore},
     util::EntityUid,
     APPLICATION,
 };
@@ -29,10 +29,10 @@ impl Default for Application {
     }
 }
 
-impl TypedEntity for Application {
-    fn pack(&self) -> Entity {
+impl From<Application> for Entity {
+    fn from(a: Application) -> Self {
         Entity::new(
-            self.euid.clone().into(),
+            a.euid().clone().into(),
             HashMap::default(),
             HashSet::default(),
         )
@@ -40,8 +40,8 @@ impl TypedEntity for Application {
 }
 
 pub trait UserOrTeam {
-    fn add_parent(&mut self, parent: EntityUid);
-    fn remove_parent(&mut self, parent: &EntityUid);
+    fn insert_parent(&mut self, parent: EntityUid);
+    fn delete_parent(&mut self, parent: &EntityUid);
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -64,22 +64,22 @@ impl User {
     }
 }
 
-impl TypedEntity for User {
-    fn pack(&self) -> Entity {
+impl From<User> for Entity {
+    fn from(value: User) -> Entity {
         Entity::new(
-            self.euid.clone().into(),
-            HashMap::default(),
-            HashSet::default(),
+            value.euid.clone().into(),
+            HashMap::new(),
+            value.parents.into_iter().map(|euid| euid.into()).collect(),
         )
     }
 }
 
 impl UserOrTeam for User {
-    fn add_parent(&mut self, parent: EntityUid) {
+    fn insert_parent(&mut self, parent: EntityUid) {
         self.parents.insert(parent);
     }
 
-    fn remove_parent(&mut self, parent: &EntityUid) {
+    fn delete_parent(&mut self, parent: &EntityUid) {
         self.parents.remove(parent);
     }
 }
@@ -114,18 +114,12 @@ impl From<Team> for Entity {
     }
 }
 
-impl TypedEntity for Team {
-    fn pack(&self) -> Entity {
-        self.clone().into()
-    }
-}
-
 impl UserOrTeam for Team {
-    fn add_parent(&mut self, parent: EntityUid) {
+    fn insert_parent(&mut self, parent: EntityUid) {
         self.parents.insert(parent);
     }
 
-    fn remove_parent(&mut self, parent: &EntityUid) {
+    fn delete_parent(&mut self, parent: &EntityUid) {
         self.parents.remove(parent);
     }
 }
@@ -140,6 +134,7 @@ pub struct List {
 
     readers: EntityUid,
     editors: EntityUid,
+    parents: HashSet<EntityUid>,
 }
 
 impl List {
@@ -151,6 +146,9 @@ impl List {
         let writers = Team::new(writers_uid.clone());
         store.insert_team(readers);
         store.insert_team(writers);
+        let parents = [Application::default().euid().clone()]
+            .into_iter()
+            .collect();
         Self {
             uid,
             owner,
@@ -158,6 +156,7 @@ impl List {
             tasks: vec![],
             readers: readers_uid,
             editors: writers_uid,
+            parents,
         }
     }
 
@@ -198,12 +197,6 @@ impl List {
     }
 }
 
-impl TypedEntity for List {
-    fn pack(&self) -> Entity {
-        self.clone().into()
-    }
-}
-
 impl From<List> for Entity {
     fn from(value: List) -> Self {
         let attrs = [
@@ -219,7 +212,11 @@ impl From<List> for Entity {
         .into_iter()
         .map(|(x, v)| (x.into(), v))
         .collect();
-        Entity::new(value.uid.into(), attrs, HashSet::default())
+        Entity::new(
+            value.uid.into(),
+            attrs,
+            value.parents.into_iter().map(|x| x.into()).collect(),
+        )
     }
 }
 
