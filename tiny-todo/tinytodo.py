@@ -52,16 +52,25 @@ def parse_euid(euid, expected_type):
     else:
         raise Exception('Failed to parse euid: {}' % euid)
 
+
+def attempt_build():
+    print('Attempting to build the tiny-todo-server via Cargo')
+    proc = subprocess.run(['cargo', 'build', '--release'], check = True)
+    print('Build successfull')
+
+
 # Class for managing a tinytodo server process
 class Server:
     def __init__(self, port):
         self.port = port
-        if os.path.isfile(server_binary_path):
-            # TODO: actually take port as param
-            self.proc =  subprocess.Popen([server_binary_path, port])
-            print('TinyTodo server started on port %s' % port)
-        else:
-            print('Could not start server! Did you run `cargo build --release`?')
+        if not os.path.isfile(server_binary_path):
+            try:
+                attempt_build()
+            except:
+                print('Unable to build using cargo!')
+                return
+        self.proc =  subprocess.Popen([server_binary_path, port])
+        print('TinyTodo server started on port %s' % port)
 
 
     def kill(self):
@@ -81,8 +90,18 @@ class Server:
     def delete(self, param, data):
         return requests.delete('%s%s' % (self.url(), param), json = data)
 
+    def stopped(self):
+        return False
+
+class StoppedServer:
+
+    def kill(self):
+        pass
+
+    def stopped(self):
+        return True
     
-server = None
+server = StoppedServer()
 # TODO : Change this when we release!
 server_binary_path = './target/release/tiny-todo-server'
 
@@ -109,7 +128,7 @@ def set_user(user):
 # Start the TinyTodo server
 def start_server(port = 8080):
     global server
-    if server is None:
+    if server.stopped():
         server = Server(str(port))
     else:
         print('Server is already running')
@@ -118,11 +137,9 @@ def start_server(port = 8080):
 # Stop the TinyTodo server
 def stop_server():
     global server
-    if server is None:
-        print('Did you start the server?')
-    else:
+    if not server.stopped():
         server.kill()
-        server = None
+        server = StoppedServer()
 
 # Ensure the server gets stop at process exit
 atexit.register(stop_server)
@@ -149,7 +166,7 @@ def web_req(name):
     def decorator(func):
         def wrapper(*args):
             global current_user, server
-            if server is None:
+            if server.stopped():
                 print('No server running! Use `start_server()`!')
                 return
             if current_user is None:
