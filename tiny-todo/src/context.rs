@@ -1,5 +1,6 @@
 use itertools::Itertools;
 use std::path::Path;
+use tracing::info;
 
 use cedar_policy::{
     Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
@@ -145,6 +146,12 @@ pub struct AppContext {
     recv: Receiver<AppQuery>,
 }
 
+impl std::fmt::Debug for AppContext {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "<AppContext>")
+    }
+}
+
 #[derive(Debug, Error)]
 pub enum ContextError {
     #[error("{0}")]
@@ -160,6 +167,7 @@ pub enum ContextError {
 }
 
 impl AppContext {
+    #[tracing::instrument(skip_all)]
     pub fn spawn(
         entities_path: impl AsRef<Path>,
         schema_path: impl AsRef<Path>,
@@ -176,10 +184,12 @@ impl AppContext {
         let validator = Validator::new(schema);
         let output = validator.validate(&policies, ValidationMode::default());
         if output.validation_passed() {
+            info!("Validation passed!");
             let authorizer = Authorizer::new();
             let (send, recv) = tokio::sync::mpsc::channel(100);
 
             tokio::spawn(async move {
+                info!("Serving application server!");
                 let c = Self {
                     entities,
                     authorizer,
@@ -199,6 +209,7 @@ impl AppContext {
         }
     }
 
+    #[tracing::instrument]
     async fn serve(mut self) -> Result<()> {
         loop {
             if let Some(msg) = self.recv.recv().await {
@@ -225,7 +236,7 @@ impl AppContext {
         let list = self.entities.get_list(&r.list)?;
         let team_uid = list.get_team(r.role).clone();
         let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
-        target_entity.add_parent(team_uid);
+        target_entity.insert_parent(team_uid);
         Ok(AppResponse::Unit(()))
     }
 
@@ -235,7 +246,7 @@ impl AppContext {
         let list = self.entities.get_list(&r.list)?;
         let team_uid = list.get_team(r.role).clone();
         let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
-        target_entity.remove_parent(&team_uid);
+        target_entity.delete_parent(&team_uid);
         Ok(AppResponse::Unit(()))
     }
 
@@ -326,6 +337,7 @@ impl AppContext {
         Ok(AppResponse::Unit(()))
     }
 
+    #[tracing::instrument]
     pub fn is_authorized(
         &self,
         principal: &EntityUid,
@@ -333,13 +345,16 @@ impl AppContext {
         resource: &EntityUid,
     ) -> Result<()> {
         let es = self.entities.as_entities();
+        info!("Entities: {:?}", es);
         let q = Request::new(
             Some(principal.clone().into()),
             Some(action.clone().into()),
             Some(resource.clone().into()),
             Context::empty(),
         );
+        info!("Request: {:?}", q);
         let ans = self.authorizer.is_authorized(&q, &self.policies, &es);
+        info!("Auth response: {:?}", ans);
         match ans.decision() {
             Decision::Allow => Ok(()),
             Decision::Deny => Err(Error::AuthDenied(ans.diagnostics().clone())),

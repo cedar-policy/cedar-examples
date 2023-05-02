@@ -37,8 +37,8 @@
         "Application::\"TinyTodo\""
       ]
     },
-    "Team::\"Admin\"": {
-      "uid": "Team::\"Admin\"",
+    "Team::\"admin\"": {
+      "uid": "Team::\"admin\"",
       "parents": [
         "Application::\"TinyTodo\""
       ]

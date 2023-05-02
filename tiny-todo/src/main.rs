@@ -5,18 +5,15 @@ mod objects;
 mod util;
 
 use context::AppContext;
-use entitystore::EntityStore;
-use objects::{Team, UserOrTeam};
-use std::io::Write;
 use std::num::ParseIntError;
 use thiserror::Error;
-
-use crate::objects::User;
+use tracing::Level;
 
 const APPLICATION: &str = r#"Application::"TinyTodo""#;
 
 #[tokio::main]
 async fn main() {
+    init_logger();
     let app = AppContext::spawn(
         "./entities.json",
         "./tinytodo.cedarschema.json",
@@ -34,49 +31,23 @@ async fn main() {
     }
 }
 
-fn generate_input_data() -> std::io::Result<()> {
-    let mut f = std::fs::File::create("./output.json")?;
-    let mut store = EntityStore::default();
-    teams(&mut store);
-    users(&mut store);
-    let src = serde_json::to_string(&store).unwrap();
-    write!(f, "{src}")?;
-    Ok(())
-}
-
-fn users(store: &mut EntityStore) {
-    let users = [
-        ("aaron", vec!["interns"]),
-        ("andrew", vec!["admin", "temp"]),
-        ("emina", vec!["admin"]),
-        ("kesha", vec!["temp"]),
-    ];
-
-    for (user, parents) in users {
-        let euid = format!(r#"User::"{}""#, user).parse().unwrap();
-        let mut user = User::new(euid);
-        for team in parents {
-            let euid = format!(r#"Team::"{}""#, team).parse().unwrap();
-            user.add_parent(euid);
+fn init_logger() {
+    if let Ok(var) = std::env::var("RUST_LOG") {
+        let level = match var.as_str() {
+            "debug" => Level::DEBUG,
+            "error" => Level::ERROR,
+            "info" => Level::INFO,
+            "trace" => Level::TRACE,
+            "warn" => Level::WARN,
+            _ => Level::INFO,
+        };
+        let subscriber = tracing_subscriber::FmtSubscriber::builder()
+            .pretty()
+            .with_max_level(level)
+            .finish();
+        if let Err(e) = tracing::subscriber::set_global_default(subscriber) {
+            eprintln!("Error setting up tracing: {e}");
         }
-        store.insert_user(user);
-    }
-}
-
-fn teams(store: &mut EntityStore) {
-    let teams = [
-        ("Admin", vec![]),
-        ("interns", vec!["temp"]),
-        ("temp", vec![]),
-    ];
-    for (team, parents) in teams {
-        let euid = format!(r#"Team::"{}""#, team).parse().unwrap();
-        let mut team = Team::new(euid);
-        for parent in parents {
-            let euid = format!(r#"Team::"{}""#, parent).parse().unwrap();
-            team.add_parent(euid);
-        }
-        store.insert_team(team);
     }
 }
 
