@@ -9,8 +9,6 @@ use std::num::ParseIntError;
 use thiserror::Error;
 use tracing::Level;
 
-const APPLICATION: &str = r#"Application::"TinyTodo""#;
-
 #[tokio::main]
 async fn main() {
     init_logger();

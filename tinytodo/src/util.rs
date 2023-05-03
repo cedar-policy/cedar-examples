@@ -1,7 +1,10 @@
 use std::{ops::Deref, str::FromStr};
 
-use cedar_policy::{ParseErrors, RestrictedExpression};
+use cedar_policy::{EntityTypeName, ParseErrors, RestrictedExpression};
+use itertools::Itertools;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use thiserror::Error;
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(transparent)]
@@ -80,6 +83,193 @@ where
     d.deserialize_str(Visitor)
 }
 
+lazy_static! {
+    pub static ref LIST_TYPE: EntityTypeName = "List".parse().unwrap();
+    pub static ref USER_TYPE: EntityTypeName = "User".parse().unwrap();
+    pub static ref TEAM_TYPE: EntityTypeName = "Team".parse().unwrap();
+}
+
+#[derive(Debug, Clone, Error)]
+pub struct EntityTypeError {
+    // Non empty vec of types
+    expected: (&'static EntityTypeName, Vec<&'static EntityTypeName>),
+    got: EntityUid,
+}
+
+impl EntityTypeError {
+    pub fn single(expected: &'static EntityTypeName, got: EntityUid) -> Self {
+        Self {
+            expected: (expected, vec![]),
+            got,
+        }
+    }
+
+    pub fn multiple(
+        first: &'static EntityTypeName,
+        rest: Vec<&'static EntityTypeName>,
+        got: EntityUid,
+    ) -> Self {
+        Self {
+            expected: (first, rest),
+            got,
+        }
+    }
+}
+
+impl std::fmt::Display for EntityTypeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut expected = self.expected.1.iter().collect::<Vec<_>>();
+        if expected.is_empty() {
+            write!(
+                f,
+                "Expected an entity of type {}, got: {}",
+                self.expected.0, self.got
+            )
+        } else {
+            expected.push(&self.expected.0);
+            write!(
+                f,
+                "Expected one of the following entity types: {}, got: {}",
+                expected.into_iter().join(","),
+                self.got
+            )
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(try_from = "EntityUid")]
+#[serde(into = "EntityUid")]
+pub struct UserUid(EntityUid);
+
+impl TryFrom<EntityUid> for UserUid {
+    type Error = EntityTypeError;
+    fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
+        entity_type_check(&USER_TYPE, got, Self)
+    }
+}
+
+impl From<UserUid> for EntityUid {
+    fn from(value: UserUid) -> Self {
+        value.0
+    }
+}
+
+impl AsRef<EntityUid> for UserUid {
+    fn as_ref(&self) -> &EntityUid {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(try_from = "EntityUid")]
+#[serde(into = "EntityUid")]
+#[repr(transparent)]
+pub struct ListUid(EntityUid);
+
+impl TryFrom<EntityUid> for ListUid {
+    type Error = EntityTypeError;
+    fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
+        entity_type_check(&LIST_TYPE, got, Self)
+    }
+}
+
+impl From<ListUid> for EntityUid {
+    fn from(l: ListUid) -> Self {
+        l.0
+    }
+}
+
+impl AsRef<EntityUid> for ListUid {
+    fn as_ref(&self) -> &EntityUid {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(try_from = "EntityUid")]
+#[serde(into = "EntityUid")]
+#[repr(transparent)]
+pub struct UserOrTeamUid(EntityUid);
+
+impl TryFrom<EntityUid> for UserOrTeamUid {
+    type Error = EntityTypeError;
+    fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
+        let r: Result<UserUid, Self::Error> = got.clone().try_into();
+        if let Ok(user) = r {
+            Ok(user.into())
+        } else {
+            let r: Result<TeamUid, Self::Error> = got.clone().try_into();
+            if let Ok(team) = r {
+                Ok(team.into())
+            } else {
+                Err(EntityTypeError::multiple(&USER_TYPE, vec![&TEAM_TYPE], got))
+            }
+        }
+    }
+}
+
+impl AsRef<EntityUid> for UserOrTeamUid {
+    fn as_ref(&self) -> &EntityUid {
+        &self.0
+    }
+}
+
+impl From<UserUid> for UserOrTeamUid {
+    fn from(value: UserUid) -> Self {
+        Self(value.0)
+    }
+}
+
+impl From<TeamUid> for UserOrTeamUid {
+    fn from(value: TeamUid) -> Self {
+        Self(value.0)
+    }
+}
+
+impl From<UserOrTeamUid> for EntityUid {
+    fn from(l: UserOrTeamUid) -> Self {
+        l.0
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(try_from = "EntityUid")]
+#[serde(into = "EntityUid")]
+#[repr(transparent)]
+pub struct TeamUid(EntityUid);
+
+impl TryFrom<EntityUid> for TeamUid {
+    type Error = EntityTypeError;
+    fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
+        entity_type_check(&TEAM_TYPE, got, Self)
+    }
+}
+
+impl AsRef<EntityUid> for TeamUid {
+    fn as_ref(&self) -> &EntityUid {
+        &self.0
+    }
+}
+
+impl From<TeamUid> for EntityUid {
+    fn from(value: TeamUid) -> Self {
+        value.0
+    }
+}
+
+fn entity_type_check<T>(
+    expected: &'static EntityTypeName,
+    got: EntityUid,
+    f: impl FnOnce(EntityUid) -> T,
+) -> Result<T, EntityTypeError> {
+    if expected == got.0.type_name() {
+        Ok(f(got))
+    } else {
+        Err(EntityTypeError::single(expected, got))
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[repr(transparent)]
 #[serde(transparent)]
@@ -88,6 +278,12 @@ pub struct EntityUid(
     #[serde(deserialize_with = "deserialize_euid")]
     cedar_policy::EntityUid,
 );
+
+impl AsRef<EntityUid> for EntityUid {
+    fn as_ref(&self) -> &EntityUid {
+        self
+    }
+}
 
 impl FromStr for EntityUid {
     type Err = ParseErrors;
