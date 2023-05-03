@@ -1,18 +1,20 @@
 # Cedar Example Use Cases
 
-Example applications encoded in the Cedar policy language.
+This repo contains two example applications encoded in the Cedar policy language.
+[Document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. [GitHub example](./github_example/) minics GitHub repository access management.
 
-To run example queries or perform validation, use the cedar-cli.
+To run example queries or perform validation, use the [cedar-policy-cli](https://github.com/cedar-policy/cedar/tree/main/cedar-policy-cli).
 
 
-## Document Cloud Examples
-Examples:
-```
+## Document Cloud Drive Examples
+You can validate example policies and perform authorization requests.
+
+```shell
 # validate the document_cloud policies
-./path/to/cedar validate --policies document_cloud/policies.cedar --schema document_cloud/schema.json
+cedar validate --policies document_cloud/policies.cedar --schema document_cloud/schema.json
 
-# run a query with the document_cloud policies
-./path/to/cedar authorize --policies document_cloud/policies.cedar --entities document_cloud/entities.json --query-json document_cloud/allow_queries/alice_view_alice_public.json
+# perform a request with the document_cloud policies
+cedar authorize --policies document_cloud/policies.cedar --entities document_cloud/entities.json --request-json document_cloud/allow_queries/alice_view_alice_public.json
 ```
 
 

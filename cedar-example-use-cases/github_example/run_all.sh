@@ -26,7 +26,7 @@ ANY_TEST_FAILED=false
 
 for file in ./allow_queries/*
 do
-res=$(cedar authorize --policies policies.cedar --entities entities.json --query-json $file)
+res=$(cedar authorize --policies policies.cedar --entities entities.json --request-json $file)
 if [ $res != "ALLOW" ]
 then
     echo "Failed on " $file " with result " $res
@@ -36,7 +36,7 @@ done
 
 for file in ./deny_queries/*
 do
-res=$(cedar authorize --policies policies.cedar --entities entities.json --query-json $file)
+res=$(cedar authorize --policies policies.cedar --entities entities.json --request-json $file)
 if [ $res != "DENY" ]
 then
     echo "Failed on " $file " with result " $res
