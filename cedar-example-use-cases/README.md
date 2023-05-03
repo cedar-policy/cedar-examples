@@ -1,7 +1,7 @@
 # Cedar Example Use Cases
 
 This repo contains two example applications encoded in the Cedar policy language.
-[Document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. [GitHub example](./github_example/) minics GitHub repository access management.
+[Document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. [GitHub example](./github_example/) minics GitHub repository access permissions.
 
 To run example queries or perform validation, use the [cedar-policy-cli](https://github.com/cedar-policy/cedar/tree/main/cedar-policy-cli).
 
@@ -25,7 +25,7 @@ cedar authorize --policies document_cloud/policies.cedar --entities document_clo
 
 To generate benchmark files:
 - Tweak `generate_entities.py` as appropriate
-- Generate the entities file: `python3 gen_entities_1000_1000_p05_teams1.json`
+- Generate the entities file: `python3 generate_entities.py gen_entities_1000_1000_p05_teams1.json`
 - Run some query. E.g.,
 ```
 cedar authorize --policies policies.cedar --entities gen_entities_1000_1000_p05_teams1.json --query-json query_random_pull.json
