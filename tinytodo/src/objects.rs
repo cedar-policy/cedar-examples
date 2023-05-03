@@ -129,9 +129,7 @@ pub struct List {
     uid: EntityUid,
     owner: EntityUid,
     name: String,
-    // Invariant, `tasks` must be sorted
-    tasks: Vec<Task>,
-
+    tasks: Vec<Task>, // Invariant, `tasks` must be sorted
     readers: EntityUid,
     editors: EntityUid,
     parents: HashSet<EntityUid>,

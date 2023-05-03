@@ -38,7 +38,6 @@ impl EntityStore {
         Entities::from_entities(all).unwrap()
     }
 
-    // Realistically you'd want to use something like a UUID here
     pub fn fresh_euid(&mut self, ty: EntityTypeName) -> EntityUid {
         loop {
             let new_uid: EntityId = format!("{}", self.uid).parse().unwrap();

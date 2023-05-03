@@ -160,7 +160,7 @@ impl Default for Empty {
 
 pub async fn serve_api(chan: AppChannel, port: u16) {
     let filter = warp::path("api").and(
-        // LIST CRUD
+        // List CRUD
         (warp::path("list").and(
             (warp::path("get")
                 .and(warp::get())
