@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     context::Error,
     objects::{Application, List, Team, User, UserOrTeam},
-    util::EntityUid,
+    util::{EntityUid, ListUid, TeamUid, UserOrTeamUid, UserUid},
 };
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -38,13 +38,13 @@ impl EntityStore {
         Entities::from_entities(all).unwrap()
     }
 
-    pub fn fresh_euid(&mut self, ty: EntityTypeName) -> EntityUid {
+    pub fn fresh_euid<T: TryFrom<EntityUid>>(&mut self, ty: EntityTypeName) -> Result<T, T::Error> {
         loop {
             let new_uid: EntityId = format!("{}", self.uid).parse().unwrap();
             self.uid += 1;
             let euid = cedar_policy::EntityUid::from_type_name_and_id(ty.clone(), new_uid).into();
             if !self.euid_exists(&euid) {
-                return euid;
+                return T::try_from(euid);
             }
         }
     }
@@ -57,78 +57,83 @@ impl EntityStore {
     }
 
     pub fn insert_user(&mut self, e: User) {
-        self.users.insert(e.uid().clone(), e);
+        self.users.insert(e.uid().clone().into(), e);
     }
 
     pub fn insert_team(&mut self, e: Team) {
-        self.teams.insert(e.uid().clone(), e);
+        self.teams.insert(e.uid().clone().into(), e);
     }
 
     pub fn insert_list(&mut self, e: List) {
-        self.lists.insert(e.uid().clone(), e);
+        self.lists.insert(e.uid().clone().into(), e);
     }
 
-    pub fn delete_entity(&mut self, e: &EntityUid) -> Result<(), Error> {
-        if self.users.contains_key(e) {
-            self.users.remove(e);
+    pub fn delete_entity(&mut self, e: impl AsRef<EntityUid>) -> Result<(), Error> {
+        let r = e.as_ref();
+        if self.users.contains_key(r) {
+            self.users.remove(r);
             Ok(())
-        } else if self.teams.contains_key(e) {
-            self.teams.remove(e);
+        } else if self.teams.contains_key(r) {
+            self.teams.remove(r);
             Ok(())
-        } else if self.lists.contains_key(e) {
-            self.lists.remove(e);
+        } else if self.lists.contains_key(r) {
+            self.lists.remove(r);
             Ok(())
         } else {
-            Err(Error::NoSuchEntity(e.clone()))
+            Err(Error::NoSuchEntity(r.clone()))
         }
     }
 
-    pub fn get_user(&self, euid: &EntityUid) -> Result<&User, Error> {
+    pub fn get_user(&self, euid: &UserUid) -> Result<&User, Error> {
         self.users
-            .get(euid)
-            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+            .get(euid.as_ref())
+            .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_user_mut(&mut self, euid: &EntityUid) -> Result<&mut User, Error> {
+    pub fn get_user_mut(&mut self, euid: &UserUid) -> Result<&mut User, Error> {
         self.users
-            .get_mut(euid)
-            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+            .get_mut(euid.as_ref())
+            .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_team(&self, euid: &EntityUid) -> Result<&Team, Error> {
+    pub fn get_team(&self, euid: &TeamUid) -> Result<&Team, Error> {
         self.teams
-            .get(euid)
-            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+            .get(euid.as_ref())
+            .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_team_mut(&mut self, euid: &EntityUid) -> Result<&mut Team, Error> {
+    pub fn get_team_mut(&mut self, euid: &TeamUid) -> Result<&mut Team, Error> {
         self.teams
-            .get_mut(euid)
-            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+            .get_mut(euid.as_ref())
+            .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_user_or_team_mut(&mut self, euid: &EntityUid) -> Result<&mut dyn UserOrTeam, Error> {
-        if self.users.contains_key(euid) {
-            let u = self.users.get_mut(euid).unwrap();
+    pub fn get_user_or_team_mut(
+        &mut self,
+        euid: &UserOrTeamUid,
+    ) -> Result<&mut dyn UserOrTeam, Error> {
+        let euid_ref = euid.as_ref();
+        if self.users.contains_key(euid_ref) {
+            let u = self.users.get_mut(euid_ref).unwrap();
             Ok(u)
-        } else if self.teams.contains_key(euid) {
-            let t = self.teams.get_mut(euid).unwrap();
+        } else if self.teams.contains_key(euid_ref) {
+            let t = self.teams.get_mut(euid_ref).unwrap();
             Ok(t)
         } else {
-            Err(Error::NoSuchEntity(euid.clone()))
+            Err(Error::no_such_entity(euid_ref.clone()))
         }
     }
 
-    pub fn get_list(&self, euid: &EntityUid) -> Result<&List, Error> {
+    pub fn get_list(&self, euid: &ListUid) -> Result<&List, Error> {
         self.lists
-            .get(euid)
-            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+            .get(euid.as_ref())
+            .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_list_mut(&mut self, euid: &EntityUid) -> Result<&mut List, Error> {
+    pub fn get_list_mut(&mut self, euid: &ListUid) -> Result<&mut List, Error> {
         self.lists
-            .get_mut(euid)
-            .ok_or_else(|| Error::NoSuchEntity(euid.clone()))
+            .get_mut(euid.as_ref())
+            .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 }
 
