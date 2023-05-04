@@ -84,10 +84,15 @@ where
 }
 
 lazy_static! {
-    pub static ref LIST_TYPE: EntityTypeName = "List".parse().unwrap();
-    pub static ref USER_TYPE: EntityTypeName = "User".parse().unwrap();
-    pub static ref TEAM_TYPE: EntityTypeName = "Team".parse().unwrap();
+    pub static ref TYPE_LIST: EntityTypeName = "List".parse().unwrap();
+    pub static ref TYPE_USER: EntityTypeName = "User".parse().unwrap();
+    pub static ref TYPE_TEAM: EntityTypeName = "Team".parse().unwrap();
 }
+
+// Here we defined a bunch of typed wrappers around `EntityUid`.
+// This lets us ensure that if we have a value of type `ListUid`,
+// we know we have `EntityUid` with type `List`.
+// Because these are single-value struct wrappers, it is free to convert between them.
 
 #[derive(Debug, Clone, Error)]
 pub struct EntityTypeError {
@@ -140,12 +145,13 @@ impl std::fmt::Display for EntityTypeError {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(try_from = "EntityUid")]
 #[serde(into = "EntityUid")]
+#[repr(transparent)]
 pub struct UserUid(EntityUid);
 
 impl TryFrom<EntityUid> for UserUid {
     type Error = EntityTypeError;
     fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
-        entity_type_check(&USER_TYPE, got, Self)
+        entity_type_check(&TYPE_USER, got, Self)
     }
 }
 
@@ -170,7 +176,7 @@ pub struct ListUid(EntityUid);
 impl TryFrom<EntityUid> for ListUid {
     type Error = EntityTypeError;
     fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
-        entity_type_check(&LIST_TYPE, got, Self)
+        entity_type_check(&TYPE_LIST, got, Self)
     }
 }
 
@@ -203,7 +209,7 @@ impl TryFrom<EntityUid> for UserOrTeamUid {
             if let Ok(team) = r {
                 Ok(team.into())
             } else {
-                Err(EntityTypeError::multiple(&USER_TYPE, vec![&TEAM_TYPE], got))
+                Err(EntityTypeError::multiple(&TYPE_USER, vec![&TYPE_TEAM], got))
             }
         }
     }
@@ -242,7 +248,7 @@ pub struct TeamUid(EntityUid);
 impl TryFrom<EntityUid> for TeamUid {
     type Error = EntityTypeError;
     fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
-        entity_type_check(&TEAM_TYPE, got, Self)
+        entity_type_check(&TYPE_TEAM, got, Self)
     }
 }
 

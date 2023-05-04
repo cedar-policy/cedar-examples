@@ -5,9 +5,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     api::ShareRole,
-    context::TINY_TODO,
+    context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
-    util::{EntityUid, ListUid, TeamUid, UserUid, TEAM_TYPE},
+    util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -24,7 +24,7 @@ impl Application {
 impl Default for Application {
     fn default() -> Self {
         Application {
-            euid: TINY_TODO.clone(),
+            euid: APPLICATION_TINY_TODO.clone(),
         }
     }
 }
@@ -138,9 +138,9 @@ pub struct List {
 
 impl List {
     pub fn new(store: &mut EntityStore, uid: ListUid, owner: UserUid, name: String) -> Self {
-        let readers_uid = store.fresh_euid::<TeamUid>(TEAM_TYPE.clone()).unwrap();
+        let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let readers = Team::new(readers_uid.clone());
-        let writers_uid = store.fresh_euid::<TeamUid>(TEAM_TYPE.clone()).unwrap();
+        let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let writers = Team::new(writers_uid.clone());
         store.insert_team(readers);
         store.insert_team(writers);
@@ -217,7 +217,7 @@ impl From<List> for Entity {
         .collect();
 
         // We always have the single parent of the application, so we just hard code that here
-        let parents = [TINY_TODO.clone().into()]
+        let parents = [APPLICATION_TINY_TODO.clone().into()]
             .into_iter()
             .collect::<HashSet<_>>();
 

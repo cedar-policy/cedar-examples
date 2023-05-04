@@ -20,7 +20,7 @@ use crate::{
     },
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
-    util::{EntityUid, ListUid, Lists, LIST_TYPE},
+    util::{EntityUid, ListUid, Lists, TYPE_LIST},
 };
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
@@ -153,16 +153,16 @@ impl Error {
 }
 
 lazy_static! {
-    pub static ref TINY_TODO: EntityUid = r#"Application::"TinyTodo""#.parse().unwrap();
-    static ref EDIT_SHARE: EntityUid = r#"Action::"EditShare""#.parse().unwrap();
-    static ref UPDATE_TASK: EntityUid = r#"Action::"UpdateTask""#.parse().unwrap();
-    static ref CREATE_TASK: EntityUid = r#"Action::"CreateTask""#.parse().unwrap();
-    static ref DELETE_TASK: EntityUid = r#"Action::"DeleteTask""#.parse().unwrap();
-    static ref GET_LISTS: EntityUid = r#"Action::"GetLists""#.parse().unwrap();
-    static ref GET_LIST: EntityUid = r#"Action::"GetList""#.parse().unwrap();
-    static ref CREATE_LIST: EntityUid = r#"Action::"CreateList""#.parse().unwrap();
-    static ref UPDATE_LIST: EntityUid = r#"Action::"UpdateList""#.parse().unwrap();
-    static ref DELETE_LIST: EntityUid = r#"Action::"DeleteList""#.parse().unwrap();
+    pub static ref APPLICATION_TINY_TODO: EntityUid = r#"Application::"TinyTodo""#.parse().unwrap();
+    static ref ACTION_EDIT_SHARE: EntityUid = r#"Action::"EditShare""#.parse().unwrap();
+    static ref ACTION_UPDATE_TASK: EntityUid = r#"Action::"UpdateTask""#.parse().unwrap();
+    static ref ACTION_CREATE_TASK: EntityUid = r#"Action::"CreateTask""#.parse().unwrap();
+    static ref ACTION_DELETE_TASK: EntityUid = r#"Action::"DeleteTask""#.parse().unwrap();
+    static ref ACTION_GET_LISTS: EntityUid = r#"Action::"GetLists""#.parse().unwrap();
+    static ref ACTION_GET_LIST: EntityUid = r#"Action::"GetList""#.parse().unwrap();
+    static ref ACTION_CREATE_LIST: EntityUid = r#"Action::"CreateList""#.parse().unwrap();
+    static ref ACTION_UPDATE_LIST: EntityUid = r#"Action::"UpdateList""#.parse().unwrap();
+    static ref ACTION_DELETE_LIST: EntityUid = r#"Action::"DeleteList""#.parse().unwrap();
 }
 
 pub struct AppContext {
@@ -257,7 +257,7 @@ impl AppContext {
     }
 
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*EDIT_SHARE, &r.list)?;
+        self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
         let list = self.entities.get_list(&r.list)?;
         let team_uid = list.get_team(r.role).clone();
         let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
@@ -266,7 +266,7 @@ impl AppContext {
     }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*EDIT_SHARE, &r.list)?;
+        self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
         let list = self.entities.get_list(&r.list)?;
         let team_uid = list.get_team(r.role).clone();
         let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
@@ -275,7 +275,7 @@ impl AppContext {
     }
 
     fn update_task(&mut self, r: UpdateTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*UPDATE_TASK, &r.list)?;
+        self.is_authorized(&r.uid, &*ACTION_UPDATE_TASK, &r.list)?;
         let list = self.entities.get_list_mut(&r.list)?;
         let task = list
             .get_task_mut(r.task)
@@ -290,14 +290,14 @@ impl AppContext {
     }
 
     fn create_task(&mut self, r: CreateTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*CREATE_TASK, &r.list)?;
+        self.is_authorized(&r.uid, &*ACTION_CREATE_TASK, &r.list)?;
         let list = self.entities.get_list_mut(&r.list)?;
         let task_id = list.create_task(r.description);
         Ok(AppResponse::TaskId(task_id))
     }
 
     fn delete_task(&mut self, r: DeleteTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*DELETE_TASK, &r.list)?;
+        self.is_authorized(&r.uid, &*ACTION_DELETE_TASK, &r.list)?;
         let list = self.entities.get_list_mut(&r.list)?;
         list.delete_task(r.task)
             .ok_or_else(|| Error::InvalidTaskId(r.list.into(), r.task))?;
@@ -306,13 +306,13 @@ impl AppContext {
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
         let t: EntityTypeName = "List".parse().unwrap();
-        self.is_authorized(&r.uid, &*GET_LISTS, &*TINY_TODO)?;
+        self.is_authorized(&r.uid, &*ACTION_GET_LISTS, &*APPLICATION_TINY_TODO)?;
 
         Ok(AppResponse::Lists(
             self.entities
                 .euids()
                 .filter(|euid| euid.type_name() == &t)
-                .filter(|euid| self.is_authorized(&r.uid, &*GET_LIST, euid).is_ok())
+                .filter(|euid| self.is_authorized(&r.uid, &*ACTION_GET_LIST, euid).is_ok())
                 .cloned()
                 .collect::<Vec<EntityUid>>()
                 .into(),
@@ -320,11 +320,11 @@ impl AppContext {
     }
 
     fn create_list(&mut self, r: CreateList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*CREATE_LIST, &*TINY_TODO)?;
+        self.is_authorized(&r.uid, &*ACTION_CREATE_LIST, &*APPLICATION_TINY_TODO)?;
 
         let euid = self
             .entities
-            .fresh_euid::<ListUid>(LIST_TYPE.clone())
+            .fresh_euid::<ListUid>(TYPE_LIST.clone())
             .unwrap();
         let l = List::new(&mut self.entities, euid.clone(), r.uid, r.name);
         self.entities.insert_list(l);
@@ -333,20 +333,20 @@ impl AppContext {
     }
 
     fn get_list(&self, r: GetList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*GET_LIST, &r.list_id)?;
+        self.is_authorized(&r.uid, &*ACTION_GET_LIST, &r.list_id)?;
         let list = self.entities.get_list(&r.list_id)?.clone();
         Ok(AppResponse::GetList(Box::new(list)))
     }
 
     fn update_list(&mut self, r: UpdateList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*UPDATE_LIST, &r.list)?;
+        self.is_authorized(&r.uid, &*ACTION_UPDATE_LIST, &r.list)?;
         let list = self.entities.get_list_mut(&r.list)?;
         list.update_name(r.name);
         Ok(AppResponse::Unit(()))
     }
 
     fn delete_list(&mut self, r: DeleteList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*DELETE_LIST, &r.list)?;
+        self.is_authorized(&r.uid, &*ACTION_DELETE_LIST, &r.list)?;
         self.entities.delete_entity(&r.list)?;
         Ok(AppResponse::Unit(()))
     }
@@ -354,7 +354,7 @@ impl AppContext {
     pub fn is_authorized(
         &self,
         principal: impl AsRef<EntityUid>,
-        action: &impl AsRef<EntityUid>,
+        action: impl AsRef<EntityUid>,
         resource: impl AsRef<EntityUid>,
     ) -> Result<()> {
         let es = self.entities.as_entities();
