@@ -15,7 +15,7 @@ type AppChannel = mpsc::Sender<AppQuery>;
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetList {
     pub uid: UserUid,
-    pub list_id: ListUid,
+    pub list: ListUid,
 }
 
 impl From<GetList> for AppQueryKind {
@@ -111,7 +111,7 @@ pub struct UpdateTask {
     pub uid: UserUid,
     pub list: ListUid,
     pub task: i64,
-    pub description: Option<String>,
+    pub name: Option<String>,
     pub state: Option<TaskState>,
 }
 
@@ -125,7 +125,7 @@ impl From<UpdateTask> for AppQueryKind {
 pub struct CreateTask {
     pub uid: UserUid,
     pub list: ListUid,
-    pub description: String,
+    pub name: String,
 }
 
 impl From<CreateTask> for AppQueryKind {

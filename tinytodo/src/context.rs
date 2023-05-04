@@ -283,7 +283,7 @@ impl AppContext {
         if let Some(state) = r.state {
             task.set_state(state);
         }
-        if let Some(name) = r.description {
+        if let Some(name) = r.name {
             task.set_name(name);
         }
         Ok(AppResponse::Unit(()))
@@ -292,7 +292,7 @@ impl AppContext {
     fn create_task(&mut self, r: CreateTask) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_CREATE_TASK, &r.list)?;
         let list = self.entities.get_list_mut(&r.list)?;
-        let task_id = list.create_task(r.description);
+        let task_id = list.create_task(r.name);
         Ok(AppResponse::TaskId(task_id))
     }
 
@@ -333,8 +333,8 @@ impl AppContext {
     }
 
     fn get_list(&self, r: GetList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_GET_LIST, &r.list_id)?;
-        let list = self.entities.get_list(&r.list_id)?.clone();
+        self.is_authorized(&r.uid, &*ACTION_GET_LIST, &r.list)?;
+        let list = self.entities.get_list(&r.list)?.clone();
         Ok(AppResponse::GetList(Box::new(list)))
     }
 
