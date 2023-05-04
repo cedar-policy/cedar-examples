@@ -7,15 +7,15 @@ use warp::Filter;
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
     objects::{List, TaskState},
-    util::{EntityUid, Lists},
+    util::{EntityUid, ListUid, Lists, UserOrTeamUid, UserUid},
 };
 
 type AppChannel = mpsc::Sender<AppQuery>;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetList {
-    pub uid: EntityUid,
-    pub list_id: EntityUid,
+    pub uid: UserUid,
+    pub list_id: ListUid,
 }
 
 impl From<GetList> for AppQueryKind {
@@ -26,7 +26,7 @@ impl From<GetList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateList {
-    pub uid: EntityUid,
+    pub uid: UserUid,
     pub name: String,
 }
 
@@ -38,8 +38,8 @@ impl From<CreateList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateList {
-    pub uid: EntityUid,
-    pub list: EntityUid,
+    pub uid: UserUid,
+    pub list: ListUid,
     pub name: String,
 }
 
@@ -51,9 +51,9 @@ impl From<UpdateList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AddShare {
-    pub uid: EntityUid,
-    pub list: EntityUid,
-    pub share_with: EntityUid,
+    pub uid: UserUid,
+    pub list: ListUid,
+    pub share_with: UserOrTeamUid,
     pub role: ShareRole,
 }
 
@@ -71,9 +71,9 @@ pub enum ShareRole {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeleteShare {
-    pub uid: EntityUid,
-    pub list: EntityUid,
-    pub unshare_with: EntityUid,
+    pub uid: UserUid,
+    pub list: ListUid,
+    pub unshare_with: UserOrTeamUid,
     pub role: ShareRole,
 }
 
@@ -85,8 +85,8 @@ impl From<DeleteShare> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeleteList {
-    pub uid: EntityUid,
-    pub list: EntityUid,
+    pub uid: UserUid,
+    pub list: ListUid,
 }
 
 impl From<DeleteList> for AppQueryKind {
@@ -97,7 +97,7 @@ impl From<DeleteList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetLists {
-    pub uid: EntityUid,
+    pub uid: UserUid,
 }
 
 impl From<GetLists> for AppQueryKind {
@@ -108,8 +108,8 @@ impl From<GetLists> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateTask {
-    pub uid: EntityUid,
-    pub list: EntityUid,
+    pub uid: UserUid,
+    pub list: ListUid,
     pub task: i64,
     pub description: Option<String>,
     pub state: Option<TaskState>,
@@ -123,8 +123,8 @@ impl From<UpdateTask> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateTask {
-    pub uid: EntityUid,
-    pub list: EntityUid,
+    pub uid: UserUid,
+    pub list: ListUid,
     pub description: String,
 }
 
@@ -136,8 +136,8 @@ impl From<CreateTask> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeleteTask {
-    pub uid: EntityUid,
-    pub list: EntityUid,
+    pub uid: UserUid,
+    pub list: ListUid,
     pub task: i64,
 }
 
@@ -160,7 +160,7 @@ impl Default for Empty {
 
 pub async fn serve_api(chan: AppChannel, port: u16) {
     let filter = warp::path("api").and(
-        // LIST CRUD
+        // List CRUD
         (warp::path("list").and(
             (warp::path("get")
                 .and(warp::get())
