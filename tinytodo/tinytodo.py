@@ -164,7 +164,7 @@ class NoSuchTaskException(Exception):
 # The decorator handles error processing
 def web_req(name):
     def decorator(func):
-        def wrapper(*args):
+        def wrapper(*args, **kwargs):
             global current_user, server
             if server.stopped():
                 print('No server running! Use `start_server()`!')
@@ -173,7 +173,7 @@ def web_req(name):
                 print('No user set! Use `set_user()`')
                 return
             try:
-                resp,f = func(current_user, *args)
+                resp,f = func(current_user, *args, **kwargs)
                 process_response(name, resp, f, args)
             except AuthException as e:
                 process_response(name, e.resp, lambda x : 'Unreachable', args)
