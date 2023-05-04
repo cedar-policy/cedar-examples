@@ -134,7 +134,6 @@ pub struct List {
     tasks: Vec<Task>, // Invariant, `tasks` must be sorted
     readers: TeamUid,
     editors: TeamUid,
-    parents: HashSet<EntityUid>,
 }
 
 impl List {
@@ -145,9 +144,6 @@ impl List {
         let writers = Team::new(writers_uid.clone());
         store.insert_team(readers);
         store.insert_team(writers);
-        let parents = [Application::default().euid().clone()]
-            .into_iter()
-            .collect();
         Self {
             uid,
             owner,
@@ -155,7 +151,6 @@ impl List {
             tasks: vec![],
             readers: readers_uid,
             editors: writers_uid,
-            parents,
         }
     }
 
@@ -220,12 +215,14 @@ impl From<List> for Entity {
         .into_iter()
         .map(|(x, v)| (x.into(), v))
         .collect();
+
+        // We always have the single parent of the application, so we just hard code that here
+        let parents = [TINY_TODO.clone().into()]
+            .into_iter()
+            .collect::<HashSet<_>>();
+
         let euid: EntityUid = value.uid.into();
-        Entity::new(
-            euid.into(),
-            attrs,
-            value.parents.into_iter().map(|x| x.into()).collect(),
-        )
+        Entity::new(euid.into(), attrs, parents)
     }
 }
 
