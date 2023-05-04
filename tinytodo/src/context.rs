@@ -351,6 +351,7 @@ impl AppContext {
         Ok(AppResponse::Unit(()))
     }
 
+    #[tracing::instrument(skip_all)]
     pub fn is_authorized(
         &self,
         principal: impl AsRef<EntityUid>,
@@ -358,19 +359,23 @@ impl AppContext {
         resource: impl AsRef<EntityUid>,
     ) -> Result<()> {
         let es = self.entities.as_entities();
-        info!("Entities: {:?}", es);
         let q = Request::new(
             Some(principal.as_ref().clone().into()),
             Some(action.as_ref().clone().into()),
             Some(resource.as_ref().clone().into()),
             Context::empty(),
         );
-        info!("Request: {:?}", q);
-        let ans = self.authorizer.is_authorized(&q, &self.policies, &es);
-        info!("Auth response: {:?}", ans);
-        match ans.decision() {
+        info!(
+            "is_authorized request: principal: {}, action: {}, resource: {}",
+            principal.as_ref(),
+            action.as_ref(),
+            resource.as_ref()
+        );
+        let response = self.authorizer.is_authorized(&q, &self.policies, &es);
+        info!("Auth response: {:?}", response);
+        match response.decision() {
             Decision::Allow => Ok(()),
-            Decision::Deny => Err(Error::AuthDenied(ans.diagnostics().clone())),
+            Decision::Deny => Err(Error::AuthDenied(response.diagnostics().clone())),
         }
     }
 }
