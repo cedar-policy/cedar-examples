@@ -6,7 +6,11 @@ In this tutorial, we introduce Cedar and the Cedar SDK using an example applicat
 
 TinyTodo allows individuals, called `User`s, and groups, called `Team`s, to organize, track, and share their todo lists. `User`s create `List`s which they can populate with tasks. As tasks are completed, they can be checked off the list.
 TinyTodo is implemented as a server (in Rust) with a HTTP frontend, and a CLI (in Python) that interacts with the server. The server stores data (`List`s, `Team`s, `User`s, etc.) and policies in memory. The server authorizes commands it receives using Cedar’s authorization engine (no enforcement takes place at the client).
-[Image: images/tinytodo_arch.png]**Figure 1: TinyTodo software architecture**
+
+![TinyTodo software archtecture](images/tinytodo_arch.png)
+
+**Figure 1: TinyTodo software architecture**
+
 In particular, when the server needs to enforce access, like when a user of TinyTodo issues a command, it makes a corresponding request to the Cedar authorization engine. The authorization engine evaluates the request in light of the Cedar policies and relevant application data (`List`s, `User`s, etc.). If it returns decision *Allow*, TinyTodo can proceed with the command. If it returns decision *Deny*, TinyTodo can report that the command is not permitted.
 
 ### Building TinyTodo
@@ -14,14 +18,14 @@ In particular, when the server needs to enforce access, like when a user of Tiny
 To build TinyTodo you need to install Rust and Python3. Download and build the TinyTodo code (and needed
 Python3 packages) by doing the following.
 
-```
+```shell
 > git clone https://github.com/cedar-policy/cedar-examples
-*...downloading messages here*
+...downloading messages here
 > cd cedar-examples/tinytodo
 > pip3 install -r requirements.txt
-*...installation messages here*
+...installation messages here
 > cargo build --release
-*...build messages here*
+...build messages here
 ```
 
 The `cargo build` command will automatically download and build the Cedar Rust packages `cedar-policy-core`, `cedar-policy-validator`, and others, from Rust’s standard package registry, `crates.io`, and
@@ -70,7 +74,7 @@ The full set of policies can be found in the TinyTodo file `policies.cedar`. We 
 
 Let’s run TinyTodo. To begin, we start up the CLI. From there, we start the server, assume the identity of user `andrew`, create a new todo list called `Cedar blog post`, add two tasks to that list, and then complete one of the tasks.
 
-```
+```shell
 > python -i tinytodo.py
 >>> start_server()
 TinyTodo server started on port 8080
@@ -110,9 +114,12 @@ Tasks:
 The `get_list`, `create_task`, and `toggle_task` commands are all authorized by the Cedar *policy 1* we
 saw above: since `andrew` is the owner of `List` ID 0, he is allowed to carry out any action on it.
 Now, continuing as user `andrew`, we share the list with team `interns` as a reader. TinyTodo’s `User`s and `Team`s are defined in a configuration file, `entities.json`, that it reads when starting up. Out of the box, this file defines the relationship between users and teams as shown in Figure 2. We switch the user identity to `aaron`, list the tasks, and attempt to complete another task, but the attempt is denied because `aaron` is only allowed to view the list (since he’s a member of `interns`) not edit it. Finally, we switch to user `kesha` and attempt to view the list, but the attempt is not allowed (`interns` is a member of `temp`, but not the reverse). 
-[Image: images/users_and_teams.png]**Figure 2: TinyTodo Users and Teams**
 
-```
+![TinyTodo Users and Teams](images/users_and_teams.png)
+
+**Figure 2: TinyTodo Users and Teams**
+
+```shell
 >>> share_list(0,interns,read_only=True)
 Shared list ID 0 with interns as reader
 >>> set_user(aaron)
@@ -153,18 +160,18 @@ In TinyTodo, we have several entity types:
 * `User` is the type of individual users. In our example run, we have four `User` entities, shown in Figure 2, with EIDs `emina`, `andrew`, `kesha`, and `aaron`, and therefore UIDs `User::"emina"`, `User::"andrew"`, `User::"kesha"`, and `User::"aaron"`, respectively.  
 * `Team` is the type of teams of users. As shown in Figure 2, both `User` and `Team` entities may have other `Team` entities as their parents in the entity hierarchy, meaning that they are members of those teams. For example, `User::"andrew"` has parent (is a member of) `Team::"temp"`, and so does `Team::"interns"`. Thanks to the latter, and the transitivity of the reachability operator `in`, we have that `User::"aaron" in Team::"interns"` and also `User::"aaron" in Team::"temp"`.
 * `Action` is a special entity type used for Cedar actions. One example action entity is `Action::"GetList"`, mentioned in *policy 2*. 
-* `List` is the type of task lists; figure 3 gives the list from our example run. `Lists` have five attributes:
+* `List` is the type of task lists; Figure 3 gives the list from our example run. `Lists` have five attributes: the `name` of the list; the `owner`, which is the `User` who created the `List`; the `readers` and `editors` of the list, defined as fresh `Team` entities created when the `List` is; and the individual tasks, defined as a set of records, each with three attributes: `name`, `id`, and `state` (whether the task has been completed).
+* `Application` is the type of an entity, `Application::"TinyTodo"`, representing the TinyTodo application itself. All other entities have `Application::"TinyTodo"` as their parent in the hierarchy (not shown in the figures above). We use this entity when no specific entity makes sense as a request’s resource. For example, a request for principal `User::"andrew"` to perform `Action::"CreateList"` would use `Application::"TinyTodo"` as the resource.
 
-the `name` of the list; the `owner`, which is the `User` who created the `List`; the `readers` and `editors` of the list, defined as fresh `Team` entities created when the `List` is; and the individual tasks, defined as a set of records, each with three attributes: `name`, `id`, and `state` (whether the task has been completed).
-[Image: images/list_entity.png]**Figure 3: Example List entity**
+![Example List entity](images/list_entity.png)
 
-* `Application` is the type of an entity, `Application::"TinyTodo"`, representing the TinyTodo application itself. All other entities have `Application::"TinyTodo"` as their parent in the hierarchy (not shown in the figures above). We use this entity when no specific entity makes sense as a request’s resource. For example, a request for principal User::"andrew" to perform Action::"CreateList" would use Application::"TinyTodo" as the resource.
+**Figure 3: Example List entity**
 
 ### Representing and storing TinyTodo  entities
 
 Cedar’s `cedar-policy` Rust package contains a definition of type `Entity`, but application data would not normally be represented as `Entity` objects directly, since doing so would make it inconvenient to compute on. Therefore we define *native* representations of TinyTodo objects in the file `objects.rs` in the TinyTodo `src/` directory. For example, here’s the Rust definition of the native `List` object:
 
-```
+```rust
 pub struct List {
     uid: ListUid,
     owner: UserUid,
@@ -183,7 +190,7 @@ TinyTodo native objects are collected in an `EntityStore`, defined in `entitysto
 
 Some TinyTodo data, e.g., `User`s and named `Team`s, are defined when the application starts up and cannot be changed once the application starts running. (Allowing changes to teams and users is a TinyTodo extension we consider later.) The file `entities.json`, parsed by the server at startup, contains the definitions of these data items in JSON format. The definitions of native objects `Team`, `User`, etc. in `objects.rs` use the `serde` Rust package to implement JSON deserializers, as indicated by the `#derive(...,Deserialize)` annotation above them. Here are a couple of definitions from the `entities.json` file:
 
-```
+```json
 "User::\"aaron\"": {
     "euid": "User::\"aaron\"",
     "parents": [
@@ -213,7 +220,7 @@ When a the TinyTodo server invokes a handler in response to a user request, the 
 
 For example, consider the code for function `create_task` in `context.rs`. This handler is called when a user wants to add a task to a list.
 
-```
+```rust
 fn create_task(&mut self, r: CreateTask) -> Result<AppResponse> {
     self.is_authorized(&r.uid, &*ACTION_CREATE_TASK, &r.list)?;
     let list = self.entities.get_list_mut(&r.list)?;
@@ -224,7 +231,7 @@ fn create_task(&mut self, r: CreateTask) -> Result<AppResponse> {
 
 Parameter `r` is the object that contains the user request information, which is created based on the HTTP message received from the client. The type `CreateTask` is defined with other request types in file `api.rs`. 
 
-```
+```rust
 pub struct CreateTask {
     pub uid: UserUid,
     pub list: ListUid,
@@ -240,7 +247,7 @@ The first line of `create_task` calls `self.is_authorized`, defined later in the
 
 The `self.is_authorized` call resolves to the method at the bottom of `context.rs`. This method encapsulates logic to invoke the Cedar authorization engine.
 
-```
+```rust
 pub fn is_authorized(
     &self,
     principal: impl AsRef<EntityUid>,
@@ -337,7 +344,7 @@ Since no `permit` policies evaluates to `true` (we say that no policy is *satisf
 
 Let’s revisit the `share_list(0,interns,read_only=True)` command we had `User::"andrew"` execute in our sample run. How was this command authorized, and what happened so that `User::"aaron"` could subsequently read the list? The `share_list()` CLI command induces `add_share()` in `context.rs` to be called. Here’s its code:
 
-```
+```rust
 fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
     self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
     let list = self.entities.get_list(&r.list)?;
@@ -365,7 +372,7 @@ permit (
 
 As per Figure 2, user ``emina`` is a member of ``Team::"admin"`` so if we start TinyTodo with this new policy added to `policies.cedar` we can see ``emina`` is able to view and edit any list, even without it being explicitly shared.
 
-```
+```shell
 > python -i tinytodo.py
 >>> start_server()
 === TinyTodo started on port 8080
@@ -402,7 +409,7 @@ task list (`Action::"CreateList"`) using TinyTodo (`Application::"TinyTodo"`). I
 
 As per Figure 2, user ``aaron`` is a member of ``Team::"interns"`` so if we start TinyTodo with this new policy added to `policies.cedar` we can see ``aaron`` is not able to create a task list.
 
-```
+```shell
 > python -i tinytodo.py
 >>> start_server()
 === TinyTodo started on port 8080
@@ -422,7 +429,7 @@ TinyTodo server stopped on port 8080
 
 When the `AppContext::spawn(...)` method reads in the Cedar policies, it also reads in a Cedar *schema* against which it validates the policies. After reading in the `schema` from the file `tinytodo.cedarschema.json`, the method creates a `Validator` object (from the `cedar-policy-validator` package) and invokes its `validator.validate` method. Here is the `spawn` method, where you can see the code for this.
 
-```
+```rust
 pub fn spawn(
     entities_path: impl AsRef<Path>,
     schema_path: impl AsRef<Path>,
@@ -436,7 +443,7 @@ pub fn spawn(
     let validator = Validator::new(schema);
     let output = validator.validate(&policies, ValidationMode::default());
     if output.validation_passed() {
-    *...* *start serving requests* *...*
+    // ... start serving requests ...
 ```
 
 If the policies were inconsistent with the schema, `output.validation_passed` would be `false`. To see this, try editing the `policies.cedar` file and introduce a typo in one of the policies, like changing `readers` to `Readers` in policy 2, or changing `Action::"CreateTask"` to `Action::"CrateTask"` in *policy 0*. When you start up the server, the validator will complain about use of an unknown attribute in the first case, and about an unknown action in the second case, and abort execution. (You can use the [Cedar CLI](https://github.com/cedar-policy/cedar/tree/main/cedar-policy-cli) executable `cedar`, which you can install as part of the `cedar-policy-cli` Rust crate, to run the validator on your policies before validating them in your application.)
@@ -447,7 +454,7 @@ A Cedar schema has two parts, the `entityTypes` and the `actions`. The first des
 
 Looking at `tinytodo.cedarschema.json`, here’s the part of the `entityTypes` that defines the structure of the `List` entity. The `memberOfTypes` attribute indicates that `List` can have `Application` entities as its parents in the entity hierarchy, which validates that individual lists will have the entity `Application::"TinyTodo"` as their parent. The `shape` part describes the attributes of a `List` entity using JSON schema-like format. You can see how entity `List::"0"` in Figure 3 matches this described shape.
 
-```
+```json
 "List": {
     "memberOfTypes": [
         "Application"
@@ -494,7 +501,7 @@ Looking at `tinytodo.cedarschema.json`, here’s the part of the `entityTypes` t
 
 Here is a snippet of the `actions` part of `tinytodo.cedarschema.json`, describing two TinyTodo actions, `Action::"CreateList"` and `Action::"CreateTask"`. 
 
-```
+```json
 "CreateList" : {
     "appliesTo" : {
         "principalTypes" : [ "User" ],
