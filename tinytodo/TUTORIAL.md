@@ -18,15 +18,15 @@ In particular, when the server needs to enforce access, like when a user of Tiny
 To build TinyTodo you need to install Rust and Python3. Download and build the TinyTodo code (and needed
 Python3 packages) by doing the following.
 
-```shell
-> git clone https://github.com/cedar-policy/cedar-examples
-...downloading messages here
+
+<pre><code>>git clone https://github.com/cedar-policy/cedar-examples
+<i>...downloading messages here</i>
 > cd cedar-examples/tinytodo
 > pip3 install -r requirements.txt
-...installation messages here
+<i>...installation messages here</i>
 > cargo build --release
-...build messages here
-```
+<i>...build messages here</i>
+</code></pre>
 
 The `cargo build` command will automatically download and build the Cedar Rust packages `cedar-policy-core`, `cedar-policy-validator`, and others, from Rust’s standard package registry, `crates.io`, and
 build the TinyTodo server, `tiny-todo-server`. The TinyTodo CLI is the Python script `tinytodo.py`, which
