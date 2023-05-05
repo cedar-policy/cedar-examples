@@ -29,4 +29,4 @@ start_server()
 ```
 When it starts up, the server reads in the Cedar policies in `policies.cedar`, and the Cedar entities, which define the TinyTodo `User`s and `Team`s, from `entities.json`. It validates the policies are consistent with `tinytodo.cedarschema.json`, and will abort if they are not.
 
-Look at the `tinytodo.py` code to see the functions you can call, which serve as the list of commands. See also `TUTORIAL.md` for a detailed description of how to use these commands, and how TinyTodo works.
+Look at the `tinytodo.py` code to see the functions you can call, which serve as the list of commands. See also [`TUTORIAL.md`](./TUTORIAL.md) for a detailed description of how to use these commands, and how TinyTodo works.
