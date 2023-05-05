@@ -240,7 +240,7 @@ def get_list(user, list_id):
     return get_list_inner(user, l), display_list(l)
 
 def get_list_inner(user, lst):
-    return server.get('/api/list/get?uid=%s&list_id=%s' % (user.euid(), lst.euid()))
+    return server.get('/api/list/get?uid=%s&list=%s' % (user.euid(), lst.euid()))
 
 def get_list_data(user, lst):
     resp = get_list_inner(user, lst)
@@ -276,7 +276,7 @@ def create_task(user, list_id, name):
     data = { 
             'uid' : user.euid(),
             'list' : List(list_id).euid(),
-            'description' : name
+            'name' : name
             }
     return server.post(url, data), lambda _ : 'Created task on list ID %d' % list_id
 
@@ -314,7 +314,7 @@ def change_task_description(user, list_id, task_id, desc):
             'uid' : user.euid(), 
             'list' : lst.euid(),
             'task' : task['id'], 
-            'description' : desc
+            'name' : desc
             }
     return server.post(url, data), lambda _: 'Description Updated'
 
