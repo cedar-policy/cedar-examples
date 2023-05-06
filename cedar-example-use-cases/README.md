@@ -11,7 +11,7 @@ You can validate example policies and perform authorization requests using [Ceda
 cedar validate --policies document_cloud/policies.cedar --schema document_cloud/schema.json
 
 # perform a request with the document_cloud policies
-cedar authorize --policies document_cloud/policies.cedar --entities document_cloud/entities.json --request-json document_cloud/allow_queries/alice_view_alice_public.json
+cedar authorize --policies document_cloud/policies.cedar --entities document_cloud/entities.json --request-json document_cloud/allow_requests/alice_view_alice_public.json
 ```
 
 ## Folder Organization
@@ -21,6 +21,6 @@ cedar authorize --policies document_cloud/policies.cedar --entities document_clo
 | `policies.cedar`  | Cedar policies for authorization management  |
 | `entities.json`  | Example entity store  |
 | `schema.json` | Example schema |
-| `allow_queries` | Allowed requests |
-| `deny_queries` | Denied requests |
+| `allow_requests` | Allowed requests |
+| `deny_requests` | Denied requests |
 | `README.md` | Instructions specific to the example |
