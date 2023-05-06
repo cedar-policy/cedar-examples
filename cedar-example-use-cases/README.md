@@ -1,6 +1,6 @@
 # Cedar Example Use Cases
 
-We present how Cedar language enables authorization for two example applications.
+We show two example applications that use the Cedar language to implement their authorization logic.
 [Document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. [GitHub example](./github_example/) minics GitHub repository access permissions.
 
 ## Quick Start
