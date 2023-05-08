@@ -7,6 +7,34 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  run_example_use_cases:
+    name: example-use-cases
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout Cedar Examples
+        uses: actions/checkout@v3
+      - name: Checkout cedar
+        uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar
+          ref: main
+          path: ./cedar
+          ssh-key: ${{ secrets.CEDAR }}
+      - name: rustup
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: build cli
+        working-directory: ./cedar-example-use-cases
+        run: (cd ../cargo && cargo build --bin cedar)
+      - name: run validation and authorization
+        working-directory: ./cedar-example-use-cases
+        run: |
+             export PATH="$pwd/../cedar/target/debug/":$PATH
+             ./run.sh
+
   build_and_test_rust_hello_world:
     name: rust-hello-world
     runs-on: ubuntu-latest
