@@ -100,37 +100,6 @@ jobs:
         working-directory: ./cedar-java-hello-world
         run: ./gradlew build
 
-  build_and_test_github_model_app:
-    name: github-model-app
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        toolchain:
-          - stable
-    steps:
-      - name: Checkout Cedar Examples
-        uses: actions/checkout@v3
-      - name: Checkout cedar
-        uses: actions/checkout@v3
-        with:
-          repository: cedar-policy/cedar
-          ref: main
-          path: ./cedar
-          ssh-key: ${{ secrets.CEDAR }}
-      - name: rustup
-        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - name: cargo fmt
-        working-directory: ./cedar-github-model-app
-        run: cargo fmt --all --check
-      - name: cargo rustc
-        working-directory: ./cedar-github-model-app
-        run: |
-             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
-             RUSTFLAGS="-F unsafe-code" cargo build --verbose
-      - name: cargo test
-        working-directory: ./cedar-github-model-app
-        run: cargo test --verbose
-
   build_and_test_tiny_todo:
     name: tinytodo
     runs-on: ubuntu-latest
