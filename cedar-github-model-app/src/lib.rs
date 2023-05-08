@@ -569,7 +569,7 @@ fn benchmark_inner(
     entity_slicing: bool,
     num_queries: u32,
     print_allows: bool,
-) -> Result<Answer, Vec<Error>> {
+) -> Result<Response, Vec<Error>> {
     let mut errs = vec![];
     let policies = match read_policy_and_instances(policies_filename.as_ref(), instances_filename) {
         Ok(pset) => pset,
