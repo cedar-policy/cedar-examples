@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Change depending on where your have your CedarCLI executable. e.g., 
-#export CEDAR_BIN_DIR="~/workspace/cedar/CedarCLI/build/bin/"
+#export CEDAR_BIN_DIR="~/cedar/cedar-policy-cli/build/bin/"
 #alternatively, just add the cedar executable to your path
 if [[ -z "${CEDAR_BIN_DIR}" ]];
 then
@@ -24,7 +24,7 @@ fi
 #track so we can print success if applicable
 ANY_TEST_FAILED=false
 
-for file in ./allow_queries/*
+for file in ./allow_requests/*
 do
 res=$(cedar authorize --policies policies.cedar --entities entities.json --request-json $file)
 if [ $res != "ALLOW" ]
@@ -34,7 +34,7 @@ then
 fi
 done
 
-for file in ./deny_queries/*
+for file in ./deny_requests/*
 do
 res=$(cedar authorize --policies policies.cedar --entities entities.json --request-json $file)
 if [ $res != "DENY" ]

@@ -1,10 +1,3 @@
-## Github Examples
-
-### Run Unit Tests
-- Add cedar-cli executable dir to your `PATH` or define `CEDAR_BIN_DIR`.
-- Run unit tests with run_all.sh
-- (Note, tests are split between `allow_queries` and `deny_queries` folders)
-
 ### Generate Benchmark Files
 - Tweak `generate_entities.py` as appropriate
 - Generate the entities file: `python3 generate_entities.py gen_entities_1000_1000_p05_teams1.json`
