@@ -5,6 +5,13 @@ It shows off simple usage of the Cedar Rust API like parsing Cedar policies, pro
 
 ## Usage
 
+This program contains the following examples:
+    * parse_policy:policy parsing example
+    * json_context: constructing context from JSON values
+    * entity_json: constructing entities from JSON
+    * entity_objects: constructing entities from Rust objects
+    * validate: validate a policy
+
 ### Build and Run
 ```shell
 cargo run

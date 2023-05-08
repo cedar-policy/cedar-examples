@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 use cedar_policy::PrincipalConstraint::{Any, Eq, In};
 use cedar_policy::{
-    Answer, Authorizer, Context, Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid,
-    Policy, PolicyId, PolicySet, Request, RestrictedExpression, Schema, SlotId, Template,
+    Authorizer, Context, Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid, Policy,
+    PolicyId, PolicySet, Request, Response, RestrictedExpression, Schema, SlotId, Template,
     ValidationMode, ValidationResult, Validator,
 };
 use std::collections::{HashMap, HashSet};
@@ -88,7 +88,7 @@ fn json_context() {
     let entities = create_entities_json();
     let ans = execute_query(&request, ps, entities);
 
-    print_answer(ans);
+    print_response(ans);
 }
 
 /// An example for constructing entities from JSON
@@ -139,7 +139,7 @@ fn entity_json() {
 
     let ans = execute_query(&request, p, entities);
 
-    print_answer(ans);
+    print_response(ans);
 }
 
 /// An example for constructing entities from Rust objects
@@ -222,10 +222,13 @@ fn entity_objects() {
 
     // link the template (another template-linked policy)
     p.link(id1, id3, v2).expect("Linking failed!");
-
+    println!("{}", p);
+    for x in p.policies() {
+        println!("x=={}", x);
+    }
     let ans = execute_query(&request, p, create_entities_obj());
 
-    print_answer(ans);
+    print_response(ans);
 }
 
 ///  create entities from using Rust objects
@@ -305,7 +308,7 @@ fn create_entities_json() -> Entities {
 }
 
 /// Prints the Answer from the Authorization
-fn print_answer(ans: Answer) {
+fn print_response(ans: Response) {
     match ans.decision() {
         Decision::Allow => println!("ALLOW"),
         Decision::Deny => println!("DENY"),
@@ -326,7 +329,7 @@ fn print_answer(ans: Answer) {
 }
 
 /// This uses the waterford API to call the authorization engine.
-fn execute_query(request: &Request, policies: PolicySet, entities: Entities) -> Answer {
+fn execute_query(request: &Request, policies: PolicySet, entities: Entities) -> Response {
     let authorizer = Authorizer::new();
     authorizer.is_authorized(request, &policies, &entities)
 }
