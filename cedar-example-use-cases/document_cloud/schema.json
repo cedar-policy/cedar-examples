@@ -82,7 +82,9 @@
                 "memberOfTypes": []
             },
             "Public": {
-                "memberOfTypes": []
+                "memberOfTypes": [
+                    "DocumentShare"
+                ]
             },
             "Drive": {
                 "memberOfTypes": []
