@@ -27,10 +27,7 @@ permit (
          Action::"DeleteTask"],
     resource
 )
-when
-{
-    principal in resource.editors
-}; 
+when { principal in resource.editors };
 
 // Policy 4: Admins can perform any action on any resource
 // permit (
@@ -38,7 +35,7 @@ when
 //     action,
 //     resource in Application::"TinyTodo"
 // );
-//
+// 
 // Policy 5: Interns may not create new task lists
 // forbid (
 //     principal in Team::"interns",
