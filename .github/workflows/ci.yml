@@ -32,7 +32,8 @@ jobs:
       - name: run validation and authorization
         working-directory: ./cedar-example-use-cases
         run: |
-             export PATH="$pwd/../cedar/target/debug/":$PATH
+             export PATH="$PWD/../cedar/target/debug/":$PATH
+             echo $PATH
              ./run.sh
 
   build_and_test_rust_hello_world:
