@@ -1,0 +1,151 @@
+[
+    {
+      "uid": { "__entity": { "type": "User", "id": "alice"} },
+      "attrs": {},
+      "parents": [{ "__entity": { "type": "UserGroup", "id": "common_knowledge_writers"} }, { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_writers"} } ]
+    },
+    {
+      "uid": { "__entity": { "type": "User", "id": "jane"} },
+      "attrs": {},
+      "parents": [{ "__entity": { "type": "UserGroup", "id": "common_knowledge_maintainers"} },  { "__entity": { "type": "Team", "id": "team_that_can_read_everything"} }]
+    },
+    {
+        "uid": { "__entity": { "type": "User", "id": "bob"} },
+        "attrs": {},
+        "parents": [{ "__entity": { "type": "Organization", "id": "tiny_corp_owners"} }]
+    },
+    {
+        "uid": { "__entity": { "type": "Repository", "id": "common_knowledge"} },
+        "attrs": {
+            "readers" : { "__entity": { "type": "UserGroup", "id": "common_knowledge_readers"} },
+            "triagers" : { "__entity": { "type": "UserGroup", "id": "common_knowledge_triagers"} },
+            "writers" : { "__entity": { "type": "UserGroup", "id": "common_knowledge_writers"} },
+            "maintainers" : { "__entity": { "type": "UserGroup", "id": "common_knowledge_maintainers"} },
+            "admins" : { "__entity": { "type": "UserGroup", "id": "common_knowledge_admins"} }
+        },
+        "parents": []
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "common_knowledge_readers"} },
+        "attrs": {
+        },
+        "parents": [  ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "common_knowledge_triagers"} },
+        "attrs": {
+        },
+        "parents": [ { "__entity": { "type": "UserGroup", "id": "common_knowledge_readers"} } ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "common_knowledge_writers"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "common_knowledge_triagers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "common_knowledge_maintainers"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "common_knowledge_writers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "common_knowledge_admins"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "common_knowledge_maintainers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "Repository", "id": "secret"} },
+        "attrs": {
+            "readers" : { "__entity": { "type": "UserGroup", "id": "secret_readers"} },
+            "triagers" : { "__entity": { "type": "UserGroup", "id": "secret_triagers"} },
+            "writers" : { "__entity": { "type": "UserGroup", "id": "secret_writers"} },
+            "maintainers" : { "__entity": { "type": "UserGroup", "id": "secret_maintainers"} },
+            "admins" : { "__entity": { "type": "UserGroup", "id": "secret_admins"} }
+        },
+        "parents": []
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "secret_readers"} },
+        "attrs": {
+        },
+        "parents": [  ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "secret_triagers"} },
+        "attrs": {
+        },
+        "parents": [ { "__entity": { "type": "UserGroup", "id": "secret_readers"} } ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "secret_writers"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "secret_triagers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "secret_maintainers"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "secret_writers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "secret_admins"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "secret_maintainers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "Repository", "id": "uncommon_knowledge"} },
+        "attrs": {
+            "readers" : { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_readers"} },
+            "triagers" : { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_triagers"} },
+            "writers" : { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_writers"} },
+            "maintainers" : { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_maintainers"} },
+            "admins" : { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_admins"} }
+        },
+        "parents": []
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_readers"} },
+        "attrs": {
+        },
+        "parents": [  ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_triagers"} },
+        "attrs": {
+        },
+        "parents": [ { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_readers"} } ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_writers"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "uncommon_knowledge_triagers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_maintainers"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "uncommon_knowledge_writers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_admins"} },
+        "attrs": {
+        },
+        "parents": [ {"__entity": { "type": "UserGroup", "id": "uncommon_knowledge_maintainers"}} ]
+    },
+    {
+        "uid": { "__entity": { "type": "Team", "id": "team_that_can_read_everything"} },
+        "attrs": {},
+        "parents": [{ "__entity": { "type": "UserGroup", "id": "common_knowledge_readers"} }, { "__entity": { "type": "UserGroup", "id": "secret_readers"} }, { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_readers"} }]
+    },
+    {
+        "uid": { "__entity": { "type": "Organization", "id": "tiny_corp_owners"} },
+        "attrs": {},
+        "parents": [{ "__entity": { "type": "UserGroup", "id": "common_knowledge_admins"} }, { "__entity": { "type": "UserGroup", "id": "secret_admins"} }, { "__entity": { "type": "UserGroup", "id": "uncommon_knowledge_admins"} }]
+    }
+]
+  
