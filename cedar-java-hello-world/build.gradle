@@ -82,7 +82,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    systemProperty 'java.library.path', '../cedar-java/CedarJavaFFI/target/debug/'
+    environment 'CEDAR_JAVA_FFI_LIB', 'path to cedar_java_ffi dynamic lib'
     testLogging {
         showStandardStreams false
         exceptionFormat 'full'

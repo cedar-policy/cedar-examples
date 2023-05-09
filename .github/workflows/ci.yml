@@ -98,7 +98,7 @@ jobs:
         run: cargo build
       - name: Build cedar-java-hello-world
         working-directory: ./cedar-java-hello-world
-        run: ./gradlew build
+        run: bash config.sh && ./gradlew build
 
   build_and_test_tiny_todo:
     name: tinytodo
