@@ -10,6 +10,7 @@ To build, you'll need CedarJava and CedarJavaFFI. You will need to ensure that C
 ```shell
 bash config.sh
 ```
+
 ### Build
 - checkout [cedar-policy/cedar-java](https://github.com/cedar-policy/cedar-java) to `cedar-java`
 
