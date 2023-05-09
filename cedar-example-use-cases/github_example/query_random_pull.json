@@ -1,6 +1,0 @@
-{
-    "principal":"User::\"user_0\"",
-    "action":"Action::\"pull\"",
-    "resource":"Repository::\"repo_0\"",
-    "context":{ }
-}
