@@ -1,10 +1,10 @@
 # Cedar Example Use Cases
 
-We show two example applications that use the Cedar language to implement their authorization logic.
-[Document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. [GitHub example](./github_example/) minics GitHub repository access permissions.
+This repository contains Cedar policies that model the authorization logic of two example applications.
+[Document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. [GitHub example](./github_example/) mimics GitHub's repository access permissions.
 
 ## Quick Start
-You can validate example policies and perform authorization requests using [Cedar CLI](https://github.com/cedar-policy/cedar/tree/main/cedar-policy-cli).
+You can validate example policies and perform authorization requests using the [Cedar CLI](https://github.com/cedar-policy/cedar/tree/main/cedar-policy-cli).
 
 ```shell
 # validate the document_cloud policies
@@ -14,7 +14,7 @@ cedar validate --policies document_cloud/policies.cedar --schema document_cloud/
 cedar authorize --policies document_cloud/policies.cedar --entities document_cloud/entities.json --request-json document_cloud/allow_requests/alice_view_alice_public.json
 ```
 
-## Folder Organization
+## Subfolder Organization
 
 | File  | Description |
 | ------------- | ------------- |
@@ -23,4 +23,4 @@ cedar authorize --policies document_cloud/policies.cedar --entities document_clo
 | `schema.json` | Example schema |
 | `allow_requests` | Allowed requests |
 | `deny_requests` | Denied requests |
-| `TUTORIAL.md` | A tutorial specific to the example |
+| `README.md` | A tutorial walking through the example application |

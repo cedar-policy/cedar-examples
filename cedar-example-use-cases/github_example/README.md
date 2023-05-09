@@ -1,6 +1,6 @@
 # GitHub Model
 
-In this tutorial, we show how you can implement GitHub's repository permission access in Cedar. There are three “views” of GitHub permissions, corresponding to *Personal*, *Organization* and *Enterprise* accounts. We’ll focus on the *Organizational* view. Our model won’t be complete since this is a tutorial. We’ll aim for a subset of features that you are probably familiar with.
+In this example, we show how you can implement GitHub's repository permission access in Cedar. There are three “views” of GitHub permissions, corresponding to *Personal*, *Organization* and *Enterprise* accounts. We’ll focus on the *Organizational* view. Our model won’t be complete since this is a tutorial. We’ll aim for a subset of features that you are probably familiar with.
 
 ## Entities
 
