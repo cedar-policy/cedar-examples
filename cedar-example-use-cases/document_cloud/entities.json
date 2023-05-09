@@ -1,0 +1,202 @@
+[
+    {
+        "uid": {
+            "type": "User",
+            "id": "alice"
+        },
+        "attrs": {
+            "personalGroup": {
+                "__entity": {
+                    "type": "Group",
+                    "id": "alice_personal"
+                }
+            },
+            "blocked": [
+                {
+                    "__entity": {
+                        "type": "User",
+                        "id": "bob"
+                    }
+                }
+            ]
+        },
+        "parents": [
+            {
+                "type": "Group",
+                "id": "alice_personal"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "bob"
+        },
+        "attrs": {
+            "personalGroup": {
+                "__entity": {
+                    "type": "Group",
+                    "id": "bob_personal"
+                }
+            },
+            "blocked": []
+        },
+        "parents": [
+            {
+                "type": "Group",
+                "id": "bob_personal"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "charlie"
+        },
+        "attrs": {
+            "personalGroup": {
+                "__entity": {
+                    "type": "Group",
+                    "id": "charlie_personal"
+                }
+            },
+            "blocked": []
+        },
+        "parents": [
+            {
+                "type": "Group",
+                "id": "charlie_personal"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Group",
+            "id": "alice_personal"
+        },
+        "attrs": {
+            "owner": {
+                "__entity": {
+                    "type": "User",
+                    "id": "alice"
+                }
+            }
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Group",
+            "id": "bob_personal"
+        },
+        "attrs": {
+            "owner": {
+                "__entity": {
+                    "type": "User",
+                    "id": "bob"
+                }
+            }
+        },
+        "parents": [
+            {
+                "type": "DocumentShare",
+                "id": "alice_public_view"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Group",
+            "id": "charlie_personal"
+        },
+        "attrs": {
+            "owner": {
+                "__entity": {
+                    "type": "User",
+                    "id": "charlie"
+                }
+            }
+        },
+        "parents": [
+            {
+                "type": "DocumentShare",
+                "id": "alice_public_view"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Document",
+            "id": "alice_public"
+        },
+        "attrs": {
+            "owner": {
+                "__entity": {
+                    "type": "User",
+                    "id": "alice"
+                }
+            },
+            "isPrivate": false,
+            "publicAccess": "view",
+            "viewACL": {
+                "__entity": {
+                    "type": "DocumentShare",
+                    "id": "alice_public_view"
+                }
+            },
+            "modifyACL": {
+                "__entity": {
+                    "type": "Document",
+                    "id": "alice_public_modify"
+                }
+            },
+            "manageACL": {
+                "__entity": {
+                    "type": "Document",
+                    "id": "alice_public_manage"
+                }
+            }
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "DocumentShare",
+            "id": "alice_public_view"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "DocumentShare",
+            "id": "alice_public_modify"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "DocumentShare",
+            "id": "alice_public_manage"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Public",
+            "id": "unauthenticated"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Drive",
+            "id": "drive"
+        },
+        "attrs": {},
+        "parents": []
+    }
+]

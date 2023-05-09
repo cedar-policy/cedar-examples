@@ -1,0 +1,197 @@
+{
+    "": {
+        "entityTypes": {
+            "User": {
+                "memberOfTypes": [
+                    "Group"
+                ],
+                "shape": {
+                    "type": "Record",
+                    "additionalAttributes": false,
+                    "attributes": {
+                        "personalGroup": {
+                            "type": "Entity",
+                            "name": "Group",
+                            "required": true
+                        },
+                        "blocked": {
+                            "type": "Set",
+                            "element": {
+                                "type": "Entity",
+                                "name": "User"
+                            },
+                            "required": true
+                        }
+                    }
+                }
+            },
+            "Group": {
+                "memberOfTypes": [
+                    "DocumentShare"
+                ],
+                "shape": {
+                    "type": "Record",
+                    "additionalAttributes": false,
+                    "attributes": {
+                        "owner": {
+                            "type": "Entity",
+                            "name": "User",
+                            "required": true
+                        }
+                    }
+                }
+            },
+            "Document": {
+                "memberOfTypes": [],
+                "shape": {
+                    "type": "Record",
+                    "additionalAttributes": false,
+                    "attributes": {
+                        "owner": {
+                            "type": "Entity",
+                            "name": "User",
+                            "required": true
+                        },
+                        "isPrivate": {
+                            "type": "Boolean",
+                            "required": true
+                        },
+                        "publicAccess": {
+                            "type": "String",
+                            "required": true
+                        },
+                        "viewACL": {
+                            "type": "Entity",
+                            "name": "DocumentShare",
+                            "required": true
+                        },
+                        "modifyACL": {
+                            "type": "Entity",
+                            "name": "DocumentShare",
+                            "required": true
+                        },
+                        "manageACL": {
+                            "type": "Entity",
+                            "name": "DocumentShare",
+                            "required": true
+                        }
+                    }
+                }
+            },
+            "DocumentShare": {
+                "memberOfTypes": []
+            },
+            "Public": {
+                "memberOfTypes": [
+                    "DocumentShare"
+                ]
+            },
+            "Drive": {
+                "memberOfTypes": []
+            }
+        },
+        "actions": {
+            "CreateDocument": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Drive"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "ViewDocument": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User",
+                        "Public"
+                    ]
+                }
+            },
+            "DeleteDocument": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "ModifyDocument": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "EditIsPrivate": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "AddToShareACL": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "EditPublicAccess": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "CreateGroup": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Drive"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "ModifyGroup": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Group"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "DeleteGroup": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Group"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            }
+        }
+    }
+}

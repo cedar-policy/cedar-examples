@@ -1,0 +1,44 @@
+name: Expand an existing example
+description: Expand an existing example
+labels: pending-triage
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a feature request! Try to include as much information as you can.
+
+  - type: dropdown
+    attributes:
+      label: Category
+      description: What example do you want to expand?
+      multiple: true
+      options:
+        - cedar-example-use-cases
+        - cedar-java-hello-world
+        - cedar-rust-hello-world
+        - tinytodo
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Describe the expansion you'd like to request
+      description: |
+        A clear and concise description of what you want to happen. Please include **any related issues**, documentation, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: |
+        Add any other use cases or context about the feature request here. Please include any prototype/sandbox, workaround, reference implementation, etc.
+
+  - type: checkboxes
+    attributes:
+      label: Is this something that you'd be interested in working on?
+      options:
+        - label: 👋 I may be able to implement this feature request
+        - label: ⚠️ This feature might incur a breaking change
+

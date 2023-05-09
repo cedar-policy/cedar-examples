@@ -1,0 +1,132 @@
+name: Cargo Build & Test
+
+on:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  run_example_use_cases:
+    name: example-use-cases
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout Cedar Examples
+        uses: actions/checkout@v3
+      - name: Checkout cedar
+        uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar
+          ref: main
+          path: ./cedar
+          ssh-key: ${{ secrets.CEDAR }}
+      - name: rustup
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: build cli
+        working-directory: ./cedar-example-use-cases
+        run: (cd ../cedar && cargo build --bin cedar)
+      - name: run validation and authorization
+        working-directory: ./cedar-example-use-cases
+        run: |
+             export PATH="$PWD/../cedar/target/debug/":$PATH
+             echo $PATH
+             ./run.sh
+
+  build_and_test_rust_hello_world:
+    name: rust-hello-world
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout Cedar Examples
+        uses: actions/checkout@v3
+      - name: Checkout cedar
+        uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar
+          ref: main
+          path: ./cedar
+          ssh-key: ${{ secrets.CEDAR }}
+      - name: rustup
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: cargo fmt
+        working-directory: ./cedar-rust-hello-world
+        run: cargo fmt --all --check
+      - name: cargo rustc
+        working-directory: ./cedar-rust-hello-world
+        run: |
+             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
+             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
+      - name: cargo test
+        working-directory: ./cedar-rust-hello-world
+        run: cargo test --verbose
+
+  build_and_test_java_hello_world:
+    name: java-hello-world
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout Cedar Examples
+        uses: actions/checkout@v3
+      - name: Checkout cedar-java
+        uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar-java
+          ref: main
+          path: ./cedar-java
+          ssh-key: ${{ secrets.CEDARJAVA }}
+      - name: Checkout cedar
+        uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar
+          ref: main
+          path: ./cedar-java/cedar
+          ssh-key: ${{ secrets.CEDAR }}
+      - name: rustup
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: cargo build CedarJavaFFI
+        working-directory: ./cedar-java/CedarJavaFFI
+        run: cargo build
+      - name: Build cedar-java-hello-world
+        working-directory: ./cedar-java-hello-world
+        run: bash config.sh && ./gradlew build
+
+  build_and_test_tiny_todo:
+    name: tinytodo
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout Cedar Examples
+        uses: actions/checkout@v3
+      - name: Checkout cedar
+        uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar
+          ref: main
+          path: ./cedar
+          ssh-key: ${{ secrets.CEDAR }}
+      - name: rustup
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: cargo fmt
+        working-directory: ./tinytodo
+        run: cargo fmt --all --check
+      - name: cargo rustc
+        working-directory: ./tinytodo
+        run: |
+             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
+             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
+      - name: cargo test
+        working-directory: ./tinytodo
+        run: cargo test --verbose
