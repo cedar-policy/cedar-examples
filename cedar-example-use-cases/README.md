@@ -29,3 +29,4 @@ cedar authorize \
 | `allow_requests` | Allowed requests |
 | `deny_requests` | Denied requests |
 | `README.md` | A tutorial walking through the example application |
+
