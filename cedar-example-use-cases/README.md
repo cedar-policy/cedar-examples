@@ -8,10 +8,15 @@ You can validate example policies and perform authorization requests using the [
 
 ```shell
 # validate the document_cloud policies
-cedar validate --policies document_cloud/policies.cedar --schema document_cloud/schema.json
+cedar validate \
+      --policies document_cloud/policies.cedar \
+      --schema document_cloud/schema.json
 
 # perform a request with the document_cloud policies
-cedar authorize --policies document_cloud/policies.cedar --entities document_cloud/entities.json --request-json document_cloud/allow_requests/alice_view_alice_public.json
+cedar authorize \
+      --policies document_cloud/policies.cedar \
+      --entities document_cloud/entities.json \
+      --request-json document_cloud/allow_requests/alice_view_alice_public.json
 ```
 
 ## Subfolder Organization
