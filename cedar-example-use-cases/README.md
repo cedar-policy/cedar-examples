@@ -12,7 +12,7 @@ cedar validate \
       --policies document_cloud/policies.cedar \
       --schema document_cloud/schema.json
 
-# perform a request with the document_cloud policies
+# perform an authorization request with the document_cloud policies
 cedar authorize \
       --policies document_cloud/policies.cedar \
       --entities document_cloud/entities.json \
