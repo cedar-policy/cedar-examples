@@ -10,7 +10,9 @@ The code is structured as a server, written in Rust, that processes HTTP command
 
 ### Build
 
-You need Python3 and Rust. Install the needed python packages, and build the server as follows. 
+You need Python3 and Rust. Rust can be installed via (rustup)[https://rustup.rs]. Python3 can be installed (here)[https://www.python.org/] or using your system's package manager.
+
+Install the needed python packages, and build the server as follows. 
 ```shell
 pip3 install -r requirements.txt
 cargo build --release
