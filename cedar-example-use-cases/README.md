@@ -23,4 +23,4 @@ cedar authorize --policies document_cloud/policies.cedar --entities document_clo
 | `schema.json` | Example schema |
 | `allow_requests` | Allowed requests |
 | `deny_requests` | Denied requests |
-| `README.md` | Instructions specific to the example |
+| `TUTORIAL.md` | A tutorial specific to the example |
