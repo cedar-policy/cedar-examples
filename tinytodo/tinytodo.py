@@ -117,7 +117,6 @@ class StoppedServer:
         return True
     
 server = StoppedServer()
-# TODO : Change this when we release!
 server_binary_path = './target/release/tiny-todo-server'
 
 
