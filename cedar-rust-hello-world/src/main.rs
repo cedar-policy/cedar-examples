@@ -238,10 +238,7 @@ fn entity_objects() {
 
     // link the template (another template-linked policy)
     p.link(id1, id3, v2).expect("Linking failed!");
-    println!("{}", p);
-    for x in p.policies() {
-        println!("x=={}", x);
-    }
+
     let ans = execute_query(&request, p, create_entities_obj());
 
     print_response(ans);
