@@ -20,28 +20,13 @@ use std::{
 };
 
 use notify::{
-    event::{AccessKind, AccessMode, RemoveKind},
+    event::{AccessKind, AccessMode},
     Config, Error, Event, EventKind, RecommendedWatcher, Watcher,
 };
 use tokio::sync::mpsc::Sender;
-use tracing::{error, info, trace};
+use tracing::{error, trace};
 
 use crate::context::{AppQuery, AppQueryKind};
-
-#[tracing::instrument]
-fn watch_function(result: std::result::Result<Event, Error>) {
-    trace!("Got notify event");
-    match result {
-        Ok(ev) => match ev.kind {
-            EventKind::Access(AccessKind::Close(AccessMode::Write)) => todo!(),
-            EventKind::Remove(RemoveKind::File) => {
-                info!("Policy set file updated!")
-            }
-            _ => (),
-        },
-        Err(e) => error!("File watch error: {:?}", e),
-    }
-}
 
 #[derive(Debug)]
 pub struct PolicySetWatcher {
@@ -61,6 +46,10 @@ impl PolicySetWatcher {
             move |res: Result<Event, Error>| match res {
                 Ok(event) => {
                     trace!("Event: {:?}", event);
+                    // This is less clean then I'd like, but modern editors seem to edit files in different ways.
+                    // I've tested this w/ VSCode and Neovim.
+                    // Closing a buffer in Neovim triggers the `Remove` event, require re-watching the file
+                    // Closing a file in VSCode triggers the `Close` event.
                     match event.kind {
                         EventKind::Access(AccessKind::Close(AccessMode::Write)) => {
                             let (send, _recv) = tokio::sync::oneshot::channel();
@@ -91,9 +80,7 @@ impl PolicySetWatcher {
             watcher,
             path: PathBuf::from(path),
         };
-
         s.set_watch();
-
         s
     }
 
