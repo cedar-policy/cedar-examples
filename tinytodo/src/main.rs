@@ -18,6 +18,7 @@ mod api;
 mod context;
 mod entitystore;
 mod objects;
+mod policy_store;
 mod util;
 
 use context::AppContext;
