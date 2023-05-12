@@ -17,7 +17,7 @@
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use std::path::Path;
-use tracing::info;
+use tracing::{info, trace};
 
 use cedar_policy::{
     Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
@@ -36,6 +36,7 @@ use crate::{
     },
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
+    policy_store::PolicySetWatcher,
     util::{EntityUid, ListUid, Lists, TYPE_LIST},
 };
 
@@ -128,6 +129,10 @@ pub enum AppQueryKind {
     // Shares
     AddShare(AddShare),
     DeleteShare(DeleteShare),
+
+    // Policy Set Updates
+    UpdatePolicySet,
+    ResetWatch,
 }
 
 #[derive(Debug)]
@@ -160,6 +165,10 @@ pub enum Error {
     TokioRecv(#[from] tokio::sync::oneshot::error::RecvError),
     #[error("Internal Error")]
     Type,
+    #[error("Internal Error")]
+    IO(#[from] std::io::Error),
+    #[error("Error Parsing PolicySet: {0}")]
+    Policy(#[from] ParseErrors),
 }
 
 impl Error {
@@ -186,6 +195,7 @@ pub struct AppContext {
     authorizer: Authorizer,
     policies: PolicySet,
     recv: Receiver<AppQuery>,
+    watcher: PolicySetWatcher,
 }
 
 impl std::fmt::Debug for AppContext {
@@ -221,7 +231,7 @@ impl AppContext {
         let entities_file = std::fs::File::open(entities_path)?;
         let entities = serde_json::from_reader(entities_file)?;
 
-        let policy_src = std::fs::read_to_string(policies_path)?;
+        let policy_src = std::fs::read_to_string(policies_path.as_ref())?;
         let policies = policy_src.parse()?;
         let validator = Validator::new(schema);
         let output = validator.validate(&policies, ValidationMode::default());
@@ -229,7 +239,7 @@ impl AppContext {
             info!("Validation passed!");
             let authorizer = Authorizer::new();
             let (send, recv) = tokio::sync::mpsc::channel(100);
-
+            let watcher = PolicySetWatcher::new(send.clone(), policies_path.as_ref());
             tokio::spawn(async move {
                 info!("Serving application server!");
                 let c = Self {
@@ -237,6 +247,7 @@ impl AppContext {
                     authorizer,
                     policies,
                     recv,
+                    watcher,
                 };
                 c.serve().await
             });
@@ -266,10 +277,30 @@ impl AppContext {
                     AppQueryKind::GetLists(r) => self.get_lists(r),
                     AppQueryKind::AddShare(r) => self.add_share(r),
                     AppQueryKind::DeleteShare(r) => self.delete_share(r),
+                    AppQueryKind::ResetWatch => self.reset_watch(),
+                    AppQueryKind::UpdatePolicySet => self.update_policy_set(),
                 };
-                msg.sender.send(r).unwrap();
+                if let Err(e) = msg.sender.send(r) {
+                    trace!("Failed send response: {:?}", e);
+                }
             }
         }
+    }
+
+    #[tracing::instrument]
+    fn update_policy_set(&mut self) -> Result<AppResponse> {
+        let path = self.watcher.path();
+        let src = std::fs::read_to_string(path)?;
+        let policy_set: PolicySet = src.parse()?;
+        self.policies = policy_set;
+        info!("Reloaded policy set");
+        Ok(AppResponse::Unit(()))
+    }
+
+    #[tracing::instrument]
+    fn reset_watch(&mut self) -> Result<AppResponse> {
+        self.watcher.set_watch();
+        Ok(AppResponse::Unit(()))
     }
 
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
