@@ -16,7 +16,7 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::path::Path;
+use std::path::PathBuf;
 use tracing::{info, trace};
 
 use cedar_policy::{
@@ -36,7 +36,7 @@ use crate::{
     },
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
-    policy_store::PolicySetWatcher,
+    policy_store,
     util::{EntityUid, ListUid, Lists, TYPE_LIST},
 };
 
@@ -131,8 +131,7 @@ pub enum AppQueryKind {
     DeleteShare(DeleteShare),
 
     // Policy Set Updates
-    UpdatePolicySet,
-    ResetWatch,
+    UpdatePolicySet(PolicySet),
 }
 
 #[derive(Debug)]
@@ -195,7 +194,6 @@ pub struct AppContext {
     authorizer: Authorizer,
     policies: PolicySet,
     recv: Receiver<AppQuery>,
-    watcher: PolicySetWatcher,
 }
 
 impl std::fmt::Debug for AppContext {
@@ -221,17 +219,19 @@ pub enum ContextError {
 impl AppContext {
     #[tracing::instrument(skip_all)]
     pub fn spawn(
-        entities_path: impl AsRef<Path>,
-        schema_path: impl AsRef<Path>,
-        policies_path: impl AsRef<Path>,
+        entities_path: impl Into<PathBuf>,
+        schema_path: impl Into<PathBuf>,
+        policies_path: impl Into<PathBuf>,
     ) -> std::result::Result<Sender<AppQuery>, ContextError> {
-        let schema_file = std::fs::File::open(schema_path)?;
+        let schema_path = schema_path.into();
+        let policies_path = policies_path.into();
+        let schema_file = std::fs::File::open(&schema_path)?;
         let schema = Schema::from_file(schema_file)?;
 
-        let entities_file = std::fs::File::open(entities_path)?;
+        let entities_file = std::fs::File::open(entities_path.into())?;
         let entities = serde_json::from_reader(entities_file)?;
 
-        let policy_src = std::fs::read_to_string(policies_path.as_ref())?;
+        let policy_src = std::fs::read_to_string(&policies_path)?;
         let policies = policy_src.parse()?;
         let validator = Validator::new(schema);
         let output = validator.validate(&policies, ValidationMode::default());
@@ -239,15 +239,15 @@ impl AppContext {
             info!("Validation passed!");
             let authorizer = Authorizer::new();
             let (send, recv) = tokio::sync::mpsc::channel(100);
-            let watcher = PolicySetWatcher::new(send.clone(), policies_path.as_ref());
+            let tx = send.clone();
             tokio::spawn(async move {
                 info!("Serving application server!");
+                policy_store::spawn_watcher(policies_path, schema_path, tx).await;
                 let c = Self {
                     entities,
                     authorizer,
                     policies,
                     recv,
-                    watcher,
                 };
                 c.serve().await
             });
@@ -277,8 +277,7 @@ impl AppContext {
                     AppQueryKind::GetLists(r) => self.get_lists(r),
                     AppQueryKind::AddShare(r) => self.add_share(r),
                     AppQueryKind::DeleteShare(r) => self.delete_share(r),
-                    AppQueryKind::ResetWatch => self.reset_watch(),
-                    AppQueryKind::UpdatePolicySet => self.update_policy_set(),
+                    AppQueryKind::UpdatePolicySet(set) => self.update_policy_set(set),
                 };
                 if let Err(e) = msg.sender.send(r) {
                     trace!("Failed send response: {:?}", e);
@@ -287,19 +286,10 @@ impl AppContext {
         }
     }
 
-    #[tracing::instrument]
-    fn update_policy_set(&mut self) -> Result<AppResponse> {
-        let path = self.watcher.path();
-        let src = std::fs::read_to_string(path)?;
-        let policy_set: PolicySet = src.parse()?;
+    #[tracing::instrument(skip(policy_set))]
+    fn update_policy_set(&mut self, policy_set: PolicySet) -> Result<AppResponse> {
         self.policies = policy_set;
         info!("Reloaded policy set");
-        Ok(AppResponse::Unit(()))
-    }
-
-    #[tracing::instrument]
-    fn reset_watch(&mut self) -> Result<AppResponse> {
-        self.watcher.set_watch();
         Ok(AppResponse::Unit(()))
     }
 
