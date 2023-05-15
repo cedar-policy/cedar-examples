@@ -20,7 +20,7 @@ use std::{
 };
 
 use notify::{
-    event::{AccessKind, AccessMode},
+    event::{AccessKind, AccessMode, DataChange, ModifyKind},
     Config, Error, Event, EventKind, RecommendedWatcher, Watcher,
 };
 use tokio::sync::mpsc::Sender;
@@ -49,23 +49,17 @@ impl PolicySetWatcher {
                     // This is less clean then I'd like, but modern editors seem to edit files in different ways.
                     // I've tested this w/ VSCode and Neovim.
                     // Closing a buffer in Neovim triggers the `Remove` event, require re-watching the file
-                    // Closing a file in VSCode triggers the `Close` event.
+                    // Closing a file in VSCode triggers the `Close` event on Linux, on MacOs it seems to send a `DatChange::Any`.
                     match event.kind {
+                        EventKind::Modify(ModifyKind::Data(DataChange::Any)) => {
+                            send_reload_policies(&tx)
+                        }
                         EventKind::Access(AccessKind::Close(AccessMode::Write)) => {
-                            let (send, _recv) = tokio::sync::oneshot::channel();
-                            let kind = AppQueryKind::UpdatePolicySet;
-                            let q = AppQuery::new(kind, send);
-                            tx.blocking_send(q).expect("Failed to send");
+                            send_reload_policies(&tx);
                         }
                         EventKind::Remove(_) => {
-                            let (send, _recv) = tokio::sync::oneshot::channel();
-                            let kind = AppQueryKind::UpdatePolicySet;
-                            let q = AppQuery::new(kind, send);
-                            tx.blocking_send(q).expect("Failed to send");
-                            let (send, _recv) = tokio::sync::oneshot::channel();
-                            let kind = AppQueryKind::ResetWatch;
-                            let q = AppQuery::new(kind, send);
-                            tx.blocking_send(q).expect("Failed to send");
+                            send_reload_policies(&tx);
+                            send_reset_watch(&tx);
                         }
                         _ => (),
                     }
@@ -95,4 +89,18 @@ impl PolicySetWatcher {
             trace!("Set watch");
         }
     }
+}
+
+fn send_reload_policies(tx: &Sender<AppQuery>) {
+    let (send, _recv) = tokio::sync::oneshot::channel();
+    let kind = AppQueryKind::UpdatePolicySet;
+    let q = AppQuery::new(kind, send);
+    tx.blocking_send(q).expect("Failed to send");
+}
+
+fn send_reset_watch(tx: &Sender<AppQuery>) {
+    let (send, _recv) = tokio::sync::oneshot::channel();
+    let kind = AppQueryKind::ResetWatch;
+    let q = AppQuery::new(kind, send);
+    tx.blocking_send(q).expect("Failed to send");
 }
