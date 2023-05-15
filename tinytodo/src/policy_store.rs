@@ -42,11 +42,11 @@ enum Error {
     IO(#[from] std::io::Error),
     #[error("Errors parsing policy set: {0}")]
     ParsePolicies(#[from] ParseErrors),
-    #[error("Erros parsing schema: {0}")]
+    #[error("Errors parsing schema: {0}")]
     ParseSchema(#[from] SchemaError),
     #[error("Errors validating policy set: {0}")]
     Validation(String),
-    #[error("Eror sending to app processor: {0}")]
+    #[error("Error sending to app processor: {0}")]
     McspChan(#[from] tokio::sync::mpsc::error::SendError<AppQuery>),
     #[error("Error receiving response from oneshot channel: {0}")]
     OneShot(#[from] tokio::sync::oneshot::error::RecvError),
@@ -70,7 +70,7 @@ impl Error {
     }
 }
 
-pub async fn spwan_watcher(
+pub async fn spawn_watcher(
     policy_set: impl AsRef<Path>,
     schema: impl AsRef<Path>,
     tx: Sender<AppQuery>,
@@ -106,13 +106,13 @@ async fn watcher(w: PolicySetWatcher) -> Result<Empty> {
         tokio::time::sleep(Duration::from_secs(1)).await;
         let time = get_last_modified(&w.policy_set).await?;
         if time != last_modified {
+            last_modified = time;
             match attempt_policy_reload(&w).await {
                 Ok(policies) => {
                     send_query(policies, &w.tx).await?;
                 }
                 Err(e) => error!("Error reloading policies: {e}"),
             };
-            last_modified = time;
         }
     }
 }

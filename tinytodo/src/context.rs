@@ -242,7 +242,7 @@ impl AppContext {
             let tx = send.clone();
             tokio::spawn(async move {
                 info!("Serving application server!");
-                policy_store::spwan_watcher(policies_path, schema_path, tx).await;
+                policy_store::spawn_watcher(policies_path, schema_path, tx).await;
                 let c = Self {
                     entities,
                     authorizer,
