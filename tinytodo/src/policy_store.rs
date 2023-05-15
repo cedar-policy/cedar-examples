@@ -15,92 +15,129 @@
  */
 
 use std::{
+    fmt::Display,
     path::{Path, PathBuf},
-    time::Duration,
+    time::{Duration, SystemTime},
 };
 
-use notify::{
-    event::{AccessKind, AccessMode, DataChange, ModifyKind},
-    Config, Error, Event, EventKind, RecommendedWatcher, Watcher,
-};
+use cedar_policy::{ParseErrors, PolicySet, Schema, SchemaError, ValidationError, Validator};
+use thiserror::Error;
 use tokio::sync::mpsc::Sender;
-use tracing::{error, trace};
+use tracing::{debug, error};
 
 use crate::context::{AppQuery, AppQueryKind};
 
-#[derive(Debug)]
-pub struct PolicySetWatcher {
-    watcher: RecommendedWatcher,
-    path: PathBuf,
+#[derive(Debug, Clone)]
+struct PolicySetWatcher {
+    policy_set: PathBuf,
+    schema: PathBuf,
+    tx: Sender<AppQuery>,
 }
 
-impl PolicySetWatcher {
-    pub fn path(&'_ self) -> impl AsRef<Path> + '_ {
-        &self.path
-    }
+type Result<A> = std::result::Result<A, Error>;
 
-    #[tracing::instrument]
-    pub fn new(tx: Sender<AppQuery>, path: &Path) -> Self {
-        let config = Config::default().with_poll_interval(Duration::from_secs(1));
-        let watcher = RecommendedWatcher::new(
-            move |res: Result<Event, Error>| match res {
-                Ok(event) => {
-                    trace!("Event: {:?}", event);
-                    // This is less clean then I'd like, but modern editors seem to edit files in different ways.
-                    // I've tested this w/ VSCode and Neovim.
-                    // Closing a buffer in Neovim triggers the `Remove` event, require re-watching the file
-                    // Closing a file in VSCode triggers the `Close` event on Linux, on MacOs it seems to send a `DatChange::Any`.
-                    match event.kind {
-                        EventKind::Modify(ModifyKind::Data(DataChange::Any)) => {
-                            send_reload_policies(&tx)
-                        }
-                        EventKind::Access(AccessKind::Close(AccessMode::Write)) => {
-                            send_reload_policies(&tx);
-                        }
-                        EventKind::Remove(_) => {
-                            send_reload_policies(&tx);
-                            send_reset_watch(&tx);
-                        }
-                        _ => (),
-                    }
-                }
-                Err(err) => error!("Error receiving filesystem event: {}", err),
+#[derive(Debug, Error)]
+enum Error {
+    #[error("{0}")]
+    IO(#[from] std::io::Error),
+    #[error("Errors parsing policy set: {0}")]
+    ParsePolicies(#[from] ParseErrors),
+    #[error("Erros parsing schema: {0}")]
+    ParseSchema(#[from] SchemaError),
+    #[error("Errors validating policy set: {0}")]
+    Validation(String),
+    #[error("Eror sending to app processor: {0}")]
+    McspChan(#[from] tokio::sync::mpsc::error::SendError<AppQuery>),
+    #[error("Error receiving response from oneshot channel: {0}")]
+    OneShot(#[from] tokio::sync::oneshot::error::RecvError),
+}
+
+#[derive(Debug)]
+struct ValidationErrors<'a>(Vec<&'a ValidationError<'a>>);
+
+impl<'a> Display for ValidationErrors<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for err in self.0.iter() {
+            writeln!(f, "{}", err)?;
+        }
+        Ok(())
+    }
+}
+
+impl Error {
+    pub fn validation<'a>(v: impl Iterator<Item = &'a ValidationError<'a>>) -> Self {
+        Self::Validation(ValidationErrors(v.collect()).to_string())
+    }
+}
+
+pub async fn spwan_watcher(
+    policy_set: impl AsRef<Path>,
+    schema: impl AsRef<Path>,
+    tx: Sender<AppQuery>,
+) {
+    let w = PolicySetWatcher {
+        policy_set: PathBuf::from(policy_set.as_ref()),
+        schema: PathBuf::from(schema.as_ref()),
+        tx,
+    };
+    tokio::spawn(async move { watcher_supervisor(w).await });
+}
+
+// This supervises the watcher task, reporting any errors and respawning the watcher
+async fn watcher_supervisor(w: PolicySetWatcher) {
+    loop {
+        let cloned = w.clone();
+        let handle = tokio::spawn(async { watcher(cloned).await });
+        match handle.await {
+            Ok(f) => match f {
+                Ok(a) => match a {},
+                Err(e) => debug!("Policy Set File Watcher died due to: {e}, respawning..."),
             },
-            config,
-        )
-        .expect("Failed to create watcher");
-
-        let mut s = Self {
-            watcher,
-            path: PathBuf::from(path),
-        };
-        s.set_watch();
-        s
-    }
-
-    #[tracing::instrument]
-    pub fn set_watch(&mut self) {
-        if let Err(e) = self
-            .watcher
-            .watch(self.path.as_ref(), notify::RecursiveMode::NonRecursive)
-        {
-            error!("Failed to set watch: {}", e);
-        } else {
-            trace!("Set watch");
+            Err(e) => error!("Join Error: {e}"),
         }
     }
 }
 
-fn send_reload_policies(tx: &Sender<AppQuery>) {
-    let (send, _recv) = tokio::sync::oneshot::channel();
-    let kind = AppQueryKind::UpdatePolicySet;
-    let q = AppQuery::new(kind, send);
-    tx.blocking_send(q).expect("Failed to send");
+enum Empty {}
+
+async fn watcher(w: PolicySetWatcher) -> Result<Empty> {
+    let mut last_modified = get_last_modified(&w.policy_set).await?;
+    loop {
+        tokio::time::sleep(Duration::from_secs(1)).await;
+        let time = get_last_modified(&w.policy_set).await?;
+        if time != last_modified {
+            match attempt_policy_reload(&w).await {
+                Ok(policies) => {
+                    send_query(policies, &w.tx).await?;
+                }
+                Err(e) => error!("Error reloading policies: {e}"),
+            };
+            last_modified = time;
+        }
+    }
 }
 
-fn send_reset_watch(tx: &Sender<AppQuery>) {
-    let (send, _recv) = tokio::sync::oneshot::channel();
-    let kind = AppQueryKind::ResetWatch;
-    let q = AppQuery::new(kind, send);
-    tx.blocking_send(q).expect("Failed to send");
+async fn send_query(p: PolicySet, tx: &Sender<AppQuery>) -> Result<()> {
+    let (send, recv) = tokio::sync::oneshot::channel();
+    let query = AppQuery::new(AppQueryKind::UpdatePolicySet(p), send);
+    tx.send(query).await?;
+    let _ = recv.await?;
+    Ok(())
+}
+
+async fn attempt_policy_reload(w: &PolicySetWatcher) -> Result<PolicySet> {
+    let policies: PolicySet = tokio::fs::read_to_string(&w.policy_set).await?.parse()?;
+    let schema: Schema = tokio::fs::read_to_string(&w.schema).await?.parse()?;
+    let validator = Validator::new(schema);
+    let results = validator.validate(&policies, cedar_policy::ValidationMode::Strict);
+    if results.validation_passed() {
+        Ok(policies)
+    } else {
+        Err(Error::validation(results.validation_errors()))
+    }
+}
+
+async fn get_last_modified(path: &Path) -> std::io::Result<SystemTime> {
+    let metadata = tokio::fs::metadata(path).await?;
+    metadata.modified()
 }
