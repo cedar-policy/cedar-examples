@@ -16,6 +16,40 @@
 					}
 				}
 			},
+			"Timebox" : {
+				"memberOfTypes" : ["Application"],
+				"shape" : {
+					"type" : "Record",
+					"attributes" : {
+						"fromUser" : {
+							"required" : false,
+							"type" : "Entity",
+							"name" : "User"
+						},
+						"fromTeam" : {
+							"required" : false,
+							"type" : "Entity",
+							"name" : "Team"
+						},
+						"list" : {
+							"type" : "Entity",
+							"name" : "List"
+						},
+						"range" : {
+							"required" : false,
+							"type" : "Record",
+							"attributes" : {
+								"start" : {
+									"type" : "Long"
+								},
+								"end" : {
+									"type" : "Long"
+								}
+							}
+						}
+					}
+				}
+			},
 			"Team": {
 				"memberOfTypes": [
 					"Team",
@@ -83,7 +117,15 @@
 					],
 					"resourceTypes": [
 						"List"
-					]
+					],
+					"context" : {
+						"type" : "Record",
+						"attributes" : {
+							"now" : {
+								"type" : "Long"
+							}
+						}
+					}
 				}
 			},
 			"UpdateList": {
@@ -93,7 +135,15 @@
 					],
 					"resourceTypes": [
 						"List"
-					]
+					],
+					"context" : {
+						"type" : "Record",
+						"attributes" : {
+							"now" : {
+								"type" : "Long"
+							}
+						}
+					}
 				}
 			},
 			"DeleteList": {
@@ -123,7 +173,15 @@
 					],
 					"resourceTypes": [
 						"List"
-					]
+					],
+					"context" : {
+						"type" : "Record",
+						"attributes" : {
+							"now" : {
+								"type" : "Long"
+							}
+						}
+					}
 				}
 			},
 			"UpdateTask": {
@@ -133,7 +191,15 @@
 					],
 					"resourceTypes": [
 						"List"
-					]
+					],
+					"context" : {
+						"type" : "Record",
+						"attributes" : {
+							"now" : {
+								"type" : "Long"
+							}
+						}
+					}
 				}
 			},
 			"DeleteTask": {
@@ -143,7 +209,15 @@
 					],
 					"resourceTypes": [
 						"List"
-					]
+					],
+					"context" : {
+						"type" : "Record",
+						"attributes" : {
+							"now" : {
+								"type" : "Long"
+							}
+						}
+					}
 				}
 			},
 			"EditShares": {

@@ -23,7 +23,7 @@ use crate::{
     api::ShareRole,
     context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
-    util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
+    util::{EntityUid, ListUid, TeamUid, TimeBoxUid, UserOrTeamUid, UserUid, TYPE_TEAM},
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -78,6 +78,125 @@ impl User {
             parents: [parent].into_iter().collect(),
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct Timebox {
+    uid: TimeBoxUid,
+    from_user: Option<UserUid>,
+    from_team: Option<TeamUid>,
+    list: ListUid,
+    range: Option<TimeRange>,
+}
+
+impl Timebox {
+    pub fn uid(&self) -> &TimeBoxUid {
+        &self.uid
+    }
+
+    pub fn is_user(&self) -> bool {
+        self.from_user.is_some()
+    }
+
+    pub fn target(&self) -> &EntityUid {
+        self.from_user
+            .as_ref()
+            .map(|uid| uid.as_ref())
+            .or(self.from_team.as_ref().map(|uid| uid.as_ref()))
+            .unwrap()
+    }
+
+    pub fn list(&self) -> &ListUid {
+        &self.list
+    }
+
+    pub fn with_user(uid: TimeBoxUid, user: UserUid, list: ListUid) -> Self {
+        Self {
+            uid,
+            from_user: Some(user),
+            from_team: None,
+            list,
+            range: None,
+        }
+    }
+    pub fn with_team(uid: TimeBoxUid, team: TeamUid, list: ListUid) -> Self {
+        Self {
+            uid,
+            from_user: None,
+            from_team: Some(team),
+            list,
+            range: None,
+        }
+    }
+
+    pub fn set_range(&mut self, start: u64, end: u64) {
+        self.range = Some(TimeRange { start, end })
+    }
+
+    pub fn clear_range(&mut self) {
+        self.range = None;
+    }
+
+    pub fn matches(&self, target: &UserOrTeamUid, list: &ListUid) -> bool {
+        let target_matches = self
+            .from_user
+            .as_ref()
+            .map(|user| user.as_ref() == target.as_ref())
+            .or(self
+                .from_team
+                .as_ref()
+                .map(|team| team.as_ref() == target.as_ref()))
+            .unwrap_or(false);
+        target_matches && &self.list == list
+    }
+}
+
+impl From<Timebox> for Entity {
+    fn from(value: Timebox) -> Self {
+        use std::iter::once;
+        let euid: EntityUid = value.uid.into();
+
+        let mut attrs = HashMap::new();
+
+        let e = format!("{}", value.list.as_ref()).parse().unwrap();
+        attrs.insert("list".to_string(), e);
+
+        if let Some(user) = value.from_user {
+            let e = format!("{}", user.as_ref()).parse().unwrap();
+            attrs.insert("fromUser".to_string(), e);
+        }
+
+        if let Some(user) = value.from_team {
+            let e = format!("{}", user.as_ref()).parse().unwrap();
+            attrs.insert("fromTeam".to_string(), e);
+        }
+
+        if let Some(range) = value.range {
+            let start = (
+                "start".to_string(),
+                RestrictedExpression::new_long(range.start as i64),
+            );
+            let end = (
+                "end".to_string(),
+                RestrictedExpression::new_long(range.end as i64),
+            );
+            let rec = RestrictedExpression::new_record(once(start).chain(once(end)));
+            attrs.insert("range".to_string(), rec);
+        }
+
+        // We always have the single parent of the application, so we just hard code that here
+        let parents = [APPLICATION_TINY_TODO.clone().into()]
+            .into_iter()
+            .collect::<HashSet<_>>();
+
+        Entity::new(euid.into(), attrs, parents)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct TimeRange {
+    pub start: u64,
+    pub end: u64,
 }
 
 impl From<User> for Entity {
