@@ -23,7 +23,6 @@ jobs:
           repository: cedar-policy/cedar
           ref: main
           path: ./cedar
-          ssh-key: ${{ secrets.CEDAR }}
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: build cli
@@ -52,7 +51,6 @@ jobs:
           repository: cedar-policy/cedar
           ref: main
           path: ./cedar
-          ssh-key: ${{ secrets.CEDAR }}
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: cargo fmt
@@ -83,14 +81,12 @@ jobs:
           repository: cedar-policy/cedar-java
           ref: main
           path: ./cedar-java
-          ssh-key: ${{ secrets.CEDARJAVA }}
       - name: Checkout cedar
         uses: actions/checkout@v3
         with:
           repository: cedar-policy/cedar
           ref: main
           path: ./cedar-java/cedar
-          ssh-key: ${{ secrets.CEDAR }}
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: cargo build CedarJavaFFI
@@ -116,7 +112,6 @@ jobs:
           repository: cedar-policy/cedar
           ref: main
           path: ./cedar
-          ssh-key: ${{ secrets.CEDAR }}
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: cargo fmt
