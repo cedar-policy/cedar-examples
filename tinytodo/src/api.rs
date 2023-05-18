@@ -71,6 +71,7 @@ pub struct AddShare {
     pub list: ListUid,
     pub share_with: UserOrTeamUid,
     pub role: ShareRole,
+    pub duration_in_seconds: Option<u64>,
 }
 
 impl From<AddShare> for AppQueryKind {

@@ -14,46 +14,106 @@
  * limitations under the License.
  */
 
-use std::{
-    fmt::Display,
-    path::{Path, PathBuf},
-    time::{Duration, SystemTime},
+use std::fmt::Display;
+
+use cedar_policy::{
+    ParseErrors, Policy, PolicyId, PolicySet, PolicySetError, SchemaError, ValidationError,
+    Validator,
 };
-
-use cedar_policy::{ParseErrors, PolicySet, Schema, SchemaError, ValidationError, Validator};
 use thiserror::Error;
-use tokio::sync::mpsc::Sender;
-use tracing::{debug, error};
 
-use crate::context::{AppQuery, AppQueryKind};
-
-#[derive(Debug, Clone)]
-struct PolicySetWatcher {
-    policy_set: PathBuf,
-    schema: PathBuf,
-    tx: Sender<AppQuery>,
+#[derive(Debug)]
+pub struct PolicyStore {
+    policy_set: PolicySet,
+    dynamic_policies: Vec<Policy>,
+    validator: Validator,
+    id_counter: usize,
 }
 
-type Result<A> = std::result::Result<A, Error>;
+impl PolicyStore {
+    pub fn new(policy_src: &str, schema_src: &str) -> Result<Self> {
+        let policy_set = policy_src.parse()?;
+        let schema = schema_src.parse()?;
+        let validator = Validator::new(schema);
+        let results = validator.validate(&policy_set, cedar_policy::ValidationMode::Strict);
+        if results.validation_passed() {
+            Ok(Self {
+                policy_set,
+                validator,
+                dynamic_policies: vec![],
+                id_counter: 0,
+            })
+        } else {
+            Err(Error::validation(results.validation_errors()))
+        }
+    }
+
+    pub fn fresh_policy_id(&mut self) -> PolicyId {
+        loop {
+            let id_try: PolicyId = format!("Dynamic-Policy-{}", self.id_counter)
+                .parse()
+                .unwrap();
+            self.id_counter += 1;
+            if self.policy_set.policy(&id_try).is_none() {
+                return id_try;
+            }
+        }
+    }
+
+    pub fn policies(&self) -> &PolicySet {
+        &self.policy_set
+    }
+
+    pub fn set_static_store(&mut self, p: PolicySet) -> Result<()> {
+        self.policy_set = p;
+        for dynamic in self.dynamic_policies.iter() {
+            self.policy_set.add(dynamic.clone())?;
+        }
+        Ok(())
+    }
+
+    pub fn add_dynamic_policy(&mut self, p: Policy) -> Result<()> {
+        self.validate_policy(p.clone())?;
+        self.policy_set.add(p.clone())?;
+        self.dynamic_policies.push(p);
+        Ok(())
+    }
+
+    fn validate_policy(&self, p: Policy) -> Result<()> {
+        let singleton = PolicySet::from_policies([p]).unwrap();
+        let results = self
+            .validator
+            .validate(&singleton, cedar_policy::ValidationMode::Strict);
+        if results.validation_passed() {
+            Ok(())
+        } else {
+            Err(Error::validation(results.validation_errors()))
+        }
+    }
+}
+
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
-enum Error {
-    #[error("{0}")]
-    IO(#[from] std::io::Error),
-    #[error("Errors parsing policy set: {0}")]
-    ParsePolicies(#[from] ParseErrors),
-    #[error("Errors parsing schema: {0}")]
-    ParseSchema(#[from] SchemaError),
-    #[error("Errors validating policy set: {0}")]
+pub enum Error {
+    #[error("Error parsing policies: {0}")]
+    PolicyParse(#[from] ParseErrors),
+    #[error("Error parsing schema: {0}")]
+    SchemaParse(#[from] SchemaError),
+    #[error("Error validating policies: {0}")]
     Validation(String),
-    #[error("Error sending to app processor: {0}")]
-    McspChan(#[from] tokio::sync::mpsc::error::SendError<AppQuery>),
-    #[error("Error receiving response from oneshot channel: {0}")]
-    OneShot(#[from] tokio::sync::oneshot::error::RecvError),
+    #[error("Error adding policy to set: {0}")]
+    Duplicate(#[from] PolicySetError),
+}
+
+impl Error {
+    pub fn validation<'a>(errs: impl Iterator<Item = &'a ValidationError<'a>>) -> Self {
+        Self::Validation(ValidationErrors(errs.collect()).to_string())
+    }
 }
 
 #[derive(Debug)]
-struct ValidationErrors<'a>(Vec<&'a ValidationError<'a>>);
+pub struct ValidationErrors<'a>(pub Vec<&'a ValidationError<'a>>);
 
 impl<'a> Display for ValidationErrors<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -62,82 +122,4 @@ impl<'a> Display for ValidationErrors<'a> {
         }
         Ok(())
     }
-}
-
-impl Error {
-    pub fn validation<'a>(v: impl Iterator<Item = &'a ValidationError<'a>>) -> Self {
-        Self::Validation(ValidationErrors(v.collect()).to_string())
-    }
-}
-
-pub async fn spawn_watcher(
-    policy_set: impl AsRef<Path>,
-    schema: impl AsRef<Path>,
-    tx: Sender<AppQuery>,
-) {
-    let w = PolicySetWatcher {
-        policy_set: PathBuf::from(policy_set.as_ref()),
-        schema: PathBuf::from(schema.as_ref()),
-        tx,
-    };
-    tokio::spawn(async move { watcher_supervisor(w).await });
-}
-
-// This supervises the watcher task, reporting any errors and respawning the watcher
-async fn watcher_supervisor(w: PolicySetWatcher) {
-    loop {
-        let cloned = w.clone();
-        let handle = tokio::spawn(async { watcher(cloned).await });
-        match handle.await {
-            Ok(f) => match f {
-                Ok(a) => match a {},
-                Err(e) => debug!("Policy Set File Watcher died due to: {e}, respawning..."),
-            },
-            Err(e) => error!("Join Error: {e}"),
-        }
-    }
-}
-
-enum Empty {}
-
-async fn watcher(w: PolicySetWatcher) -> Result<Empty> {
-    let mut last_modified = get_last_modified(&w.policy_set).await?;
-    loop {
-        tokio::time::sleep(Duration::from_secs(1)).await;
-        let time = get_last_modified(&w.policy_set).await?;
-        if time != last_modified {
-            last_modified = time;
-            match attempt_policy_reload(&w).await {
-                Ok(policies) => {
-                    send_query(policies, &w.tx).await?;
-                }
-                Err(e) => error!("Error reloading policies: {e}"),
-            };
-        }
-    }
-}
-
-async fn send_query(p: PolicySet, tx: &Sender<AppQuery>) -> Result<()> {
-    let (send, recv) = tokio::sync::oneshot::channel();
-    let query = AppQuery::new(AppQueryKind::UpdatePolicySet(p), send);
-    tx.send(query).await?;
-    let _ = recv.await?;
-    Ok(())
-}
-
-async fn attempt_policy_reload(w: &PolicySetWatcher) -> Result<PolicySet> {
-    let policies: PolicySet = tokio::fs::read_to_string(&w.policy_set).await?.parse()?;
-    let schema: Schema = tokio::fs::read_to_string(&w.schema).await?.parse()?;
-    let validator = Validator::new(schema);
-    let results = validator.validate(&policies, cedar_policy::ValidationMode::Strict);
-    if results.validation_passed() {
-        Ok(policies)
-    } else {
-        Err(Error::validation(results.validation_errors()))
-    }
-}
-
-async fn get_last_modified(path: &Path) -> std::io::Result<SystemTime> {
-    let metadata = tokio::fs::metadata(path).await?;
-    metadata.modified()
 }

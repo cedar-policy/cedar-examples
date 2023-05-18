@@ -17,7 +17,7 @@
 use std::{ops::Deref, str::FromStr};
 
 use cedar_policy::{EntityTypeName, ParseErrors, RestrictedExpression};
-use itertools::Itertools;
+use itertools::{Either, Itertools};
 use lazy_static::lazy_static;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use thiserror::Error;
@@ -102,6 +102,7 @@ where
 lazy_static! {
     pub static ref TYPE_LIST: EntityTypeName = "List".parse().unwrap();
     pub static ref TYPE_USER: EntityTypeName = "User".parse().unwrap();
+    pub static ref TYPE_TIMEBOX: EntityTypeName = "Timebox".parse().unwrap();
     pub static ref TYPE_TEAM: EntityTypeName = "Team".parse().unwrap();
 }
 
@@ -162,6 +163,31 @@ impl std::fmt::Display for EntityTypeError {
 #[serde(try_from = "EntityUid")]
 #[serde(into = "EntityUid")]
 #[repr(transparent)]
+pub struct TimeBoxUid(EntityUid);
+
+impl TryFrom<EntityUid> for TimeBoxUid {
+    type Error = EntityTypeError;
+    fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
+        entity_type_check(&TYPE_TIMEBOX, got, Self)
+    }
+}
+
+impl From<TimeBoxUid> for EntityUid {
+    fn from(value: TimeBoxUid) -> Self {
+        value.0
+    }
+}
+
+impl AsRef<EntityUid> for TimeBoxUid {
+    fn as_ref(&self) -> &EntityUid {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(try_from = "EntityUid")]
+#[serde(into = "EntityUid")]
+#[repr(transparent)]
 pub struct UserUid(EntityUid);
 
 impl TryFrom<EntityUid> for UserUid {
@@ -213,6 +239,16 @@ impl AsRef<EntityUid> for ListUid {
 #[serde(into = "EntityUid")]
 #[repr(transparent)]
 pub struct UserOrTeamUid(EntityUid);
+
+impl UserOrTeamUid {
+    pub fn or(self) -> Either<UserUid, TeamUid> {
+        if self.0.type_name() == &*TYPE_USER {
+            Either::Left(UserUid(self.0))
+        } else {
+            Either::Right(TeamUid(self.0))
+        }
+    }
+}
 
 impl TryFrom<EntityUid> for UserOrTeamUid {
     type Error = EntityTypeError;

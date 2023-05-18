@@ -355,7 +355,7 @@ def delete_list(user, list_id):
 
 
 @web_req("share list")
-def share_list(user, list_id, share_with, read_only = True):
+def share_list(user, list_id, share_with, read_only = True, time_limit = None):
     l = List(list_id)
     url = '/api/share'
     data = {
@@ -363,6 +363,7 @@ def share_list(user, list_id, share_with, read_only = True):
             'list' : l.euid(), 
             'role' : 'Reader' if read_only else 'Editor',
             'share_with' : share_with.euid(),
+            'duration_in_seconds' : time_limit,
             }
     return server.post(url, data), lambda _: 'Shared list ID %s with %s as %s' % (l, share_with, 'reader' if read_only else 'editor')
 

@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-use itertools::Itertools;
+use itertools::Either;
 use lazy_static::lazy_static;
-use std::path::PathBuf;
-use tracing::{info, trace};
+use serde_json::json;
+use std::{
+    path::PathBuf,
+    time::{Duration, SystemTime, UNIX_EPOCH},
+};
+use tracing::{debug, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
-    Schema, SchemaError, ValidationMode, Validator,
+    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, Policy, PolicyId,
+    PolicySet, Request, RestrictedExpression,
 };
 use thiserror::Error;
 use tokio::sync::{
@@ -35,9 +39,12 @@ use crate::{
         GetLists, UpdateList, UpdateTask,
     },
     entitystore::{EntityDecodeError, EntityStore},
-    objects::List,
-    policy_store,
-    util::{EntityUid, ListUid, Lists, TYPE_LIST},
+    objects::{List, Timebox},
+    policy_store::{self, PolicyStore},
+    policy_watcher,
+    util::{
+        EntityUid, ListUid, Lists, TimeBoxUid, UserOrTeamUid, TYPE_LIST, TYPE_TIMEBOX, TYPE_USER,
+    },
 };
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
@@ -168,6 +175,8 @@ pub enum Error {
     IO(#[from] std::io::Error),
     #[error("Error Parsing PolicySet: {0}")]
     Policy(#[from] ParseErrors),
+    #[error("{0}")]
+    PolicyStore(#[from] policy_store::Error),
 }
 
 impl Error {
@@ -192,7 +201,7 @@ lazy_static! {
 pub struct AppContext {
     entities: EntityStore,
     authorizer: Authorizer,
-    policies: PolicySet,
+    policies: PolicyStore,
     recv: Receiver<AppQuery>,
 }
 
@@ -206,12 +215,8 @@ impl std::fmt::Debug for AppContext {
 pub enum ContextError {
     #[error("{0}")]
     IO(#[from] std::io::Error),
-    #[error("Error Parsing Schema: {0}")]
-    Schema(#[from] SchemaError),
-    #[error("Error Parsing PolicySet: {0}")]
-    Policy(#[from] ParseErrors),
-    #[error("Validation Failed: {0}")]
-    Validation(String),
+    #[error("{0}")]
+    PolicyStore(#[from] policy_store::Error),
     #[error("Error Deserializing Json: {0}")]
     Json(#[from] serde_json::Error),
 }
@@ -225,41 +230,30 @@ impl AppContext {
     ) -> std::result::Result<Sender<AppQuery>, ContextError> {
         let schema_path = schema_path.into();
         let policies_path = policies_path.into();
-        let schema_file = std::fs::File::open(&schema_path)?;
-        let schema = Schema::from_file(schema_file)?;
+        let schema_src = std::fs::read_to_string(&schema_path)?;
+        let policy_src = std::fs::read_to_string(&policies_path)?;
+
+        let policies = PolicyStore::new(&policy_src, &schema_src)?;
 
         let entities_file = std::fs::File::open(entities_path.into())?;
         let entities = serde_json::from_reader(entities_file)?;
 
-        let policy_src = std::fs::read_to_string(&policies_path)?;
-        let policies = policy_src.parse()?;
-        let validator = Validator::new(schema);
-        let output = validator.validate(&policies, ValidationMode::default());
-        if output.validation_passed() {
-            info!("Validation passed!");
-            let authorizer = Authorizer::new();
-            let (send, recv) = tokio::sync::mpsc::channel(100);
-            let tx = send.clone();
-            tokio::spawn(async move {
-                info!("Serving application server!");
-                policy_store::spawn_watcher(policies_path, schema_path, tx).await;
-                let c = Self {
-                    entities,
-                    authorizer,
-                    policies,
-                    recv,
-                };
-                c.serve().await
-            });
+        let authorizer = Authorizer::new();
+        let (send, recv) = tokio::sync::mpsc::channel(100);
+        let tx = send.clone();
+        tokio::spawn(async move {
+            info!("Serving application server!");
+            policy_watcher::spawn_watcher(policies_path, schema_path, tx).await;
+            let c = Self {
+                entities,
+                authorizer,
+                policies,
+                recv,
+            };
+            c.serve().await
+        });
 
-            Ok(send)
-        } else {
-            let error_string = output
-                .validation_errors()
-                .map(|err| format!("{err}"))
-                .join("\n");
-            Err(ContextError::Validation(error_string))
-        }
+        Ok(send)
     }
 
     #[tracing::instrument]
@@ -288,7 +282,7 @@ impl AppContext {
 
     #[tracing::instrument(skip(policy_set))]
     fn update_policy_set(&mut self, policy_set: PolicySet) -> Result<AppResponse> {
-        self.policies = policy_set;
+        self.policies.set_static_store(policy_set)?;
         info!("Reloaded policy set");
         Ok(AppResponse::Unit(()))
     }
@@ -299,7 +293,63 @@ impl AppContext {
         let team_uid = list.get_team(r.role).clone();
         let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
         target_entity.insert_parent(team_uid);
+
+        self.update_timebox(
+            r.share_with,
+            r.list,
+            r.duration_in_seconds.map(Duration::from_secs),
+        )?;
+
         Ok(AppResponse::Unit(()))
+    }
+
+    #[tracing::instrument]
+    fn update_timebox(
+        &mut self,
+        target: UserOrTeamUid,
+        list: ListUid,
+        d: Option<Duration>,
+    ) -> Result<()> {
+        let timebox = self.get_timebox(&target, &list)?;
+        if let Some(dur) = d {
+            let now = SystemTime::now();
+            let then = now.checked_add(dur).unwrap();
+            let now_timestamp = now.duration_since(UNIX_EPOCH).unwrap().as_secs();
+            let then_timestamp = then.duration_since(UNIX_EPOCH).unwrap().as_secs();
+            timebox.set_range(now_timestamp, then_timestamp);
+        } else {
+            timebox.clear_range();
+        }
+        Ok(())
+    }
+
+    fn get_timebox(&mut self, target: &UserOrTeamUid, list: &ListUid) -> Result<&mut Timebox> {
+        if self.entities.get_timebox_mut(target, list).is_none() {
+            self.create_timebox(target.clone(), list.clone())?;
+        }
+        Ok(self.entities.get_timebox_mut(target, list).unwrap())
+    }
+
+    #[tracing::instrument]
+    fn create_timebox(&mut self, target: UserOrTeamUid, list: ListUid) -> Result<()> {
+        info!("Creating a new timebox entity & policy");
+        let uid: TimeBoxUid = self.entities.fresh_euid(TYPE_TIMEBOX.clone()).unwrap();
+        let timebox = match target.or() {
+            Either::Left(user) => Timebox::with_user(uid, user, list),
+            Either::Right(team) => Timebox::with_team(uid, team, list),
+        };
+        self.create_timebox_policy(&timebox)?;
+        self.entities.insert_timebox(timebox);
+        Ok(())
+    }
+
+    #[tracing::instrument]
+    fn create_timebox_policy(&mut self, t: &Timebox) -> Result<()> {
+        let id = self.policies.fresh_policy_id();
+        let p = create_timebox_policy(id, t.uid().as_ref(), t.target(), t.list().as_ref());
+        info!("Timebox policy: {p}");
+        self.policies.add_dynamic_policy(p)?;
+        Ok(())
     }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
@@ -396,23 +446,149 @@ impl AppContext {
         resource: impl AsRef<EntityUid>,
     ) -> Result<()> {
         let es = self.entities.as_entities();
+        let context = build_context();
+        debug!("is_authorized policies: {}", self.policies.policies());
+        debug!("is_authorized entities: {:?}", es);
+        info!(
+            "is_authorized request: principal: {}, action: {}, resource: {}, request context: {:?}",
+            principal.as_ref(),
+            action.as_ref(),
+            resource.as_ref(),
+            context
+        );
         let q = Request::new(
             Some(principal.as_ref().clone().into()),
             Some(action.as_ref().clone().into()),
             Some(resource.as_ref().clone().into()),
-            Context::empty(),
+            context,
         );
-        info!(
-            "is_authorized request: principal: {}, action: {}, resource: {}",
-            principal.as_ref(),
-            action.as_ref(),
-            resource.as_ref()
-        );
-        let response = self.authorizer.is_authorized(&q, &self.policies, &es);
+        let response = self
+            .authorizer
+            .is_authorized(&q, self.policies.policies(), &es);
         info!("Auth response: {:?}", response);
         match response.decision() {
             Decision::Allow => Ok(()),
             Decision::Deny => Err(Error::AuthDenied(response.diagnostics().clone())),
         }
     }
+}
+
+fn build_context() -> Context {
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let expr = RestrictedExpression::new_long(now as i64);
+    Context::from_pairs(std::iter::once(("now".to_string(), expr)))
+}
+
+fn create_timebox_policy(
+    id: PolicyId,
+    timebox: &EntityUid,
+    target: &EntityUid,
+    list: &EntityUid,
+) -> Policy {
+    let op = if target.type_name() == &*TYPE_USER {
+        "=="
+    } else {
+        "in"
+    };
+
+    let principal = json!({
+        "op" : op,
+        "entity" : { "type" : target.type_name().to_string(), "id" : target.id().to_string() }
+    });
+    let action = json!({
+        "op" : "in",
+        "entities" : [
+            { "type" : "Action", "id" : "UpdateList" },
+            { "type" : "Action", "id" : "UpdateTask" },
+            { "type" : "Action", "id" : "DeleteTask" },
+            { "type" : "Action", "id" : "CreateTask" },
+            { "type" : "Action", "id" : "GetList" },
+        ]
+    });
+    let resource = json!({
+        "op" : "==",
+        "entity"  : { "type" : list.type_name().to_string(), "id" : list.id().to_string() }
+    });
+
+    let timebox = json!({
+        "Value" : {
+            "__entity" : {
+                "type" : timebox.type_name().to_string(),
+                "id" : timebox.id().to_string(),
+            }
+        }
+    });
+
+    let when = json!({
+        "kind" : "when",
+        "body" : {
+            "has" : {
+                "left": timebox,
+                "attr" : "range"
+            }
+        }
+    });
+
+    let now = json!({"." : {
+        "left" : { "Var" : "context"},
+        "attr" : "now"
+    }});
+
+    let timebox_range = json!({
+        "." : {
+            "left" : timebox,
+            "attr" : "range"
+        }
+    });
+
+    let start_time = json!({
+        "." : {
+            "left" : timebox_range,
+            "attr" : "start"
+        }
+    });
+
+    let end_time = json!({
+        "." : {
+            "left" : timebox_range,
+            "attr" : "end"
+        }
+    });
+
+    let after_start = json!({
+        "<" : {
+            "left" : start_time,
+            "right" : now,
+        }
+    });
+
+    let before_end = json!({
+        "<" : {
+            "left" : now,
+            "right" : end_time
+        }
+    });
+
+    let unless = json!({
+        "kind" : "unless",
+        "body" : {
+            "&&" : {
+                "left" : after_start,
+                "right" : before_end
+            }
+        }
+    });
+
+    let est = json!({
+        "effect" : "forbid",
+        "principal" : principal,
+        "action" : action,
+        "resource" : resource,
+        "conditions" : [when, unless]
+    });
+
+    cedar_policy::Policy::from_json(Some(id), est).unwrap()
 }

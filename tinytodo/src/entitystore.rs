@@ -22,7 +22,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::Error,
-    objects::{Application, List, Team, User, UserOrTeam},
+    objects::{Application, List, Team, Timebox, User, UserOrTeam},
     util::{EntityUid, ListUid, TeamUid, UserOrTeamUid, UserUid},
 };
 
@@ -31,6 +31,7 @@ pub struct EntityStore {
     users: HashMap<EntityUid, User>,
     teams: HashMap<EntityUid, Team>,
     lists: HashMap<EntityUid, List>,
+    timeboxes: HashMap<EntityUid, Timebox>,
     app: Application,
     #[serde(skip)]
     uid: usize,
@@ -49,8 +50,12 @@ impl EntityStore {
         let users = self.users.values().map(|user| user.clone().into());
         let teams = self.teams.values().map(|team| team.clone().into());
         let lists = self.lists.values().map(|list| list.clone().into());
+        let timeboxes = self
+            .timeboxes
+            .values()
+            .map(|timebox| timebox.clone().into());
         let app = std::iter::once(self.app.clone().into());
-        let all = users.chain(teams).chain(lists).chain(app);
+        let all = users.chain(teams).chain(lists).chain(app).chain(timeboxes);
         Entities::from_entities(all).unwrap()
     }
 
@@ -150,6 +155,21 @@ impl EntityStore {
         self.lists
             .get_mut(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
+    }
+
+    pub fn insert_timebox(&mut self, t: Timebox) {
+        self.timeboxes.insert(t.uid().as_ref().clone(), t);
+    }
+
+    pub fn get_timebox_mut(
+        &mut self,
+        target: &UserOrTeamUid,
+        list: &ListUid,
+    ) -> Option<&mut Timebox> {
+        self.timeboxes
+            .iter_mut()
+            .find(|(_, timebox)| timebox.matches(target, list))
+            .map(|(_, timebox)| timebox)
     }
 }
 
