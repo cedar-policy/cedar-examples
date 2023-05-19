@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-use itertools::Either;
 use lazy_static::lazy_static;
-use serde_json::json;
 use std::{
     path::PathBuf,
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -24,8 +22,8 @@ use std::{
 use tracing::{debug, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, Policy, PolicyId,
-    PolicySet, Request, RestrictedExpression,
+    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
+    RestrictedExpression,
 };
 use thiserror::Error;
 use tokio::sync::{
@@ -39,12 +37,11 @@ use crate::{
         GetLists, ShareKind, UpdateList, UpdateTask,
     },
     entitystore::{EntityDecodeError, EntityStore},
-    objects::{List, Timebox},
+    objects::List,
     policy_store::{self, PolicyStore},
     policy_watcher,
-    util::{
-        EntityUid, ListUid, Lists, TimeBoxUid, UserOrTeamUid, TYPE_LIST, TYPE_TIMEBOX, TYPE_USER,
-    },
+    timebox::update_timebox,
+    util::{EntityUid, ListUid, Lists, TYPE_LIST},
 };
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
@@ -153,7 +150,7 @@ impl AppQuery {
     }
 }
 
-type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -295,8 +292,10 @@ impl AppContext {
         let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
         target_entity.insert_parent(team_uid);
 
-        if kind == ShareKind::Timebox {
-            self.update_timebox(
+        if kind == ShareKind::TimeboxRead {
+            update_timebox(
+                &mut self.entities,
+                &mut self.policies,
                 r.share_with,
                 r.list,
                 r.duration_in_seconds.map(Duration::from_secs),
@@ -304,55 +303,6 @@ impl AppContext {
         }
 
         Ok(AppResponse::Unit(()))
-    }
-
-    #[tracing::instrument]
-    fn update_timebox(
-        &mut self,
-        target: UserOrTeamUid,
-        list: ListUid,
-        d: Option<Duration>,
-    ) -> Result<()> {
-        let timebox = self.get_timebox(&target, &list)?;
-        if let Some(dur) = d {
-            let now = SystemTime::now();
-            let then = now.checked_add(dur).unwrap();
-            let now_timestamp = now.duration_since(UNIX_EPOCH).unwrap().as_secs();
-            let then_timestamp = then.duration_since(UNIX_EPOCH).unwrap().as_secs();
-            timebox.set_range(now_timestamp, then_timestamp);
-        } else {
-            timebox.clear_range();
-        }
-        Ok(())
-    }
-
-    fn get_timebox(&mut self, target: &UserOrTeamUid, list: &ListUid) -> Result<&mut Timebox> {
-        if self.entities.get_timebox_mut(target, list).is_none() {
-            self.create_timebox(target.clone(), list.clone())?;
-        }
-        Ok(self.entities.get_timebox_mut(target, list).unwrap())
-    }
-
-    #[tracing::instrument]
-    fn create_timebox(&mut self, target: UserOrTeamUid, list: ListUid) -> Result<()> {
-        info!("Creating a new timebox entity & policy");
-        let uid: TimeBoxUid = self.entities.fresh_euid(TYPE_TIMEBOX.clone()).unwrap();
-        let timebox = match target.or() {
-            Either::Left(user) => Timebox::with_user(uid, user, list),
-            Either::Right(team) => Timebox::with_team(uid, team, list),
-        };
-        self.create_timebox_policy(&timebox)?;
-        self.entities.insert_timebox(timebox);
-        Ok(())
-    }
-
-    #[tracing::instrument]
-    fn create_timebox_policy(&mut self, t: &Timebox) -> Result<()> {
-        let id = self.policies.fresh_policy_id();
-        let p = create_timebox_policy(id, t.uid().as_ref(), t.target(), t.list().as_ref());
-        info!("Timebox policy: {p}");
-        self.policies.add_dynamic_policy(p)?;
-        Ok(())
     }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
@@ -483,122 +433,4 @@ fn build_context() -> Context {
         .as_secs();
     let expr = RestrictedExpression::new_long(now as i64);
     Context::from_pairs(std::iter::once(("now".to_string(), expr)))
-}
-
-fn create_timebox_policy(
-    id: PolicyId,
-    timebox: &EntityUid,
-    target: &EntityUid,
-    list: &EntityUid,
-) -> Policy {
-    let op = if target.type_name() == &*TYPE_USER {
-        "=="
-    } else {
-        "in"
-    };
-
-    let principal_constraint = json!({
-        "op" : op,
-        "entity" : { "type" : target.type_name().to_string(), "id" : target.id().to_string() }
-    });
-    let action_constraint = json!({
-        "op" : "in",
-        "entities" : [
-            { "type" : "Action", "id" : "GetList" },
-        ]
-    });
-    let resource_constraint = json!({
-        "op" : "==",
-        "entity"  : { "type" : list.type_name().to_string(), "id" : list.id().to_string() }
-    });
-
-    let timebox = json!({
-        "Value" : {
-            "__entity" : {
-                "type" : timebox.type_name().to_string(),
-                "id" : timebox.id().to_string(),
-            }
-        }
-    });
-
-    let now = json!({"." : {
-        "left" : { "Var" : "context"},
-        "attr" : "now"
-    }});
-
-    let timebox_range = json!({
-        "." : {
-            "left" : timebox,
-            "attr" : "range"
-        }
-    });
-
-    let start_time = json!({
-        "." : {
-            "left" : timebox_range,
-            "attr" : "start"
-        }
-    });
-
-    let end_time = json!({
-        "." : {
-            "left" : timebox_range,
-            "attr" : "end"
-        }
-    });
-
-    let after_start = json!({
-        "<" : {
-            "left" : start_time,
-            "right" : now,
-        }
-    });
-
-    let before_end = json!({
-        "<" : {
-            "left" : now,
-            "right" : end_time
-        }
-    });
-
-    let principal = json!({"Var" : "principal"});
-    let resource = json!({"Var" : "resource"});
-    let readers = json!({
-        "." : {
-            "left" : resource,
-            "attr" : "timeboxedReaders"
-        }
-    });
-
-    let in_readers = json!({
-        "in" : {
-            "left" : principal,
-            "right" : readers
-        }
-    });
-
-    let when = json!({
-        "kind" : "when",
-        "body" : {
-            "&&" : {
-                "left": in_readers,
-                "right" : {
-                "&&" : {
-                    "left" : after_start,
-                    "right" : before_end
-                }
-            }
-        }
-        }
-    });
-
-    let est = json!({
-        "effect" : "permit",
-        "principal" : principal_constraint,
-        "action" : action_constraint,
-        "resource" : resource_constraint,
-        "conditions" : [when]
-    });
-
-    cedar_policy::Policy::from_json(Some(id), est).unwrap()
 }

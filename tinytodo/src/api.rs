@@ -78,7 +78,7 @@ pub struct AddShare {
 pub enum ShareKind {
     Read,
     Edit,
-    Timebox,
+    TimeboxRead,
 }
 
 impl AddShare {
@@ -86,7 +86,7 @@ impl AddShare {
         match self.role {
             ShareRole::Reader => {
                 if self.duration_in_seconds.is_some() {
-                    ShareKind::Timebox
+                    ShareKind::TimeboxRead
                 } else {
                     ShareKind::Read
                 }
