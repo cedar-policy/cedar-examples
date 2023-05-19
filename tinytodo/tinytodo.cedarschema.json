@@ -36,7 +36,6 @@
 							"name" : "List"
 						},
 						"range" : {
-							"required" : false,
 							"type" : "Record",
 							"attributes" : {
 								"start" : {
@@ -77,6 +76,10 @@
 						"editors": {
 							"type": "Entity",
 							"name": "Team"
+						},
+						"timeboxedReaders" : {
+							"type" : "Entity",
+							"name" : "Team"
 						},
 						"tasks": {
 							"type": "Set",

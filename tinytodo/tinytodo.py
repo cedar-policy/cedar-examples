@@ -123,8 +123,8 @@ server_binary_path = './target/release/tiny-todo-server'
 # Setup our entities
 users = ['emina', 'aaron', 'andrew', 'kesha']
 [emina, aaron, andrew, kesha] = [User(user) for user in users]
-teams = ['Admin', 'interns', 'temp']
-[admi, interns, temp] = [Team(team) for team in teams]
+teams = ['admin', 'interns', 'temp']
+[admin, interns, temp] = [Team(team) for team in teams]
 current_user = None
 
 
@@ -205,7 +205,7 @@ def process_response(name, resp, f, args):
                 tup = (current_user,  name, args)
                 print('Access denied. User %s is not authorized to %s on [%s]' % tup )
             else:
-                print('Error: %s' % resp['error'])
+                print('Error: %s' % resp.text)
         else:
             print(f(body))
     else:
