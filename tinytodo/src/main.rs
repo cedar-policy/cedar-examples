@@ -20,6 +20,7 @@ mod entitystore;
 mod objects;
 mod policy_store;
 mod policy_watcher;
+mod timebox;
 mod util;
 
 use context::AppContext;

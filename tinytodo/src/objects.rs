@@ -327,7 +327,7 @@ impl List {
         match kind {
             ShareKind::Read => &self.readers,
             ShareKind::Edit => &self.editors,
-            ShareKind::Timebox => &self.timeboxed_readers,
+            ShareKind::TimeboxRead => &self.timeboxed_readers,
         }
     }
 }
