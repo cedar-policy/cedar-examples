@@ -36,7 +36,7 @@ use tokio::sync::{
 use crate::{
     api::{
         AddShare, CreateList, CreateTask, DeleteList, DeleteShare, DeleteTask, Empty, GetList,
-        GetLists, UpdateList, UpdateTask,
+        GetLists, ShareKind, UpdateList, UpdateTask,
     },
     entitystore::{EntityDecodeError, EntityStore},
     objects::{List, Timebox},
@@ -290,15 +290,18 @@ impl AppContext {
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
         let list = self.entities.get_list(&r.list)?;
-        let team_uid = list.get_team(r.role).clone();
+        let kind = r.share_kind();
+        let team_uid = list.get_team(kind).clone();
         let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
         target_entity.insert_parent(team_uid);
 
-        self.update_timebox(
-            r.share_with,
-            r.list,
-            r.duration_in_seconds.map(Duration::from_secs),
-        )?;
+        if kind == ShareKind::Timebox {
+            self.update_timebox(
+                r.share_with,
+                r.list,
+                r.duration_in_seconds.map(Duration::from_secs),
+            )?;
+        }
 
         Ok(AppResponse::Unit(()))
     }
@@ -355,7 +358,7 @@ impl AppContext {
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
         let list = self.entities.get_list(&r.list)?;
-        let team_uid = list.get_team(r.role).clone();
+        let team_uid = list.get_team(r.share_kind()).clone();
         let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
         target_entity.delete_parent(&team_uid);
         Ok(AppResponse::Unit(()))
@@ -494,21 +497,17 @@ fn create_timebox_policy(
         "in"
     };
 
-    let principal = json!({
+    let principal_constraint = json!({
         "op" : op,
         "entity" : { "type" : target.type_name().to_string(), "id" : target.id().to_string() }
     });
-    let action = json!({
+    let action_constraint = json!({
         "op" : "in",
         "entities" : [
-            { "type" : "Action", "id" : "UpdateList" },
-            { "type" : "Action", "id" : "UpdateTask" },
-            { "type" : "Action", "id" : "DeleteTask" },
-            { "type" : "Action", "id" : "CreateTask" },
             { "type" : "Action", "id" : "GetList" },
         ]
     });
-    let resource = json!({
+    let resource_constraint = json!({
         "op" : "==",
         "entity"  : { "type" : list.type_name().to_string(), "id" : list.id().to_string() }
     });
@@ -518,16 +517,6 @@ fn create_timebox_policy(
             "__entity" : {
                 "type" : timebox.type_name().to_string(),
                 "id" : timebox.id().to_string(),
-            }
-        }
-    });
-
-    let when = json!({
-        "kind" : "when",
-        "body" : {
-            "has" : {
-                "left": timebox,
-                "attr" : "range"
             }
         }
     });
@@ -572,22 +561,43 @@ fn create_timebox_policy(
         }
     });
 
-    let unless = json!({
-        "kind" : "unless",
+    let principal = json!({"Var" : "principal"});
+    let resource = json!({"Var" : "resource"});
+    let readers = json!({
+        "." : {
+            "left" : resource,
+            "attr" : "timeboxedReaders"
+        }
+    });
+
+    let in_readers = json!({
+        "in" : {
+            "left" : principal,
+            "right" : readers
+        }
+    });
+
+    let when = json!({
+        "kind" : "when",
         "body" : {
             "&&" : {
-                "left" : after_start,
-                "right" : before_end
+                "left": in_readers,
+                "right" : {
+                "&&" : {
+                    "left" : after_start,
+                    "right" : before_end
+                }
             }
+        }
         }
     });
 
     let est = json!({
-        "effect" : "forbid",
-        "principal" : principal,
-        "action" : action,
-        "resource" : resource,
-        "conditions" : [when, unless]
+        "effect" : "permit",
+        "principal" : principal_constraint,
+        "action" : action_constraint,
+        "resource" : resource_constraint,
+        "conditions" : [when]
     });
 
     cedar_policy::Policy::from_json(Some(id), est).unwrap()

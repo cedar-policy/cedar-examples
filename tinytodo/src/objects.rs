@@ -20,7 +20,7 @@ use cedar_policy::{Entity, EvalResult, RestrictedExpression};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    api::ShareRole,
+    api::ShareKind,
     context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
     util::{EntityUid, ListUid, TeamUid, TimeBoxUid, UserOrTeamUid, UserUid, TYPE_TEAM},
@@ -269,6 +269,7 @@ pub struct List {
     tasks: Vec<Task>, // Invariant, `tasks` must be sorted
     readers: TeamUid,
     editors: TeamUid,
+    timeboxed_readers: TeamUid,
 }
 
 impl List {
@@ -277,8 +278,11 @@ impl List {
         let readers = Team::new(readers_uid.clone());
         let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let writers = Team::new(writers_uid.clone());
+        let timebox_readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
+        let timeboxed_readers = Team::new(timebox_readers_uid.clone());
         store.insert_team(readers);
         store.insert_team(writers);
+        store.insert_team(timeboxed_readers);
         Self {
             uid,
             owner,
@@ -286,6 +290,7 @@ impl List {
             tasks: vec![],
             readers: readers_uid,
             editors: writers_uid,
+            timeboxed_readers: timebox_readers_uid,
         }
     }
 
@@ -318,10 +323,11 @@ impl List {
         self.name = name;
     }
 
-    pub fn get_team(&self, role: ShareRole) -> &TeamUid {
-        match role {
-            ShareRole::Reader => &self.readers,
-            ShareRole::Editor => &self.editors,
+    pub fn get_team(&self, kind: ShareKind) -> &TeamUid {
+        match kind {
+            ShareKind::Read => &self.readers,
+            ShareKind::Edit => &self.editors,
+            ShareKind::Timebox => &self.timeboxed_readers,
         }
     }
 }
@@ -345,6 +351,12 @@ impl From<List> for Entity {
             (
                 "editors",
                 format!("{}", value.editors.as_ref()).parse().unwrap(),
+            ),
+            (
+                "timeboxedReaders",
+                format!("{}", value.timeboxed_readers.as_ref())
+                    .parse()
+                    .unwrap(),
             ),
         ]
         .into_iter()

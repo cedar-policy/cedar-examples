@@ -74,6 +74,28 @@ pub struct AddShare {
     pub duration_in_seconds: Option<u64>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ShareKind {
+    Read,
+    Edit,
+    Timebox,
+}
+
+impl AddShare {
+    pub fn share_kind(&self) -> ShareKind {
+        match self.role {
+            ShareRole::Reader => {
+                if self.duration_in_seconds.is_some() {
+                    ShareKind::Timebox
+                } else {
+                    ShareKind::Read
+                }
+            }
+            ShareRole::Editor => ShareKind::Edit,
+        }
+    }
+}
+
 impl From<AddShare> for AppQueryKind {
     fn from(v: AddShare) -> AppQueryKind {
         AppQueryKind::AddShare(v)
@@ -92,6 +114,15 @@ pub struct DeleteShare {
     pub list: ListUid,
     pub unshare_with: UserOrTeamUid,
     pub role: ShareRole,
+}
+
+impl DeleteShare {
+    pub fn share_kind(&self) -> ShareKind {
+        match self.role {
+            ShareRole::Reader => ShareKind::Read,
+            ShareRole::Editor => ShareKind::Edit,
+        }
+    }
 }
 
 impl From<DeleteShare> for AppQueryKind {
