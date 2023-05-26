@@ -153,7 +153,7 @@ TinyTodo data, stored in memory, consists of `User`s, `Lists`, `Tasks`, and `Tea
 
 ### Data as Cedar entities
 
-The Cedar language is based on a data model that organizes **entities** into **hierarchies***.* Entities serve as *principals*, *resources*, and *actions* in Cedar policies. An entity is an object with an *entity type*, an *entity identifier* (EID), zero or more *attributes* mapped to values, and zero or more *parent* entities. The entity type and entity ID are together referred to as the *entity unique ID* (UID); in Cedar syntax, an entity UID is written *type*`::"`*EID*`"`. The UID uniquely identifies an object: no two objects have both the same entity type and same EID. The parent relation on entities forms a directed acyclic graph (DAG), which we call the *entity hierarchy*. The Cedar operator `in` is used to test reachability in the hierarchy, which corresponds with group membership. Reachability `A in B` holds if and only if either `A` is equal to `B` (it’s literally the same entity UID), or `A` is a descendant of `B` in the entity hierarchy. 
+The Cedar language is based on a data model that organizes **entities** into **hierarchies**. Entities serve as *principals*, *resources*, and *actions* in Cedar policies. An entity is an object with an *entity type*, an *entity identifier* (EID), zero or more *attributes* mapped to values, and zero or more *parent* entities. The entity type and entity ID are together referred to as the *entity unique ID* (UID); in Cedar syntax, an entity UID is written *type*`::"`*EID*`"`. The UID uniquely identifies an object: no two objects have both the same entity type and same EID. The parent relation on entities forms a directed acyclic graph (DAG), which we call the *entity hierarchy*. The Cedar operator `in` is used to test reachability in the hierarchy, which corresponds with group membership. Reachability `A in B` holds if and only if either `A` is equal to `B` (it’s literally the same entity UID), or `A` is a descendant of `B` in the entity hierarchy. 
 
 In TinyTodo, we have several entity types: 
 
@@ -437,8 +437,8 @@ pub fn spawn(
 ) -> std::result::Result<Sender<AppQuery>, ContextError> {
     let schema_file = std::fs::File::open(schema_path)?;
     let schema = Schema::from_file(schema_file)?;
-   ...
-   let policy_src = std::fs::read_to_string(policies_path)?;
+    ...
+    let policy_src = std::fs::read_to_string(policies_path)?;
     let policies = policy_src.parse()?;
     let validator = Validator::new(schema);
     let output = validator.validate(&policies, ValidationMode::default());
