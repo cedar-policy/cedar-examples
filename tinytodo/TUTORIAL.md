@@ -541,6 +541,11 @@ Make a command that saves the full entity store, including `List`s (and not just
 
 `User`s and `Team`s are specified in `entities.json` only; you cannot create new users or teams via TinyTodo itself. Extend it with additional commands, and Cedar policies and schema, to allow the creation, deletion, update, etc. of `User`s and `Team`s. Suppose only members of `Team::"admin"` should be able to carry out these actions — do you need to write a new policy to allow that? 
 
+
+### Implement Timeboxed Sharing
+Extend the notion of sharing to include time-limited sharing. A user should be able to share a list with another user for a limited amount of time, 
+and have the permission to read/edit that list automatically revoked. An implementation of this feature can be found in the `features/timebox` branch.
+
 ### Implement *Entity Slicing*
 
 The `is_authorized` code in `context.rs`, which we discussed above, the line `let es = self.entities.as_entities();` converts the entire contents of the `EntityStore` to Cedar entities, and passes it with each call to Cedar’s authorization engine. While doing this is safe, it’s also potentially expensive: `as_entities` will create and populate new Rust `Entity` objects, and it will do so for objects that may not actually be relevant the request being considered. 
