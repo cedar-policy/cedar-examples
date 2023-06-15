@@ -1,6 +1,6 @@
 name: Expand an existing example
 description: Expand an existing example
-labels: pending-triage
+labels: [pending-triage, feature-request]
 
 body:
   - type: markdown
