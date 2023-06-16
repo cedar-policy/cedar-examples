@@ -38,6 +38,10 @@ fn main() {
 
     //validate a policy
     validate();
+
+    //Getting policy annotations
+    annotate();
+
 }
 /// parse a policy
 fn parse_policy() {
@@ -102,7 +106,7 @@ fn json_context() {
     let ps = PolicySet::from_str(s).expect("policy error");
 
     let entities = create_entities_json();
-    let ans = execute_query(&request, ps, entities);
+    let ans = execute_query(&request, &ps, entities);
 
     print_response(ans);
 }
@@ -153,7 +157,7 @@ fn entity_json() {
 
     let entities = create_entities_json();
 
-    let ans = execute_query(&request, p, entities);
+    let ans = execute_query(&request, &p, entities);
 
     print_response(ans);
 }
@@ -239,7 +243,7 @@ fn entity_objects() {
     // link the template (another template-linked policy)
     p.link(id1, id3, v2).expect("Linking failed!");
 
-    let ans = execute_query(&request, p, create_entities_obj());
+    let ans = execute_query(&request, &p, create_entities_obj());
 
     print_response(ans);
 }
@@ -342,14 +346,13 @@ fn print_response(ans: Response) {
 }
 
 /// This uses the waterford API to call the authorization engine.
-fn execute_query(request: &Request, policies: PolicySet, entities: Entities) -> Response {
+fn execute_query(request: &Request, policies: &PolicySet, entities: Entities) -> Response {
     let authorizer = Authorizer::new();
     authorizer.is_authorized(request, &policies, &entities)
 }
 
 fn validate() {
     println!("Example: Validating a Policy");
-    // this policy has a type error, but parses.
     let src = r#"
     permit(
         principal == User::"bob",
@@ -410,7 +413,7 @@ fn validate() {
     let p = PolicySet::from_str(src).unwrap();
     let schema = Schema::from_str(sc).unwrap();
     let validator = Validator::new(schema);
-    // validate a policy with a type error:  10 > "hello"
+    
     let result = Validator::validate(&validator, &p, ValidationMode::default());
     if ValidationResult::validation_passed(&result) {
         println!("Validation Passed");
@@ -421,6 +424,36 @@ fn validate() {
             println!("{}", err);
         }
     }
+    println!();
+}
+
+fn annotate() {
+    println!("Example: Polic Annotations");
+    let src = r#"
+    @advice("This policy allows alice to access the album")
+    @type("simple")
+    permit(
+        principal == User::"alice",
+        action == Action::"view",
+        resource == Album::"trip"
+    );
+"#;
+    
+    let policies = PolicySet::from_str(src).unwrap();
+    let (p, a, r) = create_p_a_r();
+    let request: Request = Request::new(Some(p), Some(a), Some(r), Context::empty());
+    let ans = execute_query(&request, &policies, Entities::empty());
+      for reason in ans.diagnostics().reason() {
+        //print all the annotations
+         for (key, value) in policies.policy(&reason).unwrap().annotations(){
+            println!("PolicyID: {}\tKey:{} \tValue:{}", reason, key,value);
+         }
+         
+
+     }
+    println!();
+    
+    
 }
 
 fn create_p_a_r() -> (EntityUid, EntityUid, EntityUid) {
