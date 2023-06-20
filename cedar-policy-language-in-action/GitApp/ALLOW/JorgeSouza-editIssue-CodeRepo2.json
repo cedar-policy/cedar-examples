@@ -1,0 +1,6 @@
+{
+  "principal":"GitApp::User::\"JorgeSouza\"",
+  "action":"GitApp::Action::\"editIssue\"",
+  "resource":"GitApp::Repo::\"CodeRepo2\"",
+  "context":{ }
+}

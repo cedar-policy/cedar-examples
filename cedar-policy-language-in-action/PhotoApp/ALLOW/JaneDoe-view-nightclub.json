@@ -1,0 +1,6 @@
+{
+  "principal":"PhotoApp::User::\"JaneDoe\"",
+  "action":"PhotoApp::Action::\"viewPhoto\"",
+  "resource":"PhotoApp::Photo::\"nightclub.jpg\"",
+  "context":{ }
+}

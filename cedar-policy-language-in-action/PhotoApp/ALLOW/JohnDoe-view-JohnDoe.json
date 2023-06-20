@@ -1,0 +1,6 @@
+{
+  "principal":"PhotoApp::User::\"JohnDoe\"",
+  "action":"PhotoApp::Action::\"viewPhoto\"",
+  "resource":"PhotoApp::Photo::\"JohnDoe.jpg\"",
+  "context":{ }
+}

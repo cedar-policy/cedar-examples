@@ -34,6 +34,12 @@ jobs:
              export PATH="$PWD/../cedar/target/debug/":$PATH
              echo $PATH
              ./run.sh
+      - name: run validation and authorization for cedar-policy-language-in-action
+        working-directory: ./cedar-policy-language-in-action
+        run: |
+             export PATH="$PWD/../cedar/target/debug/":$PATH
+             echo $PATH
+             ./run.sh
 
   build_and_test_rust_hello_world:
     name: rust-hello-world
