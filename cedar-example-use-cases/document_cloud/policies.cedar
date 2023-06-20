@@ -105,6 +105,13 @@ when
    principal.blocked.contains(resource.owner))
 };
 
+forbid (
+  principal,
+  action,
+  resource
+)
+when { !context.is_authenticated };
+
 forbid (principal, action, resource)
 when
 {

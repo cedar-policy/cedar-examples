@@ -106,6 +106,11 @@ Let’s take this and turn it into a concrete schema:
     * principals: `User`
     * resources: `Group`
 
+## Context
+
+* `is_authenticated`: Whether or not the request is from an authenticated user
+    * type: `Boolean`
+
 
 Finally, let's look at the policies for permission management.
 ## Policies
@@ -282,4 +287,17 @@ when
   resource has isPrivate &&
   resource.isPrivate
 };
+```
+
+### Authentication Context
+
+This forbid policy requires that requests contain a valid authentication context:
+
+```
+forbid (
+  principal,
+  action,
+  resource
+)
+when { !context.is_authenticated };
 ```

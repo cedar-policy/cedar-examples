@@ -2,5 +2,5 @@
     "principal": "User::\"alice\"",
     "action": "Action::\"ViewDocument\"",
     "resource": "Document::\"alice_public\"",
-    "context": {}
+    "context": {"is_authenticated": true}
 }
