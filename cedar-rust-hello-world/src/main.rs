@@ -41,7 +41,6 @@ fn main() {
 
     //Getting policy annotations
     annotate();
-
 }
 /// parse a policy
 fn parse_policy() {
@@ -413,7 +412,7 @@ fn validate() {
     let p = PolicySet::from_str(src).unwrap();
     let schema = Schema::from_str(sc).unwrap();
     let validator = Validator::new(schema);
-    
+
     let result = Validator::validate(&validator, &p, ValidationMode::default());
     if ValidationResult::validation_passed(&result) {
         println!("Validation Passed");
@@ -438,22 +437,18 @@ fn annotate() {
         resource == Album::"trip"
     );
 "#;
-    
+
     let policies = PolicySet::from_str(src).unwrap();
     let (p, a, r) = create_p_a_r();
     let request: Request = Request::new(Some(p), Some(a), Some(r), Context::empty());
     let ans = execute_query(&request, &policies, Entities::empty());
-      for reason in ans.diagnostics().reason() {
+    for reason in ans.diagnostics().reason() {
         //print all the annotations
-         for (key, value) in policies.policy(&reason).unwrap().annotations(){
-            println!("PolicyID: {}\tKey:{} \tValue:{}", reason, key,value);
-         }
-         
-
-     }
+        for (key, value) in policies.policy(&reason).unwrap().annotations() {
+            println!("PolicyID: {}\tKey:{} \tValue:{}", reason, key, value);
+        }
+    }
     println!();
-    
-    
 }
 
 fn create_p_a_r() -> (EntityUid, EntityUid, EntityUid) {
