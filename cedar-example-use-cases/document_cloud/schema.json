@@ -98,7 +98,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "ViewDocument": {
@@ -109,7 +112,10 @@
                     "principalTypes": [
                         "User",
                         "Public"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "DeleteDocument": {
@@ -119,7 +125,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "ModifyDocument": {
@@ -129,7 +138,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "EditIsPrivate": {
@@ -139,7 +151,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "AddToShareACL": {
@@ -149,7 +164,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "EditPublicAccess": {
@@ -159,7 +177,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "CreateGroup": {
@@ -169,7 +190,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "ModifyGroup": {
@@ -179,7 +203,10 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
                 }
             },
             "DeleteGroup": {
@@ -189,7 +216,21 @@
                     ],
                     "principalTypes": [
                         "User"
-                    ]
+                    ],
+                    "context": {
+                        "type": "ReusedContext"
+                    }
+                }
+            }
+        },
+        "commonTypes": {
+            "ReusedContext": {
+                "type": "Record",
+                "attributes": {
+                    "is_authenticated": {
+                        "type": "Boolean",
+                        "required": true
+                    }
                 }
             }
         }
