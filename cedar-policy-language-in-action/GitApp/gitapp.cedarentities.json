@@ -1,0 +1,62 @@
+[
+  {
+    "uid": { "type": "GitApp::Application", "id": "GitApp" },
+    "parents": [],
+    "attrs": {}
+  },
+  {
+    "uid": { "type": "GitApp::User", "id": "JaneDoe" },
+    "parents": [],
+    "attrs": {}
+  },
+  {
+    "uid": { "type": "GitApp::User", "id": "JohnDoe" },
+    "parents": [],
+    "attrs": {}
+  },
+  {
+    "uid": { "type": "GitApp::User", "id": "RichardRoe" },
+    "parents": [],
+    "attrs": {}
+  },
+  {
+    "uid": { "type": "GitApp::User", "id": "JorgeSouza" },
+    "parents": [],
+    "attrs": {}
+  },
+  {
+    "uid": { "type": "GitApp::Repo", "id": "CodeRepo1" },
+    "parents": [{ "type": "GitApp::Application", "id": "GitApp" }],
+    "attrs": {
+      "admins": [
+        {
+          "__entity": { "type": "GitApp::User", "id": "JaneDoe" }
+        },
+        {
+          "__entity": { "type": "GitApp::User", "id": "JohnDoe" }
+        }
+      ],
+      "reporters": [
+        {
+          "__entity": { "type": "GitApp::User", "id": "RichardRoe" }
+        }
+      ]
+    }
+  },
+  {
+    "uid": { "type": "GitApp::Repo", "id": "CodeRepo2" },
+    "parents": [{ "type": "GitApp::Application", "id": "GitApp" }],
+    "attrs": {
+      "admins": [
+        {
+          "__entity": { "type": "GitApp::User", "id": "RichardRoe" }
+        }
+      ],
+      "contributors": [
+        {
+          "__entity": { "type": "GitApp::User", "id": "JorgeSouza" }
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "principal":"PhotoApp::User::\"JohnDoe\"",
+  "action":"PhotoApp::Action::\"deletePhoto\"",
+  "resource":"PhotoApp::Photo::\"JaneDoe.jpg\"",
+  "context":{ }
+}

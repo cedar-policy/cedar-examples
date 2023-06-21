@@ -1,0 +1,6 @@
+{
+  "principal":"GitApp::User::\"RichardRoe\"",
+  "action":"GitApp::Action::\"addRepoAdmin\"",
+  "resource":"GitApp::Repo::\"CodeRepo1\"",
+  "context":{ }
+}

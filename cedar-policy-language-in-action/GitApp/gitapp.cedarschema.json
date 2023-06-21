@@ -1,0 +1,109 @@
+{
+  "GitApp": {
+    "entityTypes": {
+      "Application": {},
+      "User": {},
+      "Repo": {
+        "memberOfTypes": ["Application"],
+        "shape": {
+          "type": "Record",
+          "attributes": {
+            "admins": {
+              "required": true,
+              "type": "Set",
+              "element": {
+                "type": "Entity",
+                "name": "User"
+              }
+            },
+            "reporters": {
+              "required": false,
+              "type": "Set",
+              "element": {
+                "type": "Entity",
+                "name": "User"
+              }
+            },
+            "contributors": {
+              "required": false,
+              "type": "Set",
+              "element": {
+                "type": "Entity",
+                "name": "User"
+              }
+            }
+          }
+        }
+      },
+      "Issue": {}
+    },
+    "actions" : {
+      "pushRepo": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "pullRepo": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "forkRepo": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "addRepoReporter": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "addRepoContributor": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "addRepoAdmin": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "addIssue": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "editIssue": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "assignIssue": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "closeIssue": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      },
+      "deleteIssue": {
+        "appliesTo": {
+          "principalTypes": ["User"],
+          "resourceTypes": ["Repo"]
+        }
+      }
+    }
+  }
+}
