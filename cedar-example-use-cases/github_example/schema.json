@@ -1,223 +1,191 @@
 {
     "": {
         "entityTypes": {
-        "User": {
-            "memberOfTypes": [
-                "UserGroup", "Team"
-            ],
-            "shape": {
-                "type": "Record",
-                "additionalAttributes": false,
-                "attributes": {
-                }
-            }
-        },
-        "UserGroup": {
-            "memberOfTypes": [
-                "UserGroup"
-            ],
-            "shape": {
-                "type": "Record",
-                "additionalAttributes": false,
-                "attributes": {
-                }
-            }
-        },
-        "Repository": {
-            "memberOfTypes": [
-            ],
-            "shape": {
-                "type": "Record",
-                "additionalAttributes": false,
-                "attributes": {
-                    "readers": {
-                        "type": "Entity",
-                        "name": "UserGroup",
-                        "required": true
-                    },
-                    "traigers": {
-                        "type": "Entity",
-                        "name": "UserGroup",
-                        "required": true
-                    },
-                    "writers": {
-                        "type": "Entity",
-                        "name": "UserGroup",
-                        "required": true
-                    },
-                    "maintainers": {
-                        "type": "Entity",
-                        "name": "UserGroup",
-                        "required": true
-                    },
-                    "admins": {
-                        "type": "Entity",
-                        "name": "UserGroup",
-                        "required": true
+            "User": {
+                "memberOfTypes": [
+                    "UserGroup",
+                    "Team"
+                ]
+            },
+            "UserGroup": {
+                "memberOfTypes": [
+                    "UserGroup"
+                ]
+            },
+            "Repository": {
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "readers": {
+                            "type": "Entity",
+                            "name": "UserGroup"
+                        },
+                        "traigers": {
+                            "type": "Entity",
+                            "name": "UserGroup"
+                        },
+                        "writers": {
+                            "type": "Entity",
+                            "name": "UserGroup"
+                        },
+                        "maintainers": {
+                            "type": "Entity",
+                            "name": "UserGroup"
+                        },
+                        "admins": {
+                            "type": "Entity",
+                            "name": "UserGroup"
+                        }
                     }
                 }
-            }
-        },
-        "Issue": {
-            "memberOfTypes": [
-            ],
-            "shape": {
-                "type": "Record",
-                "additionalAttributes": false,
-                "attributes": {
-                    "repo": {
-                        "type": "Entity",
-                        "name": "Repository",
-                        "required": true
-                    },
-                    "reporter": {
-                        "type": "Entity",
-                        "name": "User",
-                        "required": true
+            },
+            "Issue": {
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "repo": {
+                            "type": "Entity",
+                            "name": "Repository"
+                        },
+                        "reporter": {
+                            "type": "Entity",
+                            "name": "User"
+                        }
                     }
                 }
-            }
-        },
-        "Org": {
-            "memberOfTypes": [
-            ],
-            "shape": {
-                "type": "Record",
-                "additionalAttributes": false,
-                "attributes": {
-                    "members": {
-                        "type": "Entity",
-                        "name": "UserGroup",
-                        "required": true
-                    },
-                    "owners": {
-                        "type": "Entity",
-                        "name": "UserGroup",
-                        "required": true
+            },
+            "Org": {
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "members": {
+                            "type": "Entity",
+                            "name": "UserGroup"
+                        },
+                        "owners": {
+                            "type": "Entity",
+                            "name": "UserGroup"
+                        }
                     }
                 }
+            },
+            "Team": {
+                "memberOfTypes": [
+                    "UserGroup"
+                ]
             }
         },
-        "Team": {
-            "memberOfTypes": [
-                "UserGroup"
-            ],
-            "shape": {
-                "type": "Record",
-                "additionalAttributes": false,
-                "attributes": {
+        "actions": {
+            "pull": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
                 }
-            }
-        }
-    },
-    "actions": {
-        "pull": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
-            }
-        },
-        "fork": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
-            }
-        },
-        "delete_issue": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Issue"
-                ]
-            }
-        },
-        "edit_issue": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Issue"
-                ]
-            }
-        },
-        "assign_issue": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Issue"
-                ]
-            }
-        },
-        "push": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
-            }
-        },
-        "add_reader": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
-            }
-        },
-        "add_triager": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
-            }
-        },"add_writer": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
-            }
-        },"add_maintainer": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
-            }
-        },"add_admin": {
-            "appliesTo": {
-                "principalTypes": [
-                    "User"
-                ],
-                "resourceTypes": [
-                    "Repository"
-                ]
+            },
+            "fork": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
+            },
+            "delete_issue": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Issue"
+                    ]
+                }
+            },
+            "edit_issue": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Issue"
+                    ]
+                }
+            },
+            "assign_issue": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Issue"
+                    ]
+                }
+            },
+            "push": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
+            },
+            "add_reader": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
+            },
+            "add_triager": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
+            },
+            "add_writer": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
+            },
+            "add_maintainer": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
+            },
+            "add_admin": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
             }
         }
     }
-}
 }
