@@ -19,8 +19,8 @@ package samplelib;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.fail;
-import cedarpolicy.model.exception.AuthException;
-import cedarpolicy.model.AuthorizationResult;
+import com.cedarpolicy.model.exception.AuthException;
+import com.cedarpolicy.model.AuthorizationResponse;
 
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +42,7 @@ public class SampleJavaClassTest {
     public void testFailing() {
         SampleJavaClass sampleClass = new SampleJavaClass();
         try {
-            AuthorizationResult r = sampleClass.shouldFail();
+            AuthorizationResponse r = sampleClass.shouldFail();
             assertEquals(false, r.isAllowed());
             assertNotEquals(0, r.getErrors().size());
         } catch (AuthException e) {

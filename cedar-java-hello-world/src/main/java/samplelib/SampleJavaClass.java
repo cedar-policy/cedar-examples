@@ -16,15 +16,15 @@
 
 package samplelib;
 
-import cedarpolicy.WrapperAuthorizationEngine;
-import cedarpolicy.AuthorizationEngine;
-import cedarpolicy.model.AuthorizationQuery;
-import cedarpolicy.model.AuthorizationResult;
-import cedarpolicy.model.slice.Slice;
-import cedarpolicy.model.slice.BasicSlice;
-import cedarpolicy.model.slice.Policy;
-import cedarpolicy.model.slice.Entity;
-import cedarpolicy.model.exception.AuthException;
+import com.cedarpolicy.WrapperAuthorizationEngine;
+import com.cedarpolicy.AuthorizationEngine;
+import com.cedarpolicy.model.AuthorizationRequest;
+import com.cedarpolicy.model.AuthorizationResponse;
+import com.cedarpolicy.model.slice.Slice;
+import com.cedarpolicy.model.slice.BasicSlice;
+import com.cedarpolicy.model.slice.Policy;
+import com.cedarpolicy.model.slice.Entity;
+import com.cedarpolicy.model.exception.AuthException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,10 +39,10 @@ public class SampleJavaClass {
      */
     public boolean sampleMethod() throws AuthException {
         AuthorizationEngine ae = new WrapperAuthorizationEngine();
-        AuthorizationQuery q = new AuthorizationQuery("User::\"Alice\"",
+        AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
             "Action::\"View_Photo\"",
         "Photo::\"pic01\"");
-        return ae.isAuthorized(q, buildSlice()).isAllowed();
+        return ae.isAuthorized(r, buildSlice()).isAllowed();
     }
 
     /**
@@ -89,13 +89,13 @@ public class SampleJavaClass {
     /**
      * Execute a query with an invalid policy to show errors.
      */
-    public AuthorizationResult shouldFail() throws AuthException {
+    public AuthorizationResponse shouldFail() throws AuthException {
         AuthorizationEngine ae = new WrapperAuthorizationEngine();
-        AuthorizationQuery q = new AuthorizationQuery("User::\"Alice\"",
+        AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
             "Action::\"View_Photo\"",
         "Photo::\"pic01\"");
-        AuthorizationResult r = ae.isAuthorized(q, buildFailingSlice());
-        return r;
+        AuthorizationResponse resp = ae.isAuthorized(r, buildFailingSlice());
+        return resp;
     }
 
     /**
