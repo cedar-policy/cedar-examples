@@ -7,20 +7,17 @@
                 ],
                 "shape": {
                     "type": "Record",
-                    "additionalAttributes": false,
                     "attributes": {
                         "personalGroup": {
                             "type": "Entity",
-                            "name": "Group",
-                            "required": true
+                            "name": "Group"
                         },
                         "blocked": {
                             "type": "Set",
                             "element": {
                                 "type": "Entity",
                                 "name": "User"
-                            },
-                            "required": true
+                            }
                         }
                     }
                 }
@@ -31,12 +28,10 @@
                 ],
                 "shape": {
                     "type": "Record",
-                    "additionalAttributes": false,
                     "attributes": {
                         "owner": {
                             "type": "Entity",
-                            "name": "User",
-                            "required": true
+                            "name": "User"
                         }
                     }
                 }
@@ -45,50 +40,39 @@
                 "memberOfTypes": [],
                 "shape": {
                     "type": "Record",
-                    "additionalAttributes": false,
                     "attributes": {
                         "owner": {
                             "type": "Entity",
-                            "name": "User",
-                            "required": true
+                            "name": "User"
                         },
                         "isPrivate": {
-                            "type": "Boolean",
-                            "required": true
+                            "type": "Boolean"
                         },
                         "publicAccess": {
-                            "type": "String",
-                            "required": true
+                            "type": "String"
                         },
                         "viewACL": {
                             "type": "Entity",
-                            "name": "DocumentShare",
-                            "required": true
+                            "name": "DocumentShare"
                         },
                         "modifyACL": {
                             "type": "Entity",
-                            "name": "DocumentShare",
-                            "required": true
+                            "name": "DocumentShare"
                         },
                         "manageACL": {
                             "type": "Entity",
-                            "name": "DocumentShare",
-                            "required": true
+                            "name": "DocumentShare"
                         }
                     }
                 }
             },
-            "DocumentShare": {
-                "memberOfTypes": []
-            },
+            "DocumentShare": {},
             "Public": {
                 "memberOfTypes": [
                     "DocumentShare"
                 ]
             },
-            "Drive": {
-                "memberOfTypes": []
-            }
+            "Drive": {}
         },
         "actions": {
             "CreateDocument": {

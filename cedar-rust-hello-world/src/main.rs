@@ -468,18 +468,18 @@ fn to_json() {
 
     };
     "#;
-    let p = Policy::parse(None,src).unwrap();;
-    println!("{}",p);
+
+    let p = Policy::parse(None, src).unwrap();
+    println!("{}", p);
     //convert the policy to JSON
     let json = p.to_json().unwrap();
-    println!("{}",json);
+    println!("{}", json);
 
     //create a policy from JSON
-    let p2 = Policy::from_json(None,json).unwrap();
+    let p2 = Policy::from_json(None, json).unwrap();
 
-    println!("{}",p2);
+    println!("{}", p2);
 }
-
 
 fn create_p_a_r() -> (EntityUid, EntityUid, EntityUid) {
     let p_eid = EntityId::from_str("alice").unwrap(); // does not go through the parser
