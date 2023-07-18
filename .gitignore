@@ -15,3 +15,11 @@
 cedar-java-hello-world/.gradle/*
 cedar-java-hello-world/build/*
 cedar-java-hello-world/.jqwik-database
+
+# Don't check build files for cedar-rust-hello-world
+cedar-rust-hello-world/Cargo.lock
+cedar-rust-hello-world/target/*
+
+# Don't check build files for tinytodo
+tinytodo/Cargo.lock
+tinytodo/target/*
