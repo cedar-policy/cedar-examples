@@ -82,7 +82,7 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    environment 'CEDAR_JAVA_FFI_LIB', 'path to cedar_java_ffi dynamic lib'
+    // environment 'CEDAR_JAVA_FFI_LIB', 'path to cedar_java_ffi dynamic lib'
     testLogging {
         showStandardStreams false
         exceptionFormat 'full'
