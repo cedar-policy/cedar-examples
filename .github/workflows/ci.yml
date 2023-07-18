@@ -26,8 +26,8 @@ jobs:
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: build cli
-        working-directory: ./cedar-example-use-cases
-        run: (cd ../cedar && cargo build --bin cedar)
+        working-directory: ./cedar
+        run: cargo build --bin cedar
       - name: run validation and authorization
         working-directory: ./cedar-example-use-cases
         run: |
