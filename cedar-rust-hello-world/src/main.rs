@@ -41,6 +41,9 @@ fn main() {
 
     //Getting policy annotations
     annotate();
+
+    //print a policy in JSON format
+    to_json();
 }
 /// parse a policy
 fn parse_policy() {
@@ -427,7 +430,7 @@ fn validate() {
 }
 
 fn annotate() {
-    println!("Example: Polic Annotations");
+    println!("Example: Policy Annotations");
     let src = r#"
     @advice("This policy allows alice to access the album")
     @type("simple")
@@ -449,6 +452,33 @@ fn annotate() {
         }
     }
     println!();
+}
+
+fn to_json() {
+    println!("Example: Policy in JSON format");
+    let src = r#"
+    permit(
+        principal == User::"bob",
+        action == Action::"view",
+        resource == Album::"trip"
+    )
+    when { 
+        
+        principal.age < 18
+
+    };
+    "#;
+
+    let p = Policy::parse(None, src).unwrap();
+    println!("{}", p);
+    //convert the policy to JSON
+    let json = p.to_json().unwrap();
+    println!("{}", json);
+
+    //create a policy from JSON
+    let p2 = Policy::from_json(None, json).unwrap();
+
+    println!("{}", p2);
 }
 
 fn create_p_a_r() -> (EntityUid, EntityUid, EntityUid) {
