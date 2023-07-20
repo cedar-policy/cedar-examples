@@ -122,6 +122,33 @@ impl From<GetLists> for AppQueryKind {
     }
 }
 
+// get policies
+// #[derive(Debug, Clone, Deserialize)]
+// pub struct GetPolicies {
+//     pub uid: UserUid,
+//     pub list: ListUid,
+// }
+
+// impl From<GetPolicies> for AppQueryKind {
+//     fn from(v: GetPolicies) -> AppQueryKind {
+//         AppQueryKind::GetPolicies()
+//     }
+// }
+
+// get entities
+// #[derive(Debug, Clone, Deserialize)]
+// pub struct GetEntities {
+//     pub uid: UserUid,
+//     pub list: ListUid,
+// }
+
+// impl From<GetEntities> for AppQueryKind {
+//     fn from(v: GetEntities) -> AppQueryKind {
+//         AppQueryKind::GetEntities(v)
+//     }
+// }
+
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateTask {
     pub uid: UserUid,
@@ -219,6 +246,13 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                     .and_then(simple_query::<DeleteTask, Empty>)),
             ),
         )
+        // get Policies 
+        .or(warp::path("policies")
+            .and(warp::path("get"))
+            .and(with_app(chan.clone()))
+            .and(warp::query::query::<GetLists>())
+            .and_then(simple_query::<GetLists, Lists>)            
+        )
         .or(warp::path("lists")
             .and(warp::path("get"))
             .and(with_app(chan.clone()))
@@ -237,7 +271,7 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
     );
 
     let s = warp::serve(filter);
-    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port);
+    let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
     s.run(socket).await
 }
 

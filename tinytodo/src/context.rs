@@ -47,6 +47,7 @@ pub enum AppResponse {
     GetList(Box<List>),
     Euid(EntityUid),
     Lists(Lists),
+    PolicyList(PolicySet),
     TaskId(i64),
     Unit(()),
 }
@@ -132,6 +133,12 @@ pub enum AppQueryKind {
 
     // Policy Set Updates
     UpdatePolicySet(PolicySet),
+
+    // Policy Set Queries
+    GetPolicies(),
+
+    // Entity Queries
+    // GetEntities(GetEntities),
 }
 
 #[derive(Debug)]
@@ -183,6 +190,8 @@ lazy_static! {
     static ref ACTION_CREATE_TASK: EntityUid = r#"Action::"CreateTask""#.parse().unwrap();
     static ref ACTION_DELETE_TASK: EntityUid = r#"Action::"DeleteTask""#.parse().unwrap();
     static ref ACTION_GET_LISTS: EntityUid = r#"Action::"GetLists""#.parse().unwrap();
+    static ref ACTION_GET_POLICIES: EntityUid = r#"Action::"GetPolicies""#.parse().unwrap();
+    static ref ACTION_GET_ENTITIES: EntityUid = r#"Action::"GetEntities""#.parse().unwrap();
     static ref ACTION_GET_LIST: EntityUid = r#"Action::"GetList""#.parse().unwrap();
     static ref ACTION_CREATE_LIST: EntityUid = r#"Action::"CreateList""#.parse().unwrap();
     static ref ACTION_UPDATE_LIST: EntityUid = r#"Action::"UpdateList""#.parse().unwrap();
@@ -278,6 +287,10 @@ impl AppContext {
                     AppQueryKind::AddShare(r) => self.add_share(r),
                     AppQueryKind::DeleteShare(r) => self.delete_share(r),
                     AppQueryKind::UpdatePolicySet(set) => self.update_policy_set(set),
+                    // get all policies
+                    AppQueryKind::GetPolicies() => self.get_policies(),
+                    // get all entities
+                    // AppQueryKind::GetEntities(r) => self.get_entities(r),
                 };
                 if let Err(e) = msg.sender.send(r) {
                     trace!("Failed send response: {:?}", e);
@@ -301,6 +314,16 @@ impl AppContext {
         target_entity.insert_parent(team_uid);
         Ok(AppResponse::Unit(()))
     }
+
+    fn get_policies(&self) -> Result<AppResponse> {
+        // self.is_authorized(&r.uid, &*ACTION_GET_POLICIES, &r.list)?;
+        Ok(AppResponse::PolicyList(self.policies.clone()))
+    }
+
+    // fn get_entities(&self, r: GetEntities) -> Result<AppResponse> {
+    //     // self.is_authorized(&r.uid, &*ACTION_GET_POLICIES, &r.list)?;
+    //     Ok(AppResponse::Entities(self.entities.clone()))
+    // }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
@@ -408,6 +431,9 @@ impl AppContext {
             action.as_ref(),
             resource.as_ref()
         );
+        info!("Policies: {:?}", self.policies);
+        info!("Entities: {:?}", es);
+        info!("Request: {:?}", q);
         let response = self.authorizer.is_authorized(&q, &self.policies, &es);
         info!("Auth response: {:?}", response);
         match response.decision() {
