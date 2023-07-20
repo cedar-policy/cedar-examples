@@ -16,9 +16,11 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::path::PathBuf;
+use serde_json::Value;
+use std::{path::PathBuf, io::{BufReader, Read}};
 use tracing::{info, trace};
-
+use std::io::BufWriter;
+use std::fs::File;
 use cedar_policy::{
     Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
     Schema, SchemaError, ValidationMode, Validator,
@@ -28,6 +30,9 @@ use tokio::sync::{
     mpsc::{Receiver, Sender},
     oneshot,
 };
+
+use cedar_agent::schemas::data as cedar_agent_schemas;
+use cedar_policy_core::entities::{self, TCComputation};
 
 use crate::{
     api::{
@@ -48,6 +53,7 @@ pub enum AppResponse {
     Euid(EntityUid),
     Lists(Lists),
     PolicyList(PolicySet),
+    EntityList(cedar_agent_schemas::Entities),
     TaskId(i64),
     Unit(()),
 }
@@ -138,7 +144,7 @@ pub enum AppQueryKind {
     GetPolicies(),
 
     // Entity Queries
-    // GetEntities(GetEntities),
+    GetEntities(),
 }
 
 #[derive(Debug)]
@@ -290,7 +296,7 @@ impl AppContext {
                     // get all policies
                     AppQueryKind::GetPolicies() => self.get_policies(),
                     // get all entities
-                    // AppQueryKind::GetEntities(r) => self.get_entities(r),
+                    AppQueryKind::GetEntities() => self.get_entities(),
                 };
                 if let Err(e) = msg.sender.send(r) {
                     trace!("Failed send response: {:?}", e);
@@ -320,10 +326,23 @@ impl AppContext {
         Ok(AppResponse::PolicyList(self.policies.clone()))
     }
 
-    // fn get_entities(&self, r: GetEntities) -> Result<AppResponse> {
-    //     // self.is_authorized(&r.uid, &*ACTION_GET_POLICIES, &r.list)?;
-    //     Ok(AppResponse::Entities(self.entities.clone()))
-    // }
+    fn get_entities(&self) -> Result<cedar_agent_schemas::Entities> {
+        // self.is_authorized(&r.uid, &*ACTION_GET_POLICIES, &r.list)?;
+        // self.is_authorized(principal, action, resource)
+        let es = self.entities.as_entities();
+        let mut buffer = BufWriter::new(File::create("/tmp/entities.json").unwrap());
+        es.write_to_json(buffer);
+        // read data from buffer and print it
+        let mut buffer = BufReader::new(File::open("/tmp/entities.json").unwrap());
+        let mut contents = String::new();
+        buffer.read_to_string(&mut contents).unwrap();
+        
+        info!("Entities as json: {}", contents);
+        // let entities = cedar_agent_schemas::Entities::from_json(contents).unwrap();
+        let entities: cedar_agent_schemas::Entities = serde_json::from_str(&contents).unwrap();
+        Ok(entities)
+
+    }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
@@ -419,7 +438,7 @@ impl AppContext {
         resource: impl AsRef<EntityUid>,
     ) -> Result<()> {
         let es = self.entities.as_entities();
-        let q = Request::new(
+        let q: Request = Request::new(
             Some(principal.as_ref().clone().into()),
             Some(action.as_ref().clone().into()),
             Some(resource.as_ref().clone().into()),
@@ -431,10 +450,38 @@ impl AppContext {
             action.as_ref(),
             resource.as_ref()
         );
+
         info!("Policies: {:?}", self.policies);
         info!("Entities: {:?}", es);
+        // print entities as json
+        // let json = serde_json::to_string_pretty(&es).unwrap();
+        // es.iter().map(|v| Entity::from(v.clone())).collect();
+        let mut buffer = BufWriter::new(File::create("/tmp/entities.json").unwrap());
+        es.write_to_json(buffer);
+        // read data from buffer and print it
+        let mut buffer = BufReader::new(File::open("/tmp/entities.json").unwrap());
+        let mut contents = String::new();
+        buffer.read_to_string(&mut contents).unwrap();
+        
+        info!("Entities as json: {}", contents);
+
+        // iterate over policy set and print it's to_json_value
+        // let ps_json = self.policies.ast.values().map(|v| v.to_json_value().unwrap()).collect::<Vec<Value>>();
+        let ps_json = self.policies.policies().map(|v| v.to_json().unwrap()).collect::<Vec<Value>>();
+        // ps_json.
+        // info!("Policy set as json: {:?}", ps_json);
+        
+        // let es_core = entities::Entities::from_entities(es.iter().map(|v| cedar_policy_core::ast::Entity::from(v.clone())), TCComputation::ComputeNow);
+        // let es_json = match es_core {
+        //     Ok(enn) => enn.to_json_value().unwrap(),
+        //     Err(e) => return Err(Error::Type)
+        // };
+        // info!("Entities as json: {}", es_json);
+
         info!("Request: {:?}", q);
-        let response = self.authorizer.is_authorized(&q, &self.policies, &es);
+        // let response = self.authorizer.is_authorized(&q, &self.policies, &es);
+        let response = self.authorizer.is_authorized_cedar(&q);
+
         info!("Auth response: {:?}", response);
         match response.decision() {
             Decision::Allow => Ok(()),

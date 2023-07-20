@@ -76,7 +76,7 @@ def attempt_build():
 
 # Class for managing a tinytodo server process
 class Server:
-    def __init__(self, port):
+    def __init__(self, port, should_start = True):
         self.port = port
         if not os.path.isfile(server_binary_path):
             try:
@@ -84,7 +84,8 @@ class Server:
             except:
                 print('Unable to build using cargo!')
                 return
-        self.proc =  subprocess.Popen([server_binary_path, port])
+        if should_start:
+            self.proc =  subprocess.Popen([server_binary_path, port])
         print('TinyTodo server started on port %s' % port)
 
 
@@ -97,6 +98,7 @@ class Server:
         return 'http://localhost:%s' % self.port
 
     def get(self, param):
+        print('%s%s' % (self.url(), param))
         return requests.get('%s%s' % (self.url(), param))
 
     def post(self, param, data):
@@ -129,9 +131,10 @@ current_user = None
 
 
 
+PORT = 8080
 
-
-
+# server = Server(str(PORT), should_start = False)
+server = Server(str(PORT), should_start = True)
 
 # Set the current user
 def set_user(user):
@@ -139,8 +142,10 @@ def set_user(user):
     current_user = user
     print('User is now %s' % user)
 
+set_user(andrew)
+
 # Start the TinyTodo server
-def start_server(port = 8080):
+def start_server(port = PORT):
     global server
     if server.stopped():
         server = Server(str(port))
@@ -182,7 +187,7 @@ def web_req(name):
             global current_user, server
             if server.stopped():
                 print('No server running! Use `start_server()`!')
-                return
+                # return
             if current_user is None:
                 print('No user set! Use `set_user()`')
                 return

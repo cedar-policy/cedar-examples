@@ -18,7 +18,11 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use serde::{Deserialize, Serialize, Serializer};
 use tokio::sync::{mpsc, oneshot};
+use tracing::log::info;
 use warp::Filter;
+
+use cedar_agent::schemas::data as cedar_agent_schemas;
+
 
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
@@ -136,17 +140,15 @@ impl From<GetLists> for AppQueryKind {
 // }
 
 // get entities
-// #[derive(Debug, Clone, Deserialize)]
-// pub struct GetEntities {
-//     pub uid: UserUid,
-//     pub list: ListUid,
-// }
+#[derive(Debug, Clone, Deserialize)]
+pub struct GetEntities {
+}
 
-// impl From<GetEntities> for AppQueryKind {
-//     fn from(v: GetEntities) -> AppQueryKind {
-//         AppQueryKind::GetEntities(v)
-//     }
-// }
+impl From<GetEntities> for AppQueryKind {
+    fn from(v: GetEntities) -> AppQueryKind {
+        AppQueryKind::GetEntities()
+    }
+}
 
 
 #[derive(Debug, Clone, Deserialize)]
@@ -201,6 +203,12 @@ impl Default for Empty {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PoliciesJson {
+    pub policies: String,
+}
+
+
 pub async fn serve_api(chan: AppChannel, port: u16) {
     let filter = warp::path("api").and(
         // List CRUD
@@ -247,11 +255,17 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
             ),
         )
         // get Policies 
-        .or(warp::path("policies")
+        // .or(warp::path("policies")
+        //     .and(warp::path("get"))
+        //     .and(with_app(chan.clone()))
+        //     .and(warp::query::query::<GetLists>())
+        //     .and_then(simple_query::<GetLists, Lists>)
+        // )
+        .or(warp::path("entities")
             .and(warp::path("get"))
             .and(with_app(chan.clone()))
-            .and(warp::query::query::<GetLists>())
-            .and_then(simple_query::<GetLists, Lists>)            
+            .and(warp::query::query::<GetEntities>())
+            .and_then(simple_query::<GetEntities, cedar_agent_schemas::Entities>)
         )
         .or(warp::path("lists")
             .and(warp::path("get"))
@@ -310,6 +324,7 @@ where
     AppResponse: TryInto<R, Error = Error>,
     R: Serialize,
 {
+    info!("query: ");
     let result = simple_query_inner::<R>(app, q).await;
     Ok(respond(result))
 }

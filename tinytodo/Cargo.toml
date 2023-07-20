@@ -16,6 +16,8 @@ tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
 lazy_static = "1.4.0"
 notify = { version = "5.1.0", default-features = false, features = ["macos_kqueue"] }
+cedar-agent = "0.1.2"
+cedar-policy-core = "2.3.0"
 
 [dependencies.cedar-policy]
 version = "2.0.0"

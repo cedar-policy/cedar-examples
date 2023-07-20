@@ -1,58 +1,129 @@
-{
-  "users": {
-    "User::\"kesha\"": {
-      "euid": "User::\"kesha\"",
-      "parents": [
-        "Application::\"TinyTodo\"",
-        "Team::\"temp\""
-      ]
+[
+  {
+    "uid": {
+      "type": "User",
+      "id": "andrew"
     },
-    "User::\"aaron\"": {
-      "euid": "User::\"aaron\"",
-      "parents": [
-        "Team::\"interns\"",
-        "Application::\"TinyTodo\""
-      ]
-    },
-    "User::\"emina\"": {
-      "euid": "User::\"emina\"",
-      "parents": [
-        "Application::\"TinyTodo\"",
-        "Team::\"admin\""
-      ]
-    },
-    "User::\"andrew\"": {
-      "euid": "User::\"andrew\"",
-      "parents": [
-        "Application::\"TinyTodo\"",
-        "Team::\"admin\"",
-        "Team::\"temp\""
-      ]
-    }
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Application",
+        "id": "TinyTodo"
+      },
+      {
+        "type": "Team",
+        "id": "temp"
+      },
+      {
+        "type": "Team",
+        "id": "admin"
+      }
+    ]
   },
-  "teams": {
-    "Team::\"temp\"": {
-      "uid": "Team::\"temp\"",
-      "parents": [
-        "Application::\"TinyTodo\""
-      ]
+  {
+    "uid": {
+      "type": "Team",
+      "id": "temp"
     },
-    "Team::\"admin\"": {
-      "uid": "Team::\"admin\"",
-      "parents": [
-        "Application::\"TinyTodo\""
-      ]
-    },
-    "Team::\"interns\"": {
-      "uid": "Team::\"interns\"",
-      "parents": [
-        "Application::\"TinyTodo\"",
-        "Team::\"temp\""
-      ]
-    }
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Application",
+        "id": "TinyTodo"
+      }
+    ]
   },
-  "lists": {},
-  "app": {
-    "euid": "Application::\"TinyTodo\""
+  {
+    "uid": {
+      "type": "User",
+      "id": "aaron"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Application",
+        "id": "TinyTodo"
+      },
+      {
+        "type": "Team",
+        "id": "interns"
+      },
+      {
+        "type": "Team",
+        "id": "temp"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "Application",
+      "id": "TinyTodo"
+    },
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "Team",
+      "id": "admin"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Application",
+        "id": "TinyTodo"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "User",
+      "id": "kesha"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Application",
+        "id": "TinyTodo"
+      },
+      {
+        "type": "Team",
+        "id": "temp"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "Team",
+      "id": "interns"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Application",
+        "id": "TinyTodo"
+      },
+      {
+        "type": "Team",
+        "id": "temp"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "User",
+      "id": "emina"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Application",
+        "id": "TinyTodo"
+      },
+      {
+        "type": "Team",
+        "id": "admin"
+      }
+    ]
   }
-}
+]
