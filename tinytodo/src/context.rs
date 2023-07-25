@@ -269,7 +269,7 @@ lazy_static! {
 
 pub struct AppContext {
     entities: EntityStore,
-    authorizer: Authorizer,
+    _authorizer: Authorizer,
     policies: PolicySet,
     recv: Receiver<AppQuery>,
 }

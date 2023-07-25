@@ -16,13 +16,13 @@
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use reqwest::header::{HeaderValue, HeaderMap};
+
 use serde::{Deserialize, Serialize, Serializer};
 use tokio::sync::{mpsc, oneshot};
-use tracing::log::info;
+
 use warp::Filter;
 
-use cedar_agent::schemas::data as cedar_agent_schemas;
+
 
 
 use crate::{
@@ -146,7 +146,7 @@ pub struct GetEntities {
 }
 
 impl From<GetEntities> for AppQueryKind {
-    fn from(v: GetEntities) -> AppQueryKind {
+    fn from(_v: GetEntities) -> AppQueryKind {
         AppQueryKind::GetEntities()
     }
 }
