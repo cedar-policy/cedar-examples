@@ -18,6 +18,7 @@ lazy_static = "1.4.0"
 notify = { version = "5.1.0", default-features = false, features = ["macos_kqueue"] }
 cedar-agent = "0.1.2"
 cedar-policy-core = "2.3.0"
+reqwest = { version= "0.11.18", features = ["blocking", "json"] }
 
 [dependencies.cedar-policy]
 version = "2.0.0"

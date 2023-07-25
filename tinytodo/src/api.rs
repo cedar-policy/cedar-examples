@@ -16,6 +16,7 @@
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
+use reqwest::header::{HeaderValue, HeaderMap};
 use serde::{Deserialize, Serialize, Serializer};
 use tokio::sync::{mpsc, oneshot};
 use tracing::log::info;
@@ -25,7 +26,7 @@ use cedar_agent::schemas::data as cedar_agent_schemas;
 
 
 use crate::{
-    context::{AppQuery, AppQueryKind, AppResponse, Error},
+    context::{AppQuery, AppQueryKind, AppResponse, Error, EntityList},
     objects::{List, TaskState},
     util::{EntityUid, ListUid, Lists, UserOrTeamUid, UserUid},
 };
@@ -265,7 +266,8 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
             .and(warp::path("get"))
             .and(with_app(chan.clone()))
             .and(warp::query::query::<GetEntities>())
-            .and_then(simple_query::<GetEntities, cedar_agent_schemas::Entities>)
+            .and_then(simple_query::<GetEntities, EntityList>)
+
         )
         .or(warp::path("lists")
             .and(warp::path("get"))
@@ -285,6 +287,7 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
     );
 
     let s = warp::serve(filter);
+    
     let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
     s.run(socket).await
 }
@@ -310,8 +313,8 @@ where
 
 fn respond(msg: Result<impl Serialize, Error>) -> impl warp::Reply {
     match msg {
-        Ok(msg) => Ok(serde_json::to_string(&msg).unwrap()),
-        Err(error) => Ok(serde_json::to_string(&ErrorMsg { error }).unwrap()),
+        Ok(msg) => Ok(warp::reply::json(&msg)),
+        Err(error) => Ok(warp::reply::json(&ErrorMsg { error })),
     }
 }
 
@@ -324,7 +327,6 @@ where
     AppResponse: TryInto<R, Error = Error>,
     R: Serialize,
 {
-    info!("query: ");
     let result = simple_query_inner::<R>(app, q).await;
     Ok(respond(result))
 }
@@ -343,5 +345,6 @@ where
     app.send(q).await?;
     let resp = recv.await??;
     let resp = resp.try_into()?;
+
     Ok(resp)
 }
