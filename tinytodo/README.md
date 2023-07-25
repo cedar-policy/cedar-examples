@@ -10,7 +10,7 @@ The code is structured as a server, written in Rust, that processes HTTP command
 
 ### Build
 
-You need Python3 and Rust. Rust can be installed via (rustup)[https://rustup.rs]. Python3 can be installed (here)[https://www.python.org/] or using your system's package manager.
+You need Docker Python3 and Rust. Rust can be installed via (rustup)[https://rustup.rs]. Python3 can be installed (here)[https://www.python.org/] or using your system's package manager. Docker can be installed (here)[https://docs.docker.com/get-docker/].
 
 Install the needed python packages, and build the server as follows. 
 ```shell
@@ -20,15 +20,47 @@ cargo build --release
 The Rust executable is stored in `target/release/tiny-todo-server`.
 
 ### Run
+To start opal-server and opal-client, run
+```shell
+docker compose -f docker-compose-example-cedar.yml up
+```
 
 To start the client within Python interactive mode, enter
 ```shell
-python3 -i ./tinytodo.py
+python3 -i ./tinytodo.py // it will start the rust server automatically and set the user as andrew (admin)
 ```
-To start the server, from the Python primary prompt `>>>` enter
-```python
-start_server()
-```
-When it starts up, the server reads in the Cedar policies in `policies.cedar`, and the Cedar entities, which define the TinyTodo `User`s and `Team`s, from `entities.json`. It validates the policies are consistent with `tinytodo.cedarschema.json`, and will abort if they are not.
 
-Look at the `tinytodo.py` code to see the functions you can call, which serve as the list of commands. See also [`TUTORIAL.md`](./TUTORIAL.md) for a detailed description of how to use these commands, and how TinyTodo works.
+
+When it starts up, the OPAL server reads in the Cedar policies in the defined github account and pass it to the `opal-client` and it pass it to `cedar-agent`, and the Cedar entities, which define the TinyTodo `User`s and `Team`s, from `data/data.json` sent as well to the `cedar-agent` by `opal`.
+
+Look at the `tinytodo.py` code to see the functions you can call, which serve as the list of commands.
+```python
+set_user("andrew") # set the user as andrew (admin)
+get_lists() # get all lists
+get_list(list_id) # get list1
+create_list("list1") # create list1
+create_task(list_id, "task1") # create task1 in list1
+toggle_task(list_id, task_id) # toggle task1 in list1
+share_list(list_id, "username") # share list1 with user "username"
+and more...
+```
+
+See also [`TUTORIAL.md`](./TUTORIAL.md) for a detailed description of how to use these commands, and how TinyTodo works.
+
+## Main changes from the original TinyTodo
+
+- We are syncing the entities every time data is changed, so that the entities are always up to date. This is done by calling `save_entities_and_sync()` in `context.rs` after every change like new list created or shared.
+- We added a new route get_entities to get the entities from the app state so `OPAL` can sync them.
+- When we check for access, we only send the `user`, `action`, `resource` and `context` to the `cedar-agent`, and we don't need to send the policy and the entities every time because they are already synced by `OPAL` and `cedar-agent`.
+```rust
+// in context.rs
+let client = reqwest::blocking::Client::new();
+let res = client.post("http://localhost:8180/v1/is_authorized")
+    .json(&serde_json::json!({
+        "principal": principal.as_ref().clone().to_string(),
+        "action": action.as_ref().clone().to_string(),
+        "resource": resource.as_ref().clone().to_string(),
+        "context": {}
+    }))
+    .send();
+```

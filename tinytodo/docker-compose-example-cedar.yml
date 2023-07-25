@@ -58,7 +58,7 @@ services:
       # - OPAL_OFFLINE_MODE_ENABLED=true
     # volumes:
     #  - opa_backup:/opal/backup:rw
-
+    
     ports:
       # exposes opal client on the host machine, you can access the client at: http://localhost:7000
       - "7766:7000"
@@ -66,6 +66,7 @@ services:
       # you can access the OPA api that you know and love at: http://localhost:8181
       # OPA api docs are at: https://www.openpolicyagent.org/docs/latest/rest-api/
       - "8180:8180"
+      - "8181:8181"
     depends_on:
       - opal_server
     # this command is not necessary when deploying OPAL for real, it is simply a trick for dev environments
@@ -73,21 +74,6 @@ services:
     command: sh -c "exec ./wait-for.sh opal_server:7002 --timeout=20 -- ./start.sh"
     links:
       - cedar_data_nginx
-  # rust application server with ubuntu base image
-  rust_app_server:
-    image: ubuntu:latest
-    environment:
-      - RUST_LOG=info
-      - RUST_BACKTRACE=1
-      - RUST_BACKTRACE=full
-    volumes:
-      - "./:/app"
-    ports:
-      - "8080:8080"
-    depends_on:
-      - opal_client
-    command: sh -c "cd app && ./target/x86_64-unknown-linux-musl/release/tiny-todo-server"
-    # command: sh -c "cd app && sleep 10000000000"
 
 volumes:
   opa_backup:
