@@ -19,7 +19,7 @@ use lazy_static::lazy_static;
 use std::{path::PathBuf, io::{Read}, collections::HashMap};
 use tracing::{info, trace, log::warn, error};
 use cedar_policy::{
-    Authorizer, Diagnostics, EntityTypeName, ParseErrors, PolicySet,
+    Diagnostics, EntityTypeName, ParseErrors, PolicySet,
     Schema, SchemaError, ValidationMode, Validator,
 };
 use thiserror::Error;
@@ -269,7 +269,7 @@ lazy_static! {
 
 pub struct AppContext {
     entities: EntityStore,
-    _authorizer: Authorizer,
+    // authorizer: Authorizer,
     policies: PolicySet,
     recv: Receiver<AppQuery>,
 }
@@ -315,7 +315,7 @@ impl AppContext {
         let output = validator.validate(&policies, ValidationMode::default());
         if output.validation_passed() {
             info!("Validation passed!");
-            let authorizer = Authorizer::new();
+            // let authorizer = Authorizer::new();
             let (send, recv) = tokio::sync::mpsc::channel(100);
             let tx = send.clone();
             tokio::spawn(async move {
@@ -323,7 +323,7 @@ impl AppContext {
                 policy_store::spawn_watcher(policies_path, schema_path, tx).await;
                 let c = Self {
                     entities,
-                    authorizer,
+                    // authorizer,
                     policies,
                     recv,
                 };
