@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
+use cedar_policy::{
+    Diagnostics, EntityTypeName, ParseErrors, PolicySet, Schema, SchemaError, ValidationMode,
+    Validator,
+};
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::{path::PathBuf, io::{Read}, collections::HashMap};
-use tracing::{info, trace, log::warn, error};
-use cedar_policy::{
-    Diagnostics, EntityTypeName, ParseErrors, PolicySet,
-    Schema, SchemaError, ValidationMode, Validator,
-};
+use std::io::Cursor;
+use std::{collections::HashMap, io::Read, path::PathBuf};
 use thiserror::Error;
 use tokio::sync::{
     mpsc::{Receiver, Sender},
     oneshot,
 };
-use std::io::Cursor;
+use tracing::{error, info, log::warn, trace};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     api::{
@@ -42,14 +42,11 @@ use crate::{
     util::{EntityUid, ListUid, Lists, TYPE_LIST},
 };
 
-
-
 #[derive(Debug, Serialize, Deserialize)]
 struct AuthDecision {
     decision: String,
     diagnostics: Diagnostics,
 }
-
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
 
@@ -66,8 +63,6 @@ pub enum AppResponse {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct EntityList(Vec<PolicyEntity>);
-
-
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PolicyEntity {
@@ -88,7 +83,6 @@ struct PolicyAttrs {
     #[serde(rename = "name")]
     name: Option<String>,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 struct PolicyAttr {
@@ -393,7 +387,7 @@ impl AppContext {
     fn get_entities(&self) -> Result<AppResponse> {
         let es: cedar_policy::Entities = self.entities.as_entities();
         let mut entities_c = Cursor::new(Vec::new());
-        
+
         let _wtj = es.write_to_json(&mut entities_c);
         let entities_str: String = String::from_utf8(entities_c.into_inner()).unwrap();
         let entities: EntityList = serde_json::from_str(&entities_str).unwrap();
@@ -405,12 +399,13 @@ impl AppContext {
         // you can also send the data directly to cedar-agent
         // let es: cedar_policy::Entities = self.entities.as_entities();
         // let mut entities_c = Cursor::new(Vec::new());
-        
+
         // let _wtj = es.write_to_json(&mut entities_c);
         // let entities_str: String = String::from_utf8(entities_c.into_inner()).unwrap();
 
         let client = reqwest::blocking::Client::new();
-        let res = client.post("http://localhost:7002/data/config")
+        let res = client
+            .post("http://localhost:7002/data/config")
             .json(&serde_json::json!({
                 "entries": [{
                     "url": "http://host.docker.internal:8080/api/entities/get",
@@ -422,7 +417,7 @@ impl AppContext {
             .send();
         match res.is_ok() {
             true => info!("Synced entities to cedar-agent: {:?}", res),
-            false => error!("Failed to sync entities to cedar-agent")            
+            false => error!("Failed to sync entities to cedar-agent"),
         }
     }
 
@@ -539,7 +534,7 @@ impl AppContext {
             action.as_ref(),
             resource.as_ref()
         );
-        
+
         // let response = self.authorizer.is_authorized(&q, &self.policies, &es);
 
         // info!("Auth response: {:?}", response);
@@ -547,15 +542,16 @@ impl AppContext {
         //     Decision::Allow => Ok(()),
         //     Decision::Deny => Err(Error::AuthDenied(response.diagnostics().clone())),
         // }
-      
+
         // let params = [("principal", principal.as_ref().clone().to_string()),
         //  ("action", action.as_ref().clone().to_string()),
         //  ("resource", resource.as_ref().clone().to_string()),
         //  ("context", "{}".to_string())
         //  ];
-         
+
         let client = reqwest::blocking::Client::new();
-        let res = client.post("http://localhost:8180/v1/is_authorized")
+        let res = client
+            .post("http://localhost:8180/v1/is_authorized")
             .json(&serde_json::json!({
                 "principal": principal.as_ref().clone().to_string(),
                 "action": action.as_ref().clone().to_string(),
@@ -563,7 +559,7 @@ impl AppContext {
                 "context": {}
             }))
             .send();
-        
+
         let mut body = String::new();
         match res {
             Ok(mut res) => {
@@ -572,20 +568,15 @@ impl AppContext {
                 let auth_decision: AuthDecision = serde_json::from_str(&body).unwrap();
                 info!("Auth decision: {:?}", auth_decision);
                 match auth_decision.decision.as_str() {
-                    "Allow" => {
-                        return Ok(())
-                    },
+                    "Allow" => return Ok(()),
                     "Deny" => return Err(Error::AuthDenied(auth_decision.diagnostics)),
-                    _ => return Err(Error::Type)
+                    _ => return Err(Error::Type),
                 }
-            },
+            }
             Err(e) => {
                 info!("Error: {:?}", e);
-                return Err(Error::Type)
+                return Err(Error::Type);
             }
         }
-
     }
 }
-
-

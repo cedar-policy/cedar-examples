@@ -16,17 +16,13 @@
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-
 use serde::{Deserialize, Serialize, Serializer};
 use tokio::sync::{mpsc, oneshot};
 
 use warp::Filter;
 
-
-
-
 use crate::{
-    context::{AppQuery, AppQueryKind, AppResponse, Error, EntityList},
+    context::{AppQuery, AppQueryKind, AppResponse, EntityList, Error},
     objects::{List, TaskState},
     util::{EntityUid, ListUid, Lists, UserOrTeamUid, UserUid},
 };
@@ -142,15 +138,13 @@ impl From<GetLists> for AppQueryKind {
 
 // get entities
 #[derive(Debug, Clone, Deserialize)]
-pub struct GetEntities {
-}
+pub struct GetEntities {}
 
 impl From<GetEntities> for AppQueryKind {
     fn from(_v: GetEntities) -> AppQueryKind {
         AppQueryKind::GetEntities()
     }
 }
-
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateTask {
@@ -209,7 +203,6 @@ pub struct PoliciesJson {
     pub policies: String,
 }
 
-
 pub async fn serve_api(chan: AppChannel, port: u16) {
     let filter = warp::path("api").and(
         // List CRUD
@@ -255,7 +248,7 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                     .and_then(simple_query::<DeleteTask, Empty>)),
             ),
         )
-        // get Policies 
+        // get Policies
         // .or(warp::path("policies")
         //     .and(warp::path("get"))
         //     .and(with_app(chan.clone()))
@@ -266,9 +259,7 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
             .and(warp::path("get"))
             .and(with_app(chan.clone()))
             .and(warp::query::query::<GetEntities>())
-            .and_then(simple_query::<GetEntities, EntityList>)
-
-        )
+            .and_then(simple_query::<GetEntities, EntityList>))
         .or(warp::path("lists")
             .and(warp::path("get"))
             .and(with_app(chan.clone()))
@@ -287,7 +278,7 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
     );
 
     let s = warp::serve(filter);
-    
+
     let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
     s.run(socket).await
 }
