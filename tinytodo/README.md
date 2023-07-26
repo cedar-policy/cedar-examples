@@ -1,8 +1,31 @@
-# TinyTodo
+# TinyTodo - OPAL and Cedar Agent fork
 
-TinyTodo is a simple application for managing task lists. It uses Cedar to control who has access to what.
+TinyTodo is a simple application for managing task lists. It uses OPAL and Cedar agent to control who has access to what.
 
 TinyTodo allows individuals, called `Users` to organize, track, and share their todo lists. `Users` create `Lists` which they can populate with tasks. As tasks are completed, they can be checked off the list. A list's creater, called its _owner_, can share a list with either `User`s or `Team`s, either as a _reader_ or an _editor_. A reader can only view the contents of a list, while an editor can modify it (e.g., add tasks, or check them off the list).
+
+## What is OPAL?
+
+[OPAL stands for _Open Policy Administration Layer_](https://github.com/permitio/opal). It has two main components: a server, and a client. The server is tracking the state of the policy on Git or bundles and the Client is responsible for saving the Policy and the Data so it could evaluating the policy.
+OPAL supports multiple engines for policy evaluation such as OPA, Cedar, and more in the near future.
+[You can read more about OPAL here](https://opal.ac).
+If you check it out we would love to [get a star from you](https://github.com/permitio/opal).
+
+
+## What is Cedar Agent?
+
+[Cedar Agent](https://github.com/permitio/cedar-agent) is an HTTP server designed to efficiently manage a policy store and a data store.
+It provides a seamless integration with [Cedar](https://www.cedarpolicy.com/en), a language for defining permissions as
+policies.  
+With Cedar-Agent, you can easily control and monitor access to your application's resources by leveraging Cedar
+policies.
+If you check it out we would love to [get a star from you](https://github.com/permitio/cedar-agent).
+
+## Permit.io
+
+[Permit.io](https://permit.io) is a platform for managing access to your application's resources. It builds on top of OPAL and Cedar Agent to provide a complete solution for managing access to your application's resources. And also it provides a UI for managing the policies and the data.
+Permit is the main contributor to OPAL and Cedar Agent, but you are more than welcome to contribute to the projects.
+
 
 ## Usage
 
@@ -19,7 +42,7 @@ cargo build --release
 ```
 The Rust executable is stored in `target/release/tiny-todo-server`.
 
-### Run
+### Run OPAL server and Python client
 To start opal-server and opal-client, run
 ```shell
 docker compose -f docker-compose-example-cedar.yml up
