@@ -11,7 +11,7 @@ validate() {
     echo "Running validation on ${folder}"
     (
      cd "$folder" || exit
-     res=$(cedar validate --policies policies.cedar --schema schema.json)
+     res=$(cedar validate --policies policies.cedar --schema "$folder".cedarschema.json)
      if [[ $res != "Validation Passed" ]]
      then
          failed "Failed validation on ${folder} with result: ${res}"
@@ -42,7 +42,7 @@ authorize() {
 folders=("document_cloud" "github_example")
 for folder in "${folders[@]}";
 do
-    #validate policies
+    # validate policies
     validate "$folder"
     # authorize policies
     authorize "$folder""/allow_requests" ALLOW
