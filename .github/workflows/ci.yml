@@ -79,19 +79,19 @@ jobs:
         toolchain:
           - stable
     steps:
+      - name: Checkout Cedar Examples
+        uses: actions/checkout@v3
       - name: Checkout cedar-java
         uses: actions/checkout@v3
         with:
           repository: cedar-policy/cedar-java
-          ref: 01b9f95bc83011aa2007d743f356ac6110dab9b1
+          ref: release/2.3.x
           path: ./cedar-java-hello-world/cedar-java
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: cargo build CedarJavaFFI
         working-directory: ./cedar-java-hello-world/cedar-java/CedarJavaFFI
         run: cargo build
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
       - name: Build cedar-java-hello-world
         working-directory: ./cedar-java-hello-world
         run: bash config.sh && ./gradlew build
