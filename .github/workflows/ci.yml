@@ -90,6 +90,8 @@ jobs:
       - name: cargo build CedarJavaFFI
         working-directory: ./cedar-java-hello-world/cedar-java/CedarJavaFFI
         run: cargo build
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
       - name: Build cedar-java-hello-world
         working-directory: ./cedar-java-hello-world
         run: bash config.sh && ./gradlew build
