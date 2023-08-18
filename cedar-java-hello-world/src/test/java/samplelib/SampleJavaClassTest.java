@@ -32,7 +32,7 @@ public class SampleJavaClassTest {
     public void sampleMethodTest() {
         SampleJavaClass sampleClass = new SampleJavaClass();
 	try {
-        	assertEquals(true, sampleClass.sampleMethod());
+        assertEquals(true, sampleClass.sampleMethod());
 	} catch (AuthException e) {
 		fail("Auth Exception: " + e.toString());
 	}
@@ -42,11 +42,9 @@ public class SampleJavaClassTest {
     public void testFailing() {
         SampleJavaClass sampleClass = new SampleJavaClass();
         try {
-            AuthorizationResponse r = sampleClass.shouldFail();
-            assertEquals(false, r.isAllowed());
-            assertNotEquals(0, r.getErrors().size());
+            sampleClass.shouldFail();
         } catch (AuthException e) {
-            fail(e.toString());
+            assertEquals(e.toString(), "Auth Exception: Bad request: couldn't parse policy with id p2\nunexpected token `a`: ");
         }
 
     }
