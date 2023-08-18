@@ -79,13 +79,11 @@ jobs:
         toolchain:
           - stable
     steps:
-      - name: Checkout Cedar Examples
-        uses: actions/checkout@v3
       - name: Checkout cedar-java
         uses: actions/checkout@v3
         with:
           repository: cedar-policy/cedar-java
-          ref: main
+          ref: release/2.3.x
           path: ./cedar-java-hello-world/cedar-java
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
