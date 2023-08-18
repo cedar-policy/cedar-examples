@@ -85,7 +85,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: cedar-policy/cedar-java
-          ref: main
+          ref: release/2.3.x
           path: ./cedar-java-hello-world/cedar-java
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
