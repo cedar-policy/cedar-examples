@@ -123,8 +123,8 @@ server_binary_path = './target/release/tiny-todo-server'
 # Setup our entities
 users = ['emina', 'aaron', 'andrew', 'kesha']
 [emina, aaron, andrew, kesha] = [User(user) for user in users]
-teams = ['Admin', 'interns', 'temp']
-[admi, interns, temp] = [Team(team) for team in teams]
+teams = ['admin', 'interns', 'temp']
+[admin, interns, temp] = [Team(team) for team in teams]
 current_user = None
 
 
