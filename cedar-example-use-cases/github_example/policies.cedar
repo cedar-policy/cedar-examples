@@ -27,13 +27,13 @@ permit (
 )
 when { principal in resource.repo.readers && principal == resource.reporter };
 
-//Actions for traigers
+//Actions for triagers
 permit (
   principal,
   action == Action::"assign_issue",
   resource
 )
-when { principal in resource.repo.traigers };
+when { principal in resource.repo.triagers };
 
 //Actions for writers
 permit (

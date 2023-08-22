@@ -45,7 +45,7 @@ Putting these together, we have the follwing schema.
 * `Repository`:
   * attributes:
     * `readers` a `UserGroup`
-    * `traigers`: a `UserGroup`
+    * `triagers`: a `UserGroup`
     * `writers`: a `UserGroup`
     * `maintainers`: a `UserGroup`
     * `admins`: a `UserGroup`
@@ -54,7 +54,7 @@ Putting these together, we have the follwing schema.
   * attributes:
     * repo: a `Repository`
     * reporter: a `User`
-  
+
 * `Org`:
   * attributes:
     * members: a `UserGroup`
