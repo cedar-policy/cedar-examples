@@ -44,6 +44,10 @@ jobs:
   build_and_test_rust_hello_world:
     name: rust-hello-world
     runs-on: ubuntu-latest
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'corretto'
+        java-version: '17'
     strategy:
       matrix:
         toolchain:

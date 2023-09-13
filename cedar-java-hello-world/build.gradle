@@ -22,6 +22,8 @@ plugins {
   // JaCoCo for coverage metrics and reports of Java source files. Read more at:
   // https://docs.gradle.org/current/userguide/jacoco_plugin.html
   id 'jacoco'
+
+  id 'application'
 }
 
 /*
@@ -59,8 +61,11 @@ spotbugs {
 }
 
 repositories {
-    mavenCentral()
+    maven {
+        url "https://repo1.maven.org/maven2"
+    }
 }
+
 
 dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
@@ -70,7 +75,7 @@ dependencies {
     implementation 'com.google.code.findbugs:findbugs:3.0.1'
     implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
     implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.20.0'
-    implementation ':CedarJava:2.0'
+    implementation 'com.cedarpolicy:cedar-java:2.3.3'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.3'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
@@ -89,4 +94,8 @@ test {
         showStandardStreams false
         exceptionFormat 'full'
     }
+}
+
+application {
+  mainClassName = 'samplelib.SampleRunner'
 }
