@@ -49,10 +49,6 @@ jobs:
         toolchain:
           - stable
     steps:
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: '17'
       - name: Checkout Cedar Examples
         uses: actions/checkout@v3
       - name: Checkout cedar
@@ -83,6 +79,10 @@ jobs:
         toolchain:
           - stable
     steps:
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'corretto'
+          java-version: '17'
       - name: Checkout Cedar Examples
         uses: actions/checkout@v3
       - name: Checkout cedar-java
