@@ -45,4 +45,4 @@ Client code `tinytodo.py` defines the functions you can call, which serve as the
 * `delete_task(list,task)` -- deletes task `task` from list `list`. Reorders remaining tasks
 * `delete_list(list)` -- deletes the given list
 * `share_list(list,target,readonly)` -- shares the given list with `target`; if `readonly` (a boolean) is `True` then the target has _reader_ status for the list, else _editor_ status. `readonly` is an optional parameter, defaulting to readonly. `target` can be a user or a team, where legal teams are `temp`, `interns`, and `admin`
-* `unshare_list(list,target) -- revokes access to `list` for `target`, which can be a user or a team
+* `unshare_list(list,target)` -- revokes access to `list` for `target`, which can be a user or a team
