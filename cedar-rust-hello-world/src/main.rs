@@ -136,7 +136,7 @@ fn entity_json() {
         "iam_idc".to_string(),
         RestrictedExpression::from_str(&t1.to_string()).unwrap(),
     );
-    let c = Context::from_pairs(context2);
+    let c = Context::from_pairs(context2).expect("no duplicate keys!");
 
     let request: Request = Request::new(Some(p), Some(a), Some(r), c);
 
