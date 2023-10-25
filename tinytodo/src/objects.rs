@@ -322,7 +322,7 @@ impl From<Task> for RestrictedExpression {
         ]
         .into_iter()
         .map(|(x, v)| (x.to_string(), v));
-        RestrictedExpression::new_record(fields)
+        RestrictedExpression::new_record(fields).expect("no duplicate keys!")
     }
 }
 
