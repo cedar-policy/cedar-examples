@@ -1,6 +1,6 @@
 # Cedar Rust Hello World
 
-This repository contains a simple hello world program demonstrating typical usage of the [Cedar Rust APIs](https://github.com/cedar-policy/cedar/tree/main/cedar-policy). 
+This repository contains a simple hello world program demonstrating typical usage of the [Cedar Rust APIs](https://github.com/cedar-policy/cedar/tree/main/cedar-policy).
 
 The file `src/main.rs` provides example code for the key steps an application takes to use Cedar. These include (1) parsing policies from text; (2) creating access requests and asking whether the request is authorized by the policies; (3) making requests that have an optional `context` (in addition to a principal, action, and resource); (4) providing _entities_ with a request, which are application data relevant to the request; and (5) validating that policies are consistent with a provided schema.
 
@@ -12,7 +12,10 @@ The following are functions that demonstrate elements of the above.
 * `entity_objects`: constructing entities from Rust objects
 * `validate`: validating a policy
 
-### Build and Run
+## Build and Run
+
+This example expects that the [`cedar`](https://github.com/cedar-policy/cedar) repository is cloned into the toplevel (`../cedar-examples`) directory.
+
 ```shell
 cargo run
 ```

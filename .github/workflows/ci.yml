@@ -64,12 +64,13 @@ jobs:
         run: cargo fmt --all --check
       - name: cargo rustc
         working-directory: ./cedar-rust-hello-world
-        run: |
-             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
-             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
+        run: RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
       - name: cargo test
         working-directory: ./cedar-rust-hello-world
         run: cargo test --verbose
+      - name: cargo run
+        working-directory: ./cedar-rust-hello-world
+        run: cargo run --verbose
 
   build_and_test_java_hello_world:
     name: java-hello-world
@@ -99,6 +100,9 @@ jobs:
       - name: Build cedar-java-hello-world
         working-directory: ./cedar-java-hello-world
         run: bash config.sh && ./gradlew build
+      - name: Run cedar-java-hello-world
+        working-directory: ./cedar-java-hello-world
+        run: ./gradlew run
 
   build_and_test_tiny_todo:
     name: tinytodo
@@ -123,9 +127,7 @@ jobs:
         run: cargo fmt --all --check
       - name: cargo rustc
         working-directory: ./tinytodo
-        run: |
-             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
-             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
+        run: RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
       - name: cargo test
         working-directory: ./tinytodo
         run: cargo test --verbose

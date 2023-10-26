@@ -376,8 +376,7 @@ fn validate() {
                         "type": "Record",
                         "attributes": {
                             "age": {
-                                "type": "Long",
-                                "name": "age"
+                                "type": "Long"
                             }
                         }
                     },

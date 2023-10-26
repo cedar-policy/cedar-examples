@@ -6,7 +6,7 @@ The challenge problems let you apply your knowledge to create the Cedar policies
 
 ## Automated testing
 
-This example includes a test script (`run.sh`) which uses the Cedar CLI to run test cases matching the problem requirements.
+This example includes a test script (`run.sh`) which uses the [Cedar CLI](https://github.com/cedar-policy/cedar/tree/main/cedar-policy-cli) to run test cases matching the problem requirements.
 
 1. It uses the `validate` command against the `.cedar` and `.cedarschema.json` files.
 1. It uses the `authorize` command runs against all `.json` files in `ALLOW` and `DENY` folders.
