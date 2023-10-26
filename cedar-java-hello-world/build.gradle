@@ -68,17 +68,9 @@ repositories {
 
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.0'
-    implementation 'org.slf4j:slf4j-api:2.0.7'
-    implementation 'org.apache.commons:commons-text:1.10.0'
-    implementation 'com.google.code.findbugs:findbugs:3.0.1'
-    implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
-    implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.20.0'
     implementation 'com.cedarpolicy:cedar-java:2.3.3'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.3'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
     testImplementation 'org.mockito:mockito-inline:5.2.0'
     testImplementation 'net.jqwik:jqwik:1.7.3'
     testImplementation 'org.slf4j:slf4j-reload4j:2.0.7'
@@ -89,6 +81,7 @@ test {
     useJUnitPlatform()
     // environment 'CEDAR_JAVA_FFI_LIB', 'path to cedar_java_ffi dynamic lib'
     // If you want to run these, you need tests matching the version of cedar-policy you pulled from github/crates:
+    environment "CEDAR_JAVA_FFI_LIB", '/Users/anmwells/Development/Cedar/cedar-java/CedarJavaFFI/target/debug/libcedar_java_ffi.dylib'
     environment "CEDAR_INTEGRATION_TESTS_ROOT", '/tmp' // bogus path to skip integration tests.
     testLogging {
         showStandardStreams false
