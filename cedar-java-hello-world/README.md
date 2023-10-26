@@ -24,7 +24,7 @@ cd ../.. && bash config.sh && ./gradlew build
 ### Run
 
 ```shell
-./gradlew run
+./gradlew test
 ```
 
 ## Security
