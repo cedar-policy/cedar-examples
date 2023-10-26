@@ -81,7 +81,6 @@ test {
     useJUnitPlatform()
     // environment 'CEDAR_JAVA_FFI_LIB', 'path to cedar_java_ffi dynamic lib'
     // If you want to run these, you need tests matching the version of cedar-policy you pulled from github/crates:
-    environment "CEDAR_JAVA_FFI_LIB", '/Users/anmwells/Development/Cedar/cedar-java/CedarJavaFFI/target/debug/libcedar_java_ffi.dylib'
     environment "CEDAR_INTEGRATION_TESTS_ROOT", '/tmp' // bogus path to skip integration tests.
     testLogging {
         showStandardStreams false
