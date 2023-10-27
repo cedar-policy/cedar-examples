@@ -297,7 +297,7 @@ fn create_entities_obj() -> Entities {
     v.push(resource);
 
     // create the Entities
-    Entities::from_entities(v).unwrap()
+    Entities::from_entities(v, None).unwrap()
 }
 
 ///create entities from JSON
@@ -361,8 +361,8 @@ fn validate() {
         action == Action::"view",
         resource == Album::"trip"
     )
-    when { 
-        
+    when {
+
         principal.age > 18
 
     };
@@ -384,11 +384,11 @@ fn validate() {
                         "UserGroup"
                     ]
                 },
-                
+
                 "UserGroup": {
                     "memberOfTypes": []
                 },
-                
+
                 "Album": {
                     "memberOfTypes": [
                         "Album"
@@ -461,8 +461,8 @@ fn to_json() {
         action == Action::"view",
         resource == Album::"trip"
     )
-    when { 
-        
+    when {
+
         principal.age < 18
 
     };
