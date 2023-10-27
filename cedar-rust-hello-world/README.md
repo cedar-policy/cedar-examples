@@ -14,7 +14,7 @@ The following are functions that demonstrate elements of the above.
 
 ## Build and Run
 
-This example expects that the [`cedar`](https://github.com/cedar-policy/cedar) repository is cloned into the toplevel (`../cedar-examples`) directory.
+This example expects that the [`cedar`](https://github.com/cedar-policy/cedar) repository is cloned into the toplevel (`../cedar-examples`) directory. You can instruct Cargo to use your local version of `cedar-policy` by adding `path = "../cedar/cedar-policy"` to Cargo.toml.
 
 ```shell
 cargo run
