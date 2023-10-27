@@ -10,25 +10,33 @@ The code is structured as a server, written in Rust, that processes HTTP command
 
 ### Build
 
-You need Python3 and Rust. Rust can be installed via (rustup)[https://rustup.rs]. Python3 can be installed (here)[https://www.python.org/] or using your system's package manager.
+You need Python3 and Rust. Rust can be installed via [rustup](https://rustup.rs). Python3 can be installed [here](https://www.python.org/) or using your system's package manager.
 
-Install the needed python packages, and build the server as follows. 
+This example expects that the [`cedar`](https://github.com/cedar-policy/cedar) repository is cloned into the toplevel (`../cedar-examples`) directory.
+
+Install the needed python packages, and build the server as follows.
+
 ```shell
 pip3 install -r requirements.txt
 cargo build --release
 ```
+
 The Rust executable is stored in `target/release/tiny-todo-server`.
 
 ### Run
 
 To start the client within Python interactive mode, enter
+
 ```shell
 python3 -i ./tinytodo.py
 ```
+
 To start the server, from the Python primary prompt `>>>` enter
+
 ```python
 start_server()
 ```
+
 When it starts up, the server reads in the Cedar policies in `policies.cedar`, and the Cedar entities, which define the TinyTodo `User`s and `Team`s, from `entities.json`. It validates the policies are consistent with `tinytodo.cedarschema.json`, and will abort if they are not.
 
 Client code `tinytodo.py` defines the functions you can call, which serve as the list of commands. See also [`TUTORIAL.md`](./TUTORIAL.md) for a detailed description of how to use these commands, and how TinyTodo works. Here is a brief description of the commands:

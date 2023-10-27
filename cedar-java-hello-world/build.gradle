@@ -95,7 +95,3 @@ test {
         exceptionFormat 'full'
     }
 }
-
-application {
-  mainClassName = 'samplelib.SampleRunner'
-}
