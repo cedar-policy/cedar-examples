@@ -64,7 +64,9 @@ jobs:
         run: cargo fmt --all --check
       - name: cargo rustc
         working-directory: ./cedar-rust-hello-world
-        run: RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
+        run: |
+             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
+             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
       - name: cargo test
         working-directory: ./cedar-rust-hello-world
         run: cargo test --verbose
@@ -127,7 +129,9 @@ jobs:
         run: cargo fmt --all --check
       - name: cargo rustc
         working-directory: ./tinytodo
-        run: RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
+        run: |
+             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
+             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
       - name: cargo test
         working-directory: ./tinytodo
         run: cargo test --verbose
