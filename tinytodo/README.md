@@ -12,8 +12,6 @@ The code is structured as a server, written in Rust, that processes HTTP command
 
 You need Python3 and Rust. Rust can be installed via [rustup](https://rustup.rs). Python3 can be installed [here](https://www.python.org/) or using your system's package manager.
 
-This example expects that the [`cedar`](https://github.com/cedar-policy/cedar) repository is cloned into the toplevel (`../cedar-examples`) directory. You can instruct Cargo to use your local version of `cedar-policy` by adding `path = "../cedar/cedar-policy"` to Cargo.toml.
-
 Install the needed python packages, and build the server as follows.
 
 ```shell
