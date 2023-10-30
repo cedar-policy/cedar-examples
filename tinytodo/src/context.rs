@@ -193,6 +193,7 @@ pub struct AppContext {
     entities: EntityStore,
     authorizer: Authorizer,
     policies: PolicySet,
+    schema: Schema,
     recv: Receiver<AppQuery>,
 }
 
@@ -233,7 +234,7 @@ impl AppContext {
 
         let policy_src = std::fs::read_to_string(&policies_path)?;
         let policies = policy_src.parse()?;
-        let validator = Validator::new(schema);
+        let validator = Validator::new(schema.clone());
         let output = validator.validate(&policies, ValidationMode::default());
         if output.validation_passed() {
             info!("Validation passed!");
@@ -247,6 +248,7 @@ impl AppContext {
                     entities,
                     authorizer,
                     policies,
+                    schema,
                     recv,
                 };
                 c.serve().await
@@ -395,7 +397,7 @@ impl AppContext {
         action: impl AsRef<EntityUid>,
         resource: impl AsRef<EntityUid>,
     ) -> Result<()> {
-        let es = self.entities.as_entities();
+        let es = self.entities.as_entities(&self.schema);
         let q = Request::new(
             Some(principal.as_ref().clone().into()),
             Some(action.as_ref().clone().into()),
