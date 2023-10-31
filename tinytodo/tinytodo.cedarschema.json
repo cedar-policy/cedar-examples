@@ -146,7 +146,7 @@
 					]
 				}
 			},
-			"EditShares": {
+			"EditShare": {
 				"appliesTo": {
 					"principalTypes": [
 						"User"
