@@ -15,7 +15,7 @@
  */
 
 #![forbid(unsafe_code)]
-use cedar_policy::PrincipalConstraint::{Any, Eq, In};
+use cedar_policy::PrincipalConstraint::{Any, Eq, In, Is, IsIn};
 use cedar_policy::{
     Authorizer, Context, Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid, Policy,
     PolicyId, PolicySet, Request, Response, RestrictedExpression, Schema, SlotId, Template,
@@ -69,6 +69,8 @@ fn parse_policy() {
                     Any => println!("No Principal"),
                     In(euid) => println!("Principal Constraint: Principal in {}", euid),
                     Eq(euid) => println!("Principal Constraint: Principal=={}", euid),
+                    Is(entity_type) => println!("Principal Constraint: Principal is {}", entity_type),
+                    IsIn(entity_type, euid) => println!("Principal Constraint: Principal is {} in {}", entity_type, euid),
                 }
             }
         }
