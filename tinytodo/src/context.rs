@@ -20,8 +20,8 @@ use std::path::PathBuf;
 use tracing::{info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
-    Schema, SchemaError, ValidationMode, Validator,
+    Diagnostics, EntityTypeName, ParseErrors, PolicySet, Schema, SchemaError, ValidationMode,
+    Validator,
 };
 use thiserror::Error;
 use tokio::sync::{
@@ -38,6 +38,7 @@ use crate::{
     objects::List,
     policy_store,
     util::{EntityUid, ListUid, Lists, TYPE_LIST},
+    witnesses::{self, actions, Action, AuthWitness},
 };
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
@@ -146,7 +147,7 @@ impl AppQuery {
     }
 }
 
-type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -178,20 +179,19 @@ impl Error {
 
 lazy_static! {
     pub static ref APPLICATION_TINY_TODO: EntityUid = r#"Application::"TinyTodo""#.parse().unwrap();
-    static ref ACTION_EDIT_SHARE: EntityUid = r#"Action::"EditShare""#.parse().unwrap();
-    static ref ACTION_UPDATE_TASK: EntityUid = r#"Action::"UpdateTask""#.parse().unwrap();
-    static ref ACTION_CREATE_TASK: EntityUid = r#"Action::"CreateTask""#.parse().unwrap();
-    static ref ACTION_DELETE_TASK: EntityUid = r#"Action::"DeleteTask""#.parse().unwrap();
-    static ref ACTION_GET_LISTS: EntityUid = r#"Action::"GetLists""#.parse().unwrap();
-    static ref ACTION_GET_LIST: EntityUid = r#"Action::"GetList""#.parse().unwrap();
-    static ref ACTION_CREATE_LIST: EntityUid = r#"Action::"CreateList""#.parse().unwrap();
-    static ref ACTION_UPDATE_LIST: EntityUid = r#"Action::"UpdateList""#.parse().unwrap();
-    static ref ACTION_DELETE_LIST: EntityUid = r#"Action::"DeleteList""#.parse().unwrap();
+    pub static ref ACTION_EDIT_SHARE: EntityUid = r#"Action::"EditShare""#.parse().unwrap();
+    pub static ref ACTION_UPDATE_TASK: EntityUid = r#"Action::"UpdateTask""#.parse().unwrap();
+    pub static ref ACTION_CREATE_TASK: EntityUid = r#"Action::"CreateTask""#.parse().unwrap();
+    pub static ref ACTION_DELETE_TASK: EntityUid = r#"Action::"DeleteTask""#.parse().unwrap();
+    pub static ref ACTION_GET_LISTS: EntityUid = r#"Action::"GetLists""#.parse().unwrap();
+    pub static ref ACTION_GET_LIST: EntityUid = r#"Action::"GetList""#.parse().unwrap();
+    pub static ref ACTION_CREATE_LIST: EntityUid = r#"Action::"CreateList""#.parse().unwrap();
+    pub static ref ACTION_UPDATE_LIST: EntityUid = r#"Action::"UpdateList""#.parse().unwrap();
+    pub static ref ACTION_DELETE_LIST: EntityUid = r#"Action::"DeleteList""#.parse().unwrap();
 }
 
 pub struct AppContext {
     entities: EntityStore,
-    authorizer: Authorizer,
     policies: PolicySet,
     schema: Schema,
     recv: Receiver<AppQuery>,
@@ -238,7 +238,6 @@ impl AppContext {
         let output = validator.validate(&policies, ValidationMode::default());
         if output.validation_passed() {
             info!("Validation passed!");
-            let authorizer = Authorizer::new();
             let (send, recv) = tokio::sync::mpsc::channel(100);
             let tx = send.clone();
             tokio::spawn(async move {
@@ -246,7 +245,6 @@ impl AppContext {
                 policy_store::spawn_watcher(policies_path, schema_path, tx).await;
                 let c = Self {
                     entities,
-                    authorizer,
                     policies,
                     schema,
                     recv,
@@ -296,26 +294,26 @@ impl AppContext {
     }
 
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
-        let list = self.entities.get_list(&r.list)?;
+        let proof = self.is_authorized::<actions::EditShare>(&r.uid, &r.list)?;
+        let list = self.entities.get_list(&r.list, &proof)?;
         let team_uid = list.get_team(r.role).clone();
-        let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
+        let target_entity = self.entities.get_user_or_team_mut(&r.share_with, proof)?;
         target_entity.insert_parent(team_uid);
         Ok(AppResponse::Unit(()))
     }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
-        let list = self.entities.get_list(&r.list)?;
+        let proof = self.is_authorized::<actions::EditShare>(&r.uid, &r.list)?;
+        let list = self.entities.get_list(&r.list, &proof)?;
         let team_uid = list.get_team(r.role).clone();
-        let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
+        let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with, proof)?;
         target_entity.delete_parent(&team_uid);
         Ok(AppResponse::Unit(()))
     }
 
     fn update_task(&mut self, r: UpdateTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_UPDATE_TASK, &r.list)?;
-        let list = self.entities.get_list_mut(&r.list)?;
+        let proof = self.is_authorized::<actions::UpdateTask>(&r.uid, &r.list)?;
+        let list = self.entities.get_list_mut(&r.list, &proof)?;
         let task = list
             .get_task_mut(r.task)
             .ok_or_else(|| Error::InvalidTaskId(r.list.into(), r.task))?;
@@ -329,15 +327,15 @@ impl AppContext {
     }
 
     fn create_task(&mut self, r: CreateTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_CREATE_TASK, &r.list)?;
-        let list = self.entities.get_list_mut(&r.list)?;
+        let proof = self.is_authorized::<actions::CreateTask>(&r.uid, &r.list)?;
+        let list = self.entities.get_list_mut(&r.list, &proof)?;
         let task_id = list.create_task(r.name);
         Ok(AppResponse::TaskId(task_id))
     }
 
     fn delete_task(&mut self, r: DeleteTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_DELETE_TASK, &r.list)?;
-        let list = self.entities.get_list_mut(&r.list)?;
+        let proof = self.is_authorized::<actions::DeleteTask>(&r.uid, &r.list)?;
+        let list = self.entities.get_list_mut(&r.list, &proof)?;
         list.delete_task(r.task)
             .ok_or_else(|| Error::InvalidTaskId(r.list.into(), r.task))?;
         Ok(AppResponse::Unit(()))
@@ -345,13 +343,13 @@ impl AppContext {
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
         let t: EntityTypeName = "List".parse().unwrap();
-        self.is_authorized(&r.uid, &*ACTION_GET_LISTS, &*APPLICATION_TINY_TODO)?;
+        let proof = self.is_authorized::<actions::GetLists>(&r.uid, &*APPLICATION_TINY_TODO)?;
 
         Ok(AppResponse::Lists(
             self.entities
-                .euids()
+                .euids(proof)
                 .filter(|euid| euid.type_name() == &t)
-                .filter(|euid| self.is_authorized(&r.uid, &*ACTION_GET_LIST, euid).is_ok())
+                .filter(|euid| self.is_authorized::<actions::GetList>(&r.uid, euid).is_ok())
                 .cloned()
                 .collect::<Vec<EntityUid>>()
                 .into(),
@@ -359,62 +357,50 @@ impl AppContext {
     }
 
     fn create_list(&mut self, r: CreateList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_CREATE_LIST, &*APPLICATION_TINY_TODO)?;
+        let proof = self.is_authorized::<actions::CreateList>(&r.uid, &*APPLICATION_TINY_TODO)?;
 
         let euid = self
             .entities
             .fresh_euid::<ListUid>(TYPE_LIST.clone())
             .unwrap();
-        let l = List::new(&mut self.entities, euid.clone(), r.uid, r.name);
-        self.entities.insert_list(l);
+        let l = List::new(&mut self.entities, euid.clone(), r.uid, r.name, &proof);
+        self.entities.insert_list(l, proof);
 
         Ok(AppResponse::euid(euid))
     }
 
     fn get_list(&self, r: GetList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_GET_LIST, &r.list)?;
-        let list = self.entities.get_list(&r.list)?.clone();
+        let proof = self.is_authorized::<actions::GetList>(&r.uid, &r.list)?;
+        let list = self.entities.get_list(&r.list, &proof)?.clone();
         Ok(AppResponse::GetList(Box::new(list)))
     }
 
     fn update_list(&mut self, r: UpdateList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_UPDATE_LIST, &r.list)?;
-        let list = self.entities.get_list_mut(&r.list)?;
+        let proof = self.is_authorized::<actions::UpdateList>(&r.uid, &r.list)?;
+        let list = self.entities.get_list_mut(&r.list, &proof)?;
         list.update_name(r.name);
         Ok(AppResponse::Unit(()))
     }
 
     fn delete_list(&mut self, r: DeleteList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_DELETE_LIST, &r.list)?;
-        self.entities.delete_entity(&r.list)?;
+        let witness = self.is_authorized(&r.uid, &r.list)?;
+        self.entities.delete_entity(&r.list, witness)?;
         Ok(AppResponse::Unit(()))
     }
 
     #[tracing::instrument(skip_all)]
-    pub fn is_authorized(
+    pub fn is_authorized<A: Action>(
         &self,
         principal: impl AsRef<EntityUid>,
-        action: impl AsRef<EntityUid>,
         resource: impl AsRef<EntityUid>,
-    ) -> Result<()> {
+    ) -> Result<AuthWitness<A>> {
         let es = self.entities.as_entities(&self.schema);
-        let q = Request::new(
-            Some(principal.as_ref().clone().into()),
-            Some(action.as_ref().clone().into()),
-            Some(resource.as_ref().clone().into()),
-            Context::empty(),
-        );
-        info!(
-            "is_authorized request: principal: {}, action: {}, resource: {}",
-            principal.as_ref(),
-            action.as_ref(),
-            resource.as_ref()
-        );
-        let response = self.authorizer.is_authorized(&q, &self.policies, &es);
-        info!("Auth response: {:?}", response);
-        match response.decision() {
-            Decision::Allow => Ok(()),
-            Decision::Deny => Err(Error::AuthDenied(response.diagnostics().clone())),
-        }
+        // info!(
+        //     "is_authorized request: principal: {}, action: {}, resource: {}",
+        //     principal.as_ref(),
+        //     action.as_ref(),
+        //     resource.as_ref()
+        // );
+        witnesses::is_authorized(principal, resource, es, &self.policies)
     }
 }

@@ -24,6 +24,7 @@ use crate::{
     context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
     util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
+    witnesses::CreateTeam,
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -153,13 +154,19 @@ pub struct List {
 }
 
 impl List {
-    pub fn new(store: &mut EntityStore, uid: ListUid, owner: UserUid, name: String) -> Self {
+    pub fn new(
+        store: &mut EntityStore,
+        uid: ListUid,
+        owner: UserUid,
+        name: String,
+        proof: &impl CreateTeam,
+    ) -> Self {
         let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let readers = Team::new(readers_uid.clone());
         let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let writers = Team::new(writers_uid.clone());
-        store.insert_team(readers);
-        store.insert_team(writers);
+        store.insert_team(readers, proof);
+        store.insert_team(writers, proof);
         Self {
             uid,
             owner,
@@ -269,7 +276,7 @@ impl Task {
 
 impl PartialOrd for Task {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.id.partial_cmp(&other.id)
+        Some(self.cmp(other))
     }
 }
 
