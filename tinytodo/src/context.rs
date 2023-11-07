@@ -383,8 +383,8 @@ impl AppContext {
     }
 
     fn delete_list(&mut self, r: DeleteList) -> Result<AppResponse> {
-        let witness = self.is_authorized(&r.uid, &r.list)?;
-        self.entities.delete_entity(&r.list, witness)?;
+        let proof = self.is_authorized::<actions::DeleteList>(&r.uid, &r.list)?;
+        self.entities.delete_entity(&r.list, proof)?;
         Ok(AppResponse::Unit(()))
     }
 

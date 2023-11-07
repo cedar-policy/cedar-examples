@@ -24,7 +24,7 @@ use crate::{
     context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
     util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
-    witnesses::CreateTeam,
+    witnesses::{AuthWitness, CreateTeam},
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -159,7 +159,7 @@ impl List {
         uid: ListUid,
         owner: UserUid,
         name: String,
-        proof: &impl CreateTeam,
+        proof: &AuthWitness<impl CreateTeam>,
     ) -> Self {
         let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let readers = Team::new(readers_uid.clone());

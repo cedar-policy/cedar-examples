@@ -69,8 +69,8 @@ pub mod actions {
         }
     }
 
-    impl super::CreateList for AuthWitness<CreateList> {}
-    impl super::CreateTeam for AuthWitness<CreateList> {}
+    impl super::CreateList for CreateList {}
+    impl super::CreateTeam for CreateList {}
 
     pub struct GetList;
     impl Action for GetList {
@@ -79,7 +79,7 @@ pub mod actions {
         }
     }
 
-    impl super::ReadList for AuthWitness<GetList> {}
+    impl super::ReadList for GetList {}
 
     pub struct GetLists;
     impl Action for GetLists {
@@ -88,7 +88,7 @@ pub mod actions {
         }
     }
 
-    impl super::ReadAll for AuthWitness<GetLists> {}
+    impl super::ReadAll for GetLists {}
 
     pub struct UpdateList;
     impl Action for UpdateList {
@@ -97,7 +97,7 @@ pub mod actions {
         }
     }
 
-    impl super::WriteList for AuthWitness<UpdateList> {}
+    impl super::WriteList for UpdateList {}
 
     pub struct DeleteList;
     impl Action for DeleteList {
@@ -106,7 +106,7 @@ pub mod actions {
         }
     }
 
-    impl super::Delete for AuthWitness<DeleteList> {}
+    impl super::Delete for DeleteList {}
 
     pub struct CreateTask;
     impl Action for CreateTask {
@@ -115,7 +115,7 @@ pub mod actions {
         }
     }
 
-    impl super::WriteList for AuthWitness<CreateTask> {}
+    impl super::WriteList for CreateTask {}
 
     pub struct UpdateTask;
     impl Action for UpdateTask {
@@ -124,7 +124,7 @@ pub mod actions {
         }
     }
 
-    impl super::WriteList for AuthWitness<UpdateTask> {}
+    impl super::WriteList for UpdateTask {}
 
     pub struct DeleteTask;
     impl Action for DeleteTask {
@@ -133,7 +133,7 @@ pub mod actions {
         }
     }
 
-    impl super::WriteList for AuthWitness<DeleteTask> {}
+    impl super::WriteList for DeleteTask {}
 
     pub struct EditShare;
     impl Action for EditShare {
@@ -142,6 +142,6 @@ pub mod actions {
         }
     }
 
-    impl super::WriteTeamUser for AuthWitness<EditShare> {}
-    impl super::ReadList for AuthWitness<EditShare> {}
+    impl super::WriteTeamUser for EditShare {}
+    impl super::ReadList for EditShare {}
 }
