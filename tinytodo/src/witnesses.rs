@@ -43,7 +43,9 @@ pub fn is_authorized<A: Action>(
         Some(A::action().clone().into()),
         Some(resource.as_ref().clone().into()),
         Context::empty(),
-    );
+        None,
+    )
+    .unwrap();
     let entities = entities.unwrap(InternalProof);
     let response = Authorizer::new().is_authorized(&r, policies, &entities);
     match response.decision() {
