@@ -16,7 +16,7 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::path::PathBuf;
+use std::{path::PathBuf, str::FromStr};
 use tracing::{info, trace};
 
 use cedar_policy::{
@@ -37,7 +37,7 @@ use crate::{
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
     policy_store,
-    util::{EntityUid, ListUid, Lists, TYPE_LIST},
+    util::{ApplicationUid, EntityUid, ListUid, Lists, TYPE_LIST},
     witnesses::{self, actions, Action, AuthWitness},
 };
 
@@ -178,7 +178,9 @@ impl Error {
 }
 
 lazy_static! {
-    pub static ref APPLICATION_TINY_TODO: EntityUid = r#"Application::"TinyTodo""#.parse().unwrap();
+    pub static ref APPLICATION_TINY_TODO: ApplicationUid =
+        ApplicationUid::try_from(EntityUid::from_str(r#"Application::"TinyTodo""#).unwrap())
+            .unwrap();
     pub static ref ACTION_EDIT_SHARE: EntityUid = r#"Action::"EditShare""#.parse().unwrap();
     pub static ref ACTION_UPDATE_TASK: EntityUid = r#"Action::"UpdateTask""#.parse().unwrap();
     pub static ref ACTION_CREATE_TASK: EntityUid = r#"Action::"CreateTask""#.parse().unwrap();
@@ -342,15 +344,15 @@ impl AppContext {
     }
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
-        let t: EntityTypeName = "List".parse().unwrap();
         let proof = self.is_authorized::<actions::GetLists>(&r.uid, &*APPLICATION_TINY_TODO)?;
 
         Ok(AppResponse::Lists(
             self.entities
                 .euids(proof)
-                .filter(|euid| euid.type_name() == &t)
+                // .filter(|euid| euid.type_name() == &t)
+                .filter_map(|euid| ListUid::try_from(euid.clone()).ok())
                 .filter(|euid| self.is_authorized::<actions::GetList>(&r.uid, euid).is_ok())
-                .cloned()
+                .map(|luid| luid.into())
                 .collect::<Vec<EntityUid>>()
                 .into(),
         ))
@@ -391,9 +393,13 @@ impl AppContext {
     #[tracing::instrument(skip_all)]
     pub fn is_authorized<A: Action>(
         &self,
-        principal: impl AsRef<EntityUid>,
-        resource: impl AsRef<EntityUid>,
-    ) -> Result<AuthWitness<A>> {
+        principal: &A::Principal,
+        resource: &A::Resource,
+    ) -> Result<AuthWitness<A>>
+    where
+        A::Principal: AsRef<EntityUid>,
+        A::Resource: AsRef<EntityUid>,
+    {
         let es = self.entities.as_entities(&self.schema);
         // info!(
         //     "is_authorized request: principal: {}, action: {}, resource: {}",

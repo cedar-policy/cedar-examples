@@ -33,11 +33,15 @@ struct InternalProof;
 impl ReadAll for InternalProof {}
 
 pub fn is_authorized<A: Action>(
-    principal: impl AsRef<EntityUid>,
-    resource: impl AsRef<EntityUid>,
+    principal: &A::Principal,
+    resource: &A::Resource,
     entities: SealedBundle,
     policies: &PolicySet,
-) -> Result<AuthWitness<A>> {
+) -> Result<AuthWitness<A>>
+where
+    A::Principal: AsRef<EntityUid>,
+    A::Resource: AsRef<EntityUid>,
+{
     let r = Request::new(
         Some(principal.as_ref().clone().into()),
         Some(A::action().clone().into()),
@@ -57,15 +61,22 @@ pub fn is_authorized<A: Action>(
 }
 
 pub trait Action {
+    type Principal;
+    type Resource;
     fn action() -> &'static EntityUid;
 }
 
 pub mod actions {
-    use crate::context::ACTION_GET_LISTS;
-
     use super::*;
+    use crate::{
+        context::ACTION_GET_LISTS,
+        util::{ApplicationUid, ListUid, UserUid},
+    };
+
     pub struct CreateList;
     impl Action for CreateList {
+        type Principal = UserUid;
+        type Resource = ApplicationUid;
         fn action() -> &'static EntityUid {
             &ACTION_CREATE_LIST
         }
@@ -76,6 +87,8 @@ pub mod actions {
 
     pub struct GetList;
     impl Action for GetList {
+        type Principal = UserUid;
+        type Resource = ListUid;
         fn action() -> &'static EntityUid {
             &ACTION_GET_LIST
         }
@@ -85,6 +98,8 @@ pub mod actions {
 
     pub struct GetLists;
     impl Action for GetLists {
+        type Principal = UserUid;
+        type Resource = ApplicationUid;
         fn action() -> &'static EntityUid {
             &ACTION_GET_LISTS
         }
@@ -94,6 +109,8 @@ pub mod actions {
 
     pub struct UpdateList;
     impl Action for UpdateList {
+        type Principal = UserUid;
+        type Resource = ListUid;
         fn action() -> &'static EntityUid {
             &ACTION_UPDATE_LIST
         }
@@ -103,6 +120,8 @@ pub mod actions {
 
     pub struct DeleteList;
     impl Action for DeleteList {
+        type Principal = UserUid;
+        type Resource = ListUid;
         fn action() -> &'static EntityUid {
             &ACTION_DELETE_LIST
         }
@@ -112,6 +131,8 @@ pub mod actions {
 
     pub struct CreateTask;
     impl Action for CreateTask {
+        type Principal = UserUid;
+        type Resource = ListUid;
         fn action() -> &'static EntityUid {
             &ACTION_CREATE_TASK
         }
@@ -121,6 +142,8 @@ pub mod actions {
 
     pub struct UpdateTask;
     impl Action for UpdateTask {
+        type Principal = UserUid;
+        type Resource = ListUid;
         fn action() -> &'static EntityUid {
             &ACTION_UPDATE_TASK
         }
@@ -130,6 +153,8 @@ pub mod actions {
 
     pub struct DeleteTask;
     impl Action for DeleteTask {
+        type Principal = UserUid;
+        type Resource = ListUid;
         fn action() -> &'static EntityUid {
             &ACTION_DELETE_TASK
         }
@@ -139,6 +164,8 @@ pub mod actions {
 
     pub struct EditShare;
     impl Action for EditShare {
+        type Principal = UserUid;
+        type Resource = ListUid;
         fn action() -> &'static EntityUid {
             &ACTION_EDIT_SHARE
         }

@@ -35,6 +35,7 @@ pub struct EntityStore {
     users: HashMap<EntityUid, User>,
     teams: HashMap<EntityUid, Team>,
     lists: HashMap<EntityUid, List>,
+    #[serde(skip)]
     app: Application,
     #[serde(skip)]
     uid: usize,

@@ -23,18 +23,18 @@ use crate::{
     api::ShareRole,
     context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
-    util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
+    util::{ApplicationUid, EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
     witnesses::{AuthWitness, CreateTeam},
 };
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Application {
-    euid: EntityUid,
+    euid: ApplicationUid,
 }
 
 impl Application {
     pub fn euid(&self) -> &EntityUid {
-        &self.euid
+        self.euid.as_ref()
     }
 }
 
@@ -240,7 +240,7 @@ impl From<List> for Entity {
         .collect();
 
         // We always have the single parent of the application, so we just hard code that here
-        let parents = [APPLICATION_TINY_TODO.clone().into()]
+        let parents = [APPLICATION_TINY_TODO.as_ref().clone().into()]
             .into_iter()
             .collect::<HashSet<_>>();
 
