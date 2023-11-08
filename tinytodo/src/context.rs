@@ -405,7 +405,7 @@ impl AppContext {
             Some(action.as_ref().clone().into()),
             Some(resource.as_ref().clone().into()),
             Context::empty(),
-            None,
+            Some(&self.schema),
         )
         .map_err(|e| Error::Request(e.to_string()))?;
         info!(
