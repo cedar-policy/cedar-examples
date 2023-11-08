@@ -69,8 +69,13 @@ fn parse_policy() {
                     Any => println!("No Principal"),
                     In(euid) => println!("Principal Constraint: Principal in {}", euid),
                     Eq(euid) => println!("Principal Constraint: Principal=={}", euid),
-                    Is(entity_type) => println!("Principal Constraint: Principal is {}", entity_type),
-                    IsIn(entity_type, euid) => println!("Principal Constraint: Principal is {} in {}", entity_type, euid),
+                    Is(entity_type) => {
+                        println!("Principal Constraint: Principal is {}", entity_type)
+                    }
+                    IsIn(entity_type, euid) => println!(
+                        "Principal Constraint: Principal is {} in {}",
+                        entity_type, euid
+                    ),
                 }
             }
         }
