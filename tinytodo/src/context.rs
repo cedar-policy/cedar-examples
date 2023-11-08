@@ -168,6 +168,8 @@ pub enum Error {
     IO(#[from] std::io::Error),
     #[error("Error Parsing PolicySet: {0}")]
     Policy(#[from] ParseErrors),
+    #[error("Error constructing authorization request: {0}")]
+    Request(String),
 }
 
 impl Error {
@@ -403,7 +405,9 @@ impl AppContext {
             Some(action.as_ref().clone().into()),
             Some(resource.as_ref().clone().into()),
             Context::empty(),
-        );
+            Some(&self.schema),
+        )
+        .map_err(|e| Error::Request(e.to_string()))?;
         info!(
             "is_authorized request: principal: {}, action: {}, resource: {}",
             principal.as_ref(),

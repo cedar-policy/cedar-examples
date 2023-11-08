@@ -15,7 +15,7 @@
  */
 
 #![forbid(unsafe_code)]
-use cedar_policy::PrincipalConstraint::{Any, Eq, In};
+use cedar_policy::PrincipalConstraint::{Any, Eq, In, Is, IsIn};
 use cedar_policy::{
     Authorizer, Context, Decision, Entities, Entity, EntityId, EntityTypeName, EntityUid, Policy,
     PolicyId, PolicySet, Request, Response, RestrictedExpression, Schema, SlotId, Template,
@@ -69,6 +69,13 @@ fn parse_policy() {
                     Any => println!("No Principal"),
                     In(euid) => println!("Principal Constraint: Principal in {}", euid),
                     Eq(euid) => println!("Principal Constraint: Principal=={}", euid),
+                    Is(entity_type) => {
+                        println!("Principal Constraint: Principal is {}", entity_type)
+                    }
+                    IsIn(entity_type, euid) => println!(
+                        "Principal Constraint: Principal is {} in {}",
+                        entity_type, euid
+                    ),
                 }
             }
         }
@@ -94,7 +101,7 @@ fn json_context() {
 
     let (p, a, r) = create_p_a_r();
     // create a request
-    let request: Request = Request::new(Some(p), Some(a), Some(r), c);
+    let request: Request = Request::new(Some(p), Some(a), Some(r), c, None).unwrap();
 
     // create a policy
     let s = r#"permit(
@@ -138,7 +145,7 @@ fn entity_json() {
     );
     let c = Context::from_pairs(context2).expect("no duplicate keys!");
 
-    let request: Request = Request::new(Some(p), Some(a), Some(r), c);
+    let request: Request = Request::new(Some(p), Some(a), Some(r), c, None).unwrap();
 
     // create a policy
     let s = "
@@ -182,7 +189,7 @@ fn entity_objects() {
     );
 
     let c = Context::empty();
-    let request: Request = Request::new(Some(p), Some(a), Some(r), c);
+    let request: Request = Request::new(Some(p), Some(a), Some(r), c, None).unwrap();
 
     // create a policy
     let c1 = "permit(
@@ -442,7 +449,7 @@ fn annotate() {
 
     let policies = PolicySet::from_str(src).unwrap();
     let (p, a, r) = create_p_a_r();
-    let request: Request = Request::new(Some(p), Some(a), Some(r), Context::empty());
+    let request: Request = Request::new(Some(p), Some(a), Some(r), Context::empty(), None).unwrap();
     let ans = execute_query(&request, &policies, Entities::empty());
     for reason in ans.diagnostics().reason() {
         //print all the annotations
