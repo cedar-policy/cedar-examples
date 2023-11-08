@@ -103,6 +103,7 @@ lazy_static! {
     pub static ref TYPE_LIST: EntityTypeName = "List".parse().unwrap();
     pub static ref TYPE_USER: EntityTypeName = "User".parse().unwrap();
     pub static ref TYPE_TEAM: EntityTypeName = "Team".parse().unwrap();
+    pub static ref TYPE_APPLICATION: EntityTypeName = "Application".parse().unwrap();
 }
 
 // Here we defined a bunch of typed wrappers around `EntityUid`.
@@ -155,6 +156,31 @@ impl std::fmt::Display for EntityTypeError {
                 self.got
             )
         }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(try_from = "EntityUid")]
+#[serde(into = "EntityUid")]
+#[repr(transparent)]
+pub struct ApplicationUid(EntityUid);
+
+impl TryFrom<EntityUid> for ApplicationUid {
+    type Error = EntityTypeError;
+    fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
+        entity_type_check(&TYPE_APPLICATION, got, Self)
+    }
+}
+
+impl From<ApplicationUid> for EntityUid {
+    fn from(value: ApplicationUid) -> Self {
+        value.0
+    }
+}
+
+impl AsRef<EntityUid> for ApplicationUid {
+    fn as_ref(&self) -> &EntityUid {
+        &self.0
     }
 }
 

@@ -23,17 +23,18 @@ use crate::{
     api::ShareRole,
     context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
-    util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
+    util::{ApplicationUid, EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
+    witnesses::{AuthWitness, CreateTeam},
 };
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone)]
 pub struct Application {
-    euid: EntityUid,
+    euid: ApplicationUid,
 }
 
 impl Application {
     pub fn euid(&self) -> &EntityUid {
-        &self.euid
+        self.euid.as_ref()
     }
 }
 
@@ -153,13 +154,19 @@ pub struct List {
 }
 
 impl List {
-    pub fn new(store: &mut EntityStore, uid: ListUid, owner: UserUid, name: String) -> Self {
+    pub fn new(
+        store: &mut EntityStore,
+        uid: ListUid,
+        owner: UserUid,
+        name: String,
+        proof: &AuthWitness<impl CreateTeam>,
+    ) -> Self {
         let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let readers = Team::new(readers_uid.clone());
         let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
         let writers = Team::new(writers_uid.clone());
-        store.insert_team(readers);
-        store.insert_team(writers);
+        store.insert_team(readers, proof);
+        store.insert_team(writers, proof);
         Self {
             uid,
             owner,
@@ -233,7 +240,7 @@ impl From<List> for Entity {
         .collect();
 
         // We always have the single parent of the application, so we just hard code that here
-        let parents = [APPLICATION_TINY_TODO.clone().into()]
+        let parents = [APPLICATION_TINY_TODO.as_ref().clone().into()]
             .into_iter()
             .collect::<HashSet<_>>();
 
@@ -269,7 +276,7 @@ impl Task {
 
 impl PartialOrd for Task {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.id.partial_cmp(&other.id)
+        Some(self.cmp(other))
     }
 }
 

@@ -24,6 +24,10 @@ use crate::{
     context::Error,
     objects::{Application, List, Team, User, UserOrTeam},
     util::{EntityUid, ListUid, TeamUid, UserOrTeamUid, UserUid},
+    witnesses::{
+        AuthWitness, CreateList, CreateTeam, CreateUser, Delete, ReadAll, ReadList, ReadTeam,
+        ReadUser, WriteList, WriteTeam, WriteTeamUser, WriteUser,
+    },
 };
 
 #[derive(Debug, Default, Deserialize, Serialize)]
@@ -31,13 +35,22 @@ pub struct EntityStore {
     users: HashMap<EntityUid, User>,
     teams: HashMap<EntityUid, Team>,
     lists: HashMap<EntityUid, List>,
+    #[serde(skip)]
     app: Application,
     #[serde(skip)]
     uid: usize,
 }
 
+pub struct SealedBundle(Entities);
+
+impl SealedBundle {
+    pub fn unwrap(self, _proof: impl ReadAll) -> Entities {
+        self.0
+    }
+}
+
 impl EntityStore {
-    pub fn euids(&self) -> impl Iterator<Item = &EntityUid> {
+    pub fn euids(&self, _proof: AuthWitness<impl ReadAll>) -> impl Iterator<Item = &EntityUid> {
         self.users
             .keys()
             .chain(self.teams.keys())
@@ -45,13 +58,13 @@ impl EntityStore {
             .chain(std::iter::once(self.app.euid()))
     }
 
-    pub fn as_entities(&self, schema: &Schema) -> Entities {
+    pub fn as_entities(&self, schema: &Schema) -> SealedBundle {
         let users = self.users.values().map(|user| user.clone().into());
         let teams = self.teams.values().map(|team| team.clone().into());
         let lists = self.lists.values().map(|list| list.clone().into());
         let app = std::iter::once(self.app.clone().into());
         let all = users.chain(teams).chain(lists).chain(app);
-        Entities::from_entities(all, Some(schema)).unwrap()
+        SealedBundle(Entities::from_entities(all, Some(schema)).unwrap())
     }
 
     pub fn fresh_euid<T: TryFrom<EntityUid>>(&mut self, ty: EntityTypeName) -> Result<T, T::Error> {
@@ -72,19 +85,23 @@ impl EntityStore {
             || self.app.euid() == euid
     }
 
-    pub fn insert_user(&mut self, e: User) {
+    pub fn insert_user(&mut self, e: User, _proof: AuthWitness<impl CreateUser>) {
         self.users.insert(e.uid().clone().into(), e);
     }
 
-    pub fn insert_team(&mut self, e: Team) {
+    pub fn insert_team(&mut self, e: Team, _proof: &AuthWitness<impl CreateTeam>) {
         self.teams.insert(e.uid().clone().into(), e);
     }
 
-    pub fn insert_list(&mut self, e: List) {
+    pub fn insert_list(&mut self, e: List, _proof: AuthWitness<impl CreateList>) {
         self.lists.insert(e.uid().clone().into(), e);
     }
 
-    pub fn delete_entity(&mut self, e: impl AsRef<EntityUid>) -> Result<(), Error> {
+    pub fn delete_entity(
+        &mut self,
+        e: impl AsRef<EntityUid>,
+        _proof: AuthWitness<impl Delete>,
+    ) -> Result<(), Error> {
         let r = e.as_ref();
         if self.users.contains_key(r) {
             self.users.remove(r);
@@ -100,25 +117,41 @@ impl EntityStore {
         }
     }
 
-    pub fn get_user(&self, euid: &UserUid) -> Result<&User, Error> {
+    pub fn get_user(
+        &self,
+        euid: &UserUid,
+        _proof: AuthWitness<impl ReadUser>,
+    ) -> Result<&User, Error> {
         self.users
             .get(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_user_mut(&mut self, euid: &UserUid) -> Result<&mut User, Error> {
+    pub fn get_user_mut(
+        &mut self,
+        euid: &UserUid,
+        _proof: AuthWitness<impl WriteUser>,
+    ) -> Result<&mut User, Error> {
         self.users
             .get_mut(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_team(&self, euid: &TeamUid) -> Result<&Team, Error> {
+    pub fn get_team(
+        &self,
+        euid: &TeamUid,
+        _proof: AuthWitness<impl ReadTeam>,
+    ) -> Result<&Team, Error> {
         self.teams
             .get(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_team_mut(&mut self, euid: &TeamUid) -> Result<&mut Team, Error> {
+    pub fn get_team_mut(
+        &mut self,
+        euid: &TeamUid,
+        _proof: AuthWitness<impl WriteTeam>,
+    ) -> Result<&mut Team, Error> {
         self.teams
             .get_mut(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
@@ -127,6 +160,7 @@ impl EntityStore {
     pub fn get_user_or_team_mut(
         &mut self,
         euid: &UserOrTeamUid,
+        _proof: AuthWitness<impl WriteTeamUser>,
     ) -> Result<&mut dyn UserOrTeam, Error> {
         let euid_ref = euid.as_ref();
         if self.users.contains_key(euid_ref) {
@@ -140,13 +174,22 @@ impl EntityStore {
         }
     }
 
-    pub fn get_list(&self, euid: &ListUid) -> Result<&List, Error> {
+    // Need a witness that we are allowed to read lists
+    pub fn get_list(
+        &self,
+        euid: &ListUid,
+        _proof: &AuthWitness<impl ReadList>,
+    ) -> Result<&List, Error> {
         self.lists
             .get(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
 
-    pub fn get_list_mut(&mut self, euid: &ListUid) -> Result<&mut List, Error> {
+    pub fn get_list_mut(
+        &mut self,
+        euid: &ListUid,
+        _proof: &AuthWitness<impl WriteList>,
+    ) -> Result<&mut List, Error> {
         self.lists
             .get_mut(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))

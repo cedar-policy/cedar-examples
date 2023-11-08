@@ -20,6 +20,7 @@ mod entitystore;
 mod objects;
 mod policy_store;
 mod util;
+mod witnesses;
 
 use context::AppContext;
 use std::num::ParseIntError;
