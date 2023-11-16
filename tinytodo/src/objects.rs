@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use cedar_policy::{Entity, EvalResult, RestrictedExpression};
 use serde::{Deserialize, Serialize};
@@ -47,9 +47,8 @@ impl Default for Application {
 
 impl From<Application> for Entity {
     fn from(a: Application) -> Self {
-        Entity::new(
+        Entity::new_no_attrs(
             a.euid().clone().into(),
-            HashMap::default(),
             HashSet::default(),
         )
     }
@@ -83,9 +82,8 @@ impl User {
 impl From<User> for Entity {
     fn from(value: User) -> Entity {
         let euid: EntityUid = value.euid.into();
-        Entity::new(
+        Entity::new_no_attrs(
             euid.into(),
-            HashMap::new(),
             value.parents.into_iter().map(|euid| euid.into()).collect(),
         )
     }
@@ -124,9 +122,8 @@ impl Team {
 impl From<Team> for Entity {
     fn from(team: Team) -> Entity {
         let euid: EntityUid = team.uid.into();
-        Entity::new(
+        Entity::new_no_attrs(
             euid.into(),
-            HashMap::default(),
             team.parents.into_iter().map(|euid| euid.into()).collect(),
         )
     }
@@ -238,7 +235,7 @@ impl From<List> for Entity {
             .collect::<HashSet<_>>();
 
         let euid: EntityUid = value.uid.into();
-        Entity::new(euid.into(), attrs, parents)
+        Entity::new(euid.into(), attrs, parents).unwrap()
     }
 }
 
