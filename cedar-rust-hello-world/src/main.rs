@@ -281,7 +281,7 @@ fn create_entities_obj() -> Entities {
 
     //println!("ATTRS:{:?}", attrs);
 
-    let user = Entity::new(u, attrs, HashSet::new());
+    let user = Entity::new(u, attrs, HashSet::new()).unwrap();
     let mut v = vec![user];
 
     // create an action entity
@@ -290,7 +290,7 @@ fn create_entities_obj() -> Entities {
         EntityId::from_str("view").unwrap(),
     );
 
-    let action = Entity::new(t, HashMap::new(), HashSet::new());
+    let action = Entity::new_no_attrs(t, HashSet::new());
 
     v.push(action);
 
@@ -300,7 +300,7 @@ fn create_entities_obj() -> Entities {
         EntityId::from_str("trip").unwrap(),
     );
 
-    let resource = Entity::new(t, HashMap::new(), HashSet::new());
+    let resource = Entity::new_no_attrs(t, HashSet::new());
     v.push(resource);
 
     // create the Entities
