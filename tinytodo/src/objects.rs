@@ -47,10 +47,7 @@ impl Default for Application {
 
 impl From<Application> for Entity {
     fn from(a: Application) -> Self {
-        Entity::new_no_attrs(
-            a.euid().clone().into(),
-            HashSet::default(),
-        )
+        Entity::new_no_attrs(a.euid().clone().into(), HashSet::default())
     }
 }
 
