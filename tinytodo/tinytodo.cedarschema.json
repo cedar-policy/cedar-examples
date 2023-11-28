@@ -6,15 +6,7 @@
 				"memberOfTypes": [
 					"Team",
 					"Application"
-				],
-				"shape": {
-					"type": "Record",
-					"attributes": {
-						"name": {
-							"type": "String"
-						}
-					}
-				}
+				]
 			},
 			"Team": {
 				"memberOfTypes": [
