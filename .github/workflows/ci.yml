@@ -149,3 +149,8 @@ jobs:
       - name: cargo test
         working-directory: ./tinytodo
         run: cargo test --verbose
+      - name: python test
+        working-directory: ./tinytodo
+        run: |
+          cargo build --release
+          python3 -m unittest
