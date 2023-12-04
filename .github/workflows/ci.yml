@@ -144,7 +144,6 @@ jobs:
       - name: cargo rustc
         working-directory: ./tinytodo
         run: |
-             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
              RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
       - name: cargo test
         working-directory: ./tinytodo
