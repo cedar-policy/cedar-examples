@@ -511,7 +511,7 @@ Here is a snippet of the `actions` part of `tinytodo.cedarschema.json`, describi
 },
 "CreateTask" : { 
     "appliesTo" : { 
-        "principalTypes" : [ "User" ], 
+        "principalTypes" : [ "User" ],
         "resourceTypes" : [ "List" ]
     }
 },
