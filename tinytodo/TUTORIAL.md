@@ -44,12 +44,11 @@ Here is one of TinyTodo’s Cedar policies.
 // Policy 1: A User can perform any action on a List they own 
 permit(principal, action, resource)
 when {
-    resource has owner && resource.owner == principal
+    resource is List && resource.owner == principal
 };
 ```
 
-This policy states that any principal (a TinyTodo `User`) can perform any action on any resource (a TinyTodo `List`)
-as long as the resource’s creator, defined by its `owner` attribute, matches the requesting principal. Here’s another TinyTodo Cedar policy.
+This policy states that any principal (a TinyTodo `User`) can perform any action on any resource, as long as the resource is a `List` and its creator, defined by its `owner` attribute, matches the requesting principal. Here’s another TinyTodo Cedar policy.
 
 ```
 // Policy 2: A User can see a List and its tasks if they are a reader or editor
@@ -63,8 +62,7 @@ when {
 };
 ```
 
-This policy states that any principal can read the contents of a task list (`Action::"GetList"`) so long as they
-are in either the list’s `readers` group, or its `editors` group.
+This policy states that any principal can read the contents of a task list (`Action::"GetList"`) so long as they are in either the list’s `readers` group, or its `editors` group.
 
 Cedar’s authorizer enforces *default deny*: A request is authorized only if a specific `permit` policy grants it.
 
@@ -254,13 +252,15 @@ pub fn is_authorized(
     action: impl AsRef<EntityUid>,
     resource: impl AsRef<EntityUid>,
 ) -> Result<()> {
-    let es = self.entities.as_entities();
+    let es = self.entities.as_entities(&self.schema);
     let q = Request::new(
         Some(principal.as_ref().clone().into()),
         Some(action.as_ref().clone().into()),
         Some(resource.as_ref().clone().into()),
         Context::empty(),
-    );
+        Some(&self.schema),
+    )
+    .map_err(|e| Error::Request(e.to_string()))?;
     info!(
         "is_authorized request: principal: {}, action: {}, resource: {}",
         principal.as_ref(),
@@ -293,7 +293,7 @@ permit (
 // Policy 1: A User can perform any action on a List they own 
 permit (principal, action, resource)
 when {
-    resource has owner &&
+    resource is List &&
     resource.owner == principal
 };
 
@@ -431,16 +431,17 @@ When the `AppContext::spawn(...)` method reads in the Cedar policies, it also re
 
 ```rust
 pub fn spawn(
-    entities_path: impl AsRef<Path>,
-    schema_path: impl AsRef<Path>,
-    policies_path: impl AsRef<Path>,
+    entities_path: impl Into<PathBuf>,
+    schema_path: impl Into<PathBuf>,
+    policies_path: impl Into<PathBuf>,
 ) -> std::result::Result<Sender<AppQuery>, ContextError> {
-    let schema_file = std::fs::File::open(schema_path)?;
+    ...
+    let schema_file = std::fs::File::open(&schema_path)?;
     let schema = Schema::from_file(schema_file)?;
     ...
-    let policy_src = std::fs::read_to_string(policies_path)?;
+    let policy_src = std::fs::read_to_string(&policies_path)?;
     let policies = policy_src.parse()?;
-    let validator = Validator::new(schema);
+    let validator = Validator::new(schema.clone());
     let output = validator.validate(&policies, ValidationMode::default());
     if output.validation_passed() {
     // ... start serving requests ...
@@ -510,7 +511,7 @@ Here is a snippet of the `actions` part of `tinytodo.cedarschema.json`, describi
 },
 "CreateTask" : { 
     "appliesTo" : { 
-        "principalTypes" : ["User"], 
+        "principalTypes" : [ "User" ],
         "resourceTypes" : [ "List" ]
     }
 },
@@ -534,11 +535,9 @@ This completes our tour of TinyTodo, an example application that uses Cedar for 
 Before we go, let’s consider some ways you could extend TinyTodo, to get more experience using Cedar.
 
 ### Persisting TinyTodo data
-
 Make a command that saves the full entity store, including `List`s (and not just `User`s and `Team`s) to the `entities.json` file so that users can re-access their lists. Alternatively, save the entity store after each command, automatically. For bonus points, implement a persistent entity store directly, e.g., on top of a database.
 
 ### Add CRUD commands for `User`s and `Team`s
-
 `User`s and `Team`s are specified in `entities.json` only; you cannot create new users or teams via TinyTodo itself. Extend it with additional commands, and Cedar policies and schema, to allow the creation, deletion, update, etc. of `User`s and `Team`s. Suppose only members of `Team::"admin"` should be able to carry out these actions — do you need to write a new policy to allow that? 
 
 
@@ -547,7 +546,6 @@ Extend the notion of sharing to include time-limited sharing. A user should be a
 and have the permission to read/edit that list automatically revoked. An implementation of this feature can be found in the `features/timebox` branch.
 
 ### Implement *Entity Slicing*
-
 The `is_authorized` code in `context.rs`, which we discussed above, the line `let es = self.entities.as_entities();` converts the entire contents of the `EntityStore` to Cedar entities, and passes it with each call to Cedar’s authorization engine. While doing this is safe, it’s also potentially expensive: `as_entities` will create and populate new Rust `Entity` objects, and it will do so for objects that may not actually be relevant the request being considered. 
 
 For example, suppose we submit request asking, can 
