@@ -21,7 +21,7 @@ use tracing::{info, trace};
 
 use cedar_policy::{
     Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
-    Schema, SchemaError, ValidationMode, Validator,
+    Schema, SchemaError, ValidationMode, Validator, PolicySetError
 };
 use thiserror::Error;
 use tokio::sync::{
@@ -149,6 +149,22 @@ impl AppQuery {
 type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
+pub enum ContextError {
+    #[error("{0}")]
+    IO(#[from] std::io::Error),
+    #[error("Error Parsing Schema: {0}")]
+    Schema(#[from] SchemaError),
+    #[error("Error Parsing PolicySet: {0}")]
+    Policy(#[from] ParseErrors),
+    #[error("Error Processing PolicySet: {0}")]
+    PolicySet(#[from] PolicySetError),
+    #[error("Validation Failed: {0}")]
+    Validation(String),
+    #[error("Error Deserializing Json: {0}")]
+    Json(#[from] serde_json::Error),
+}
+
+#[derive(Debug, Error)]
 pub enum Error {
     #[error("No Such Entity: {0}")]
     NoSuchEntity(EntityUid),
@@ -168,6 +184,8 @@ pub enum Error {
     IO(#[from] std::io::Error),
     #[error("Error Parsing PolicySet: {0}")]
     Policy(#[from] ParseErrors),
+    #[error("Error updating PolicySet: {0}")]
+    PolicySet(#[from] PolicySetError),
     #[error("Error constructing authorization request: {0}")]
     Request(String),
 }
@@ -206,17 +224,61 @@ impl std::fmt::Debug for AppContext {
 }
 
 #[derive(Debug, Error)]
-pub enum ContextError {
+enum ReadError {
     #[error("{0}")]
-    IO(#[from] std::io::Error),
-    #[error("Error Parsing Schema: {0}")]
-    Schema(#[from] SchemaError),
-    #[error("Error Parsing PolicySet: {0}")]
-    Policy(#[from] ParseErrors),
-    #[error("Validation Failed: {0}")]
-    Validation(String),
-    #[error("Error Deserializing Json: {0}")]
-    Json(#[from] serde_json::Error),
+    Parse(#[from] ParseErrors),
+    #[error("{0}")]
+    Semantics(#[from] PolicySetError)
+}
+
+impl From<ReadError> for ContextError {
+    fn from(error: ReadError) -> Self {
+        match error {
+            ReadError::Parse(e) => ContextError::Policy(e),
+            ReadError::Semantics(e) => ContextError::PolicySet(e)
+        }
+    }
+}
+
+impl From<ReadError> for Error {
+    fn from(error: ReadError) -> Self {
+        match error {
+            ReadError::Parse(e) => Error::Policy(e),
+            ReadError::Semantics(e) => Error::PolicySet(e)
+        }
+    }
+}
+/// Renames policies and templates based on (@id("new_id") annotation.
+/// If no such annotation exists, it keeps the current id.
+///
+/// This will rename template-linked policies to the id of their template, which may
+/// cause id conflicts, so only call this function before linking
+/// templates into the policy set.
+fn rename_from_id_annotation(ps: PolicySet) -> std::result::Result<PolicySet,ReadError> {
+    let mut new_ps = PolicySet::new();
+    let t_iter = ps.templates().map(|t| match t.annotation("id") {
+        None => Ok(t.clone()),
+        Some(anno) => {
+            //info!("Found template with ID {}!",anno);
+            anno.parse().map(|a| t.new_id(a))
+        }
+    });
+    for t in t_iter {
+        let template = t?;
+        new_ps.add_template(template)?;
+    }
+    let p_iter = ps.policies().map(|p| match p.annotation("id") {
+        None => Ok(p.clone()),
+        Some(anno) => {
+            //info!("Found policy with ID {}!",anno);
+            anno.parse().map(|a| p.new_id(a))
+        }
+    });
+    for p in p_iter {
+        let policy = p?;
+        new_ps.add(policy)?;
+    }
+    Ok(new_ps)
 }
 
 impl AppContext {
@@ -235,7 +297,8 @@ impl AppContext {
         let entities = serde_json::from_reader(entities_file)?;
 
         let policy_src = std::fs::read_to_string(&policies_path)?;
-        let policies = policy_src.parse()?;
+        let policies0 = policy_src.parse()?;
+        let policies = rename_from_id_annotation(policies0)?;
         let validator = Validator::new(schema.clone());
         let output = validator.validate(&policies, ValidationMode::default());
         if output.validation_passed() {
@@ -292,7 +355,8 @@ impl AppContext {
 
     #[tracing::instrument(skip(policy_set))]
     fn update_policy_set(&mut self, policy_set: PolicySet) -> Result<AppResponse> {
-        self.policies = policy_set;
+        let policies = rename_from_id_annotation(policy_set)?;
+        self.policies = policies;
         info!("Reloaded policy set");
         Ok(AppResponse::Unit(()))
     }
