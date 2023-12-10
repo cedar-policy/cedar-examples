@@ -20,8 +20,8 @@ use std::path::PathBuf;
 use tracing::{info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet, Request,
-    Schema, SchemaError, ValidationMode, Validator, PolicySetError
+    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet,
+    PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
 };
 use thiserror::Error;
 use tokio::sync::{
@@ -228,14 +228,14 @@ enum ReadError {
     #[error("{0}")]
     Parse(#[from] ParseErrors),
     #[error("{0}")]
-    Semantics(#[from] PolicySetError)
+    Semantics(#[from] PolicySetError),
 }
 
 impl From<ReadError> for ContextError {
     fn from(error: ReadError) -> Self {
         match error {
             ReadError::Parse(e) => ContextError::Policy(e),
-            ReadError::Semantics(e) => ContextError::PolicySet(e)
+            ReadError::Semantics(e) => ContextError::PolicySet(e),
         }
     }
 }
@@ -244,7 +244,7 @@ impl From<ReadError> for Error {
     fn from(error: ReadError) -> Self {
         match error {
             ReadError::Parse(e) => Error::Policy(e),
-            ReadError::Semantics(e) => Error::PolicySet(e)
+            ReadError::Semantics(e) => Error::PolicySet(e),
         }
     }
 }
@@ -254,7 +254,7 @@ impl From<ReadError> for Error {
 /// This will rename template-linked policies to the id of their template, which may
 /// cause id conflicts, so only call this function before linking
 /// templates into the policy set.
-fn rename_from_id_annotation(ps: PolicySet) -> std::result::Result<PolicySet,ReadError> {
+fn rename_from_id_annotation(ps: PolicySet) -> std::result::Result<PolicySet, ReadError> {
     let mut new_ps = PolicySet::new();
     let t_iter = ps.templates().map(|t| match t.annotation("id") {
         None => Ok(t.clone()),
