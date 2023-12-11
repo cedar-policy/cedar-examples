@@ -30,10 +30,11 @@ permit (
 when { principal in resource.editors };
 
 // Policy 4: Admins can perform any action on any resource
+// @id("admin-omnipotence")
 // permit (
-//     principal in Team::"admin",
-//     action,
-//     resource in Application::"TinyTodo"
+//    principal in Team::"admin",
+//    action,
+//    resource in Application::"TinyTodo"
 // );
 // 
 // Policy 5: Interns may not create new task lists

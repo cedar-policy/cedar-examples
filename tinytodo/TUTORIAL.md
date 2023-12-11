@@ -41,7 +41,7 @@ We specify and enforce these access permissions using Cedar. Cedar is a language
 Here is one of TinyTodo’s Cedar policies.
 
 ```
-// Policy 1: A User can perform any action on a List they own 
+// Policy 1: A User can perform any action on a List they own
 permit(principal, action, resource)
 when {
     resource is List && resource.owner == principal
@@ -363,6 +363,7 @@ Let’s see how we can extend the Cedar policies to effect permission changes to
 
 ```
 // Policy 4: Admins can perform any action on any resource
+@id("admin-omnipotence")
 permit (
     principal in Team::"admin",
     action,
@@ -370,28 +371,45 @@ permit (
  );
 ```
 
-As per Figure 2, user ``emina`` is a member of ``Team::"admin"`` so if we start TinyTodo with this new policy added to `policies.cedar` we can see ``emina`` is able to view and edit any list, even without it being explicitly shared.
+In this policy we have used a [Cedar policy _annotation_](https://docs.cedarpolicy.com/policies/syntax-policy.html#term-parc-annotations) `@id(...)`. Annotations have no built-in semantics in Cedar, so it is up to the application to decide how to use them. The [Cedar command-line interface (CLI)](https://github.com/cedar-policy/cedar/tree/main/cedar-policy-cli) uses the `@id(...)` annotation to give a name to the target policy, and we adopt the same convention for TinyTodo. By default, policies are named `policy`_N_ where _N_ is a number starting at 0 that increases with each policy added to the policy set. We adopt code from the CLI that post-processes parsed policies and renames them according to any present `@id` annotation. This name will be used in an authorization's response diagnostics, as we will see below.
+
+Per Figure 2, user ``emina`` is a member of ``Team::"admin"`` so if we start TinyTodo with this new policy added to `policies.cedar`, ``emina`` is able to view and edit any list, even without it being explicitly shared. We see this in the transcript below, which shows TinyTodo run with output logging enabled via the environment variable `RUST_LOG` to level `info`. The log messages show the requests sent to Cedar's authorization engine and the responses it sends back. (We have elided some logging messages and simplified others, for readability.)
 
 ```shell
-> python -i tinytodo.py
+> RUST_LOG=info python -i tinytodo.py
 >>> start_server()
-=== TinyTodo started on port 8080
+TinyTodo server started on port 8080
+  INFO (messages elided ...)
+
 >>> set_user(andrew)
 User is now andrew
 >>> create_list("Cedar blog post")
+  INFO tiny_todo_server::context: is_authorized request: principal: User::"andrew", action: Action::"CreateList", resource: Application::"TinyTodo"
+
+  INFO tiny_todo_server::context: Auth response: Response { decision: Allow, diagnostics: Diagnostics { reason: {PolicyId(PolicyID("policy 0")), PolicyId(PolicyID("admin-omnipotence"))}, errors: [] } }
+
 Created list ID 0
 >>> set_user(emina)
 User is now emina
->>> get_list(0) 
+>>> get_list(0)
+  INFO tiny_todo_server::context: is_authorized request: principal: User::"emina", action: Action::"GetList", resource: List::"0"
+
+  INFO tiny_todo_server::context: Auth response: Response { decision: Allow, diagnostics: Diagnostics { reason: {PolicyId(PolicyID("admin-omnipotence"))}, errors: [] } }
+
 === Cedar blog post ===
 List ID: 0
 Owner: User::"andrew"
 Tasks:
 >>> delete_list(0)
+  INFO tiny_todo_server::context: is_authorized request: principal: User::"emina", action: Action::"DeleteList", resource: List::"0"
+
+  INFO tiny_todo_server::context: Auth response: Response { decision: Allow, diagnostics: Diagnostics { reason: {PolicyId(PolicyID("admin-omnipotence"))}, errors: [] } }
+
 List Deleted
 >>> stop_server()
 TinyTodo server stopped on port 8080
 ```
+Notice in the `INFO` messages that Andrew's creation of the list is authorized by `PolicyID` `"policy0"`, the default ID for the first policy, whereas Emina's reading and updating of the list is authorized by `PolicyID` `"admin-omnipotence"`, the name given via `@id` annotation to our newly-added policy.
 
 As another extension, we can add this policy:
 
@@ -404,8 +422,7 @@ forbid (
 );
 ```
 
-This policy states that any principal who is an intern (in `Team::"interns"`) is *forbidden* from creating a new
-task list (`Action::"CreateList"`) using TinyTodo (`Application::"TinyTodo"`). In Cedar, `forbid` policies always take precedence over `permit` policies, i.e., even if a `permit` policy might authorize a request, a `forbid` policy can override that authorization. For TinyTodo, *policy 0* permits *any* user to create a task list, but *policy 5* overrides that permission for users in `Team::"interns"`. Note that the order of Cedar policies doesn’t affect this behavior.
+This policy states that any principal who is an intern (in `Team::"interns"`) is *forbidden* from creating a new task list (`Action::"CreateList"`) using TinyTodo (`Application::"TinyTodo"`). In Cedar, `forbid` policies always take precedence over `permit` policies, i.e., even if a `permit` policy might authorize a request, a `forbid` policy can override that authorization. For TinyTodo, *policy 0* permits *any* user to create a task list, but *policy 5* overrides that permission for users in `Team::"interns"`. Note that the order of Cedar policies doesn’t affect this behavior.
 
 As per Figure 2, user ``aaron`` is a member of ``Team::"interns"`` so if we start TinyTodo with this new policy added to `policies.cedar` we can see ``aaron`` is not able to create a task list.
 
@@ -427,7 +444,7 @@ TinyTodo server stopped on port 8080
 
 ## Validating Cedar policies
 
-When the `AppContext::spawn(...)` method reads in the Cedar policies, it also reads in a Cedar *schema* against which it validates the policies. After reading in the `schema` from the file `tinytodo.cedarschema.json`, the method creates a `Validator` object (from the `cedar-policy-validator` package) and invokes its `validator.validate` method. Here is the `spawn` method, where you can see the code for this.
+When the `AppContext::spawn(...)` method reads in the Cedar policies (and renames them according to their `@id` annotations, if present), it also reads in a Cedar *schema* against which it validates the policies. After reading in the `schema` from the file `tinytodo.cedarschema.json`, the method creates a `Validator` object (from the `cedar-policy-validator` package) and invokes its `validator.validate` method. Here is the `spawn` method, where you can see the code for this.
 
 ```rust
 pub fn spawn(
@@ -440,7 +457,8 @@ pub fn spawn(
     let schema = Schema::from_file(schema_file)?;
     ...
     let policy_src = std::fs::read_to_string(&policies_path)?;
-    let policies = policy_src.parse()?;
+    let policies0 = policy_src.parse()?;
+    let policies = rename_from_id_annotation(policies0)?;
     let validator = Validator::new(schema.clone());
     let output = validator.validate(&policies, ValidationMode::default());
     if output.validation_passed() {
