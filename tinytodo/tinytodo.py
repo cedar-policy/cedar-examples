@@ -205,7 +205,7 @@ def process_response(name, resp, f, args):
                 tup = (current_user,  name, args)
                 print('Access denied. User %s is not authorized to %s on [%s]' % tup )
             else:
-                print('Error: %s' % resp['error'])
+                print('Error: %s' % body['error'])
         else:
             print(f(body))
     else:

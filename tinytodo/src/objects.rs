@@ -20,10 +20,9 @@ use cedar_policy::{Entity, EvalResult, RestrictedExpression};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    api::ShareRole,
     context::APPLICATION_TINY_TODO,
-    entitystore::{EntityDecodeError, EntityStore},
-    util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_TEAM},
+    entitystore::EntityDecodeError,
+    util::{EntityUid, ListUid, TeamUid, UserUid},
 };
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -142,25 +141,15 @@ pub struct List {
     owner: UserUid,
     name: String,
     tasks: Vec<Task>, // Invariant, `tasks` must be sorted
-    readers: TeamUid,
-    editors: TeamUid,
 }
 
 impl List {
-    pub fn new(store: &mut EntityStore, uid: ListUid, owner: UserUid, name: String) -> Self {
-        let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-        let readers = Team::new(readers_uid.clone());
-        let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-        let writers = Team::new(writers_uid.clone());
-        store.insert_team(readers);
-        store.insert_team(writers);
+    pub fn new(uid: ListUid, owner: UserUid, name: String) -> Self {
         Self {
             uid,
             owner,
             name,
             tasks: vec![],
-            readers: readers_uid,
-            editors: writers_uid,
         }
     }
 
@@ -192,13 +181,6 @@ impl List {
     pub fn update_name(&mut self, name: String) {
         self.name = name;
     }
-
-    pub fn get_team(&self, role: ShareRole) -> &TeamUid {
-        match role {
-            ShareRole::Reader => &self.readers,
-            ShareRole::Editor => &self.editors,
-        }
-    }
 }
 
 impl From<List> for Entity {
@@ -212,14 +194,6 @@ impl From<List> for Entity {
             (
                 "tasks",
                 RestrictedExpression::new_set(value.tasks.into_iter().map(|t| t.into())),
-            ),
-            (
-                "readers",
-                format!("{}", value.readers.as_ref()).parse().unwrap(),
-            ),
-            (
-                "editors",
-                format!("{}", value.editors.as_ref()).parse().unwrap(),
             ),
         ]
         .into_iter()

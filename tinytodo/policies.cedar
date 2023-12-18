@@ -9,25 +9,26 @@ permit (
 permit (principal, action, resource)
 when { resource is List && resource.owner == principal };
 
-// Policy 2: A User can see a List if they are either a reader or editor
+// Policy 2: Users who are members of [?principal] are readers of [?resource]
+@id("reader-template")
 permit (
-    principal,
+    principal in ?principal,
     action == Action::"GetList",
-    resource
-)
-when { principal in resource.readers || principal in resource.editors };
+    resource == ?resource
+);
 
-// Policy 3: A User can update a List and its tasks if they are an editor
+// Policy 3: Users who are members of [?principal] are editors of [?resource]
+@id("editor-template")
 permit (
-    principal,
+    principal in ?principal,
     action in
-        [Action::"UpdateList",
+        [Action::"GetList",
+         Action::"UpdateList",
          Action::"CreateTask",
          Action::"UpdateTask",
          Action::"DeleteTask"],
-    resource
-)
-when { principal in resource.editors };
+    resource == ?resource
+);
 
 // Policy 4: Admins can perform any action on any resource
 // @id("admin-omnipotence")
