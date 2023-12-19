@@ -126,5 +126,5 @@ jobs:
     name: tinytodo
     needs: get-branch-name
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
-      inputs:
-        cedar_policy_ref: "main" # use the latest commit on main
+    with:
+      cedar_policy_ref: "main" # use the latest commit on main
