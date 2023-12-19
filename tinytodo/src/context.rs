@@ -37,7 +37,7 @@ use crate::{
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
     policy_store,
-    util::{EntityUid, ListUid, Lists, TYPE_LIST},
+    util::{EntityUid, ListUid, Lists, UserOrTeamUid, TYPE_LIST},
 };
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
@@ -408,17 +408,34 @@ impl AppContext {
         Ok(AppResponse::Unit(()))
     }
 
+    // Computes the name of the template-linked policy.
+    // This function is injective, ensuring that different share permissions will have different policy IDs
+    fn linked_policy_id(
+        role: ShareRole,
+        target: UserOrTeamUid,
+        list: ListUid,
+    ) -> std::result::Result<PolicyId, ParseErrors> {
+        let pid_prefix = match role {
+            ShareRole::Reader => "reader",
+            ShareRole::Editor => "editor",
+        };
+        let target_eid = target.as_ref().id();
+        // Note: A List EID is controlled by TinyTodo, and will always be a number
+        let list_eid = list.as_ref().id();
+        PolicyId::from_str(&format!("{pid_prefix}[{target_eid}][{list_eid}]"))
+    }
+
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
         // Confirm that the identified list and sharer are known
         let _list = self.entities.get_list(&r.list)?;
         let _target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
         // Link a template to register the new permission
-        let (tid, pid_prefix) = match r.role {
-            ShareRole::Reader => (PolicyId::from_str("reader-template")?, "reader"),
-            ShareRole::Editor => (PolicyId::from_str("editor-template")?, "editor"),
+        let tid = match r.role {
+            ShareRole::Reader => PolicyId::from_str("reader-template")?,
+            ShareRole::Editor => PolicyId::from_str("editor-template")?,
         };
-        // Construct template linking values
+        // Construct template linking environment
         let target_euid: &cedar_policy::EntityUid = r.share_with.as_ref();
         let list_euid: &cedar_policy::EntityUid = r.list.as_ref();
         let env: HashMap<SlotId, cedar_policy::EntityUid> = [
@@ -427,11 +444,8 @@ impl AppContext {
         ]
         .into_iter()
         .collect();
-        // Construct policy ID; assumes no policy in the set has it already
-        let target_eid = target_euid.id();
-        let list_eid = list_euid.id();
-        let pid = PolicyId::from_str(&format!("{pid_prefix}[{target_eid}][{list_eid}]"))?;
         // Link it!
+        let pid = Self::linked_policy_id(r.role, r.share_with, r.list)?;
         self.policies.link(tid, pid.clone(), env)?;
         info!("Created policy {pid}");
         Ok(AppResponse::Unit(()))
@@ -443,14 +457,9 @@ impl AppContext {
         let _list = self.entities.get_list(&r.list)?;
         let _target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
         // Unlink the policy that provided the permission
-        let pid_prefix = match r.role {
-            ShareRole::Reader => "reader",
-            ShareRole::Editor => "editor",
-        };
-        let target_eid = r.unshare_with.as_ref().id();
-        let list_eid = r.list.as_ref().id();
-        let pid = PolicyId::from_str(&format!("{pid_prefix}[{target_eid}][{list_eid}]"))?;
-        self.policies.unlink(pid)?;
+        let pid = Self::linked_policy_id(r.role, r.unshare_with, r.list)?;
+        self.policies.unlink(pid.clone())?;
+        info!("Removed policy {pid}");
         Ok(AppResponse::Unit(()))
     }
 
