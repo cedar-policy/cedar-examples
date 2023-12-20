@@ -36,7 +36,6 @@ pub struct EntityStore {
     uid: usize,
 }
 
-#[allow(dead_code)]
 impl EntityStore {
     pub fn euids(&self) -> impl Iterator<Item = &EntityUid> {
         self.users

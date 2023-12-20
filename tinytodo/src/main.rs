@@ -29,12 +29,15 @@ use tracing::Level;
 #[tokio::main]
 async fn main() {
     init_logger();
-    let app = AppContext::spawn(
-        "./entities.json",
-        "./tinytodo.cedarschema.json",
-        "./policies.cedar",
-    )
-    .unwrap();
+    let (schema_path, policies_path) = if cfg!(feature = "use-templates") {
+        (
+            "./tinytodo-templates.cedarschema.json",
+            "./policies-templates.cedar",
+        )
+    } else {
+        ("./tinytodo.cedarschema.json", "./policies.cedar")
+    };
+    let app = AppContext::spawn("./entities.json", schema_path, policies_path).unwrap();
     let args = std::env::args().collect::<Vec<_>>();
 
     match get_port(&args) {

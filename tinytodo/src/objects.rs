@@ -21,9 +21,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::APPLICATION_TINY_TODO,
-    entitystore::EntityDecodeError,
+    entitystore::{EntityDecodeError, EntityStore},
     util::{EntityUid, ListUid, TeamUid, UserUid},
 };
+
+#[cfg(not(feature = "use-templates"))]
+use crate::{api::ShareRole, util::TYPE_TEAM};
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Application {
@@ -141,10 +144,33 @@ pub struct List {
     owner: UserUid,
     name: String,
     tasks: Vec<Task>, // Invariant, `tasks` must be sorted
+    #[cfg(not(feature = "use-templates"))]
+    readers: TeamUid,
+    #[cfg(not(feature = "use-templates"))]
+    editors: TeamUid,
 }
 
 impl List {
-    pub fn new(uid: ListUid, owner: UserUid, name: String) -> Self {
+    #![allow(unused_variables)]
+    pub fn new(store: &mut EntityStore, uid: ListUid, owner: UserUid, name: String) -> Self {
+        #[cfg(not(feature = "use-templates"))]
+        {
+            let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
+            let readers = Team::new(readers_uid.clone());
+            let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
+            let writers = Team::new(writers_uid.clone());
+            store.insert_team(readers);
+            store.insert_team(writers);
+            Self {
+                uid,
+                owner,
+                name,
+                tasks: vec![],
+                readers: readers_uid,
+                editors: writers_uid,
+            }    
+        }
+        #[cfg(feature = "use-templates")]
         Self {
             uid,
             owner,
@@ -181,6 +207,14 @@ impl List {
     pub fn update_name(&mut self, name: String) {
         self.name = name;
     }
+
+    #[cfg(not(feature = "use-templates"))]
+    pub fn get_team(&self, role: ShareRole) -> &TeamUid {
+        match role {
+            ShareRole::Reader => &self.readers,
+            ShareRole::Editor => &self.editors,
+        }
+    }
 }
 
 impl From<List> for Entity {
@@ -194,6 +228,16 @@ impl From<List> for Entity {
             (
                 "tasks",
                 RestrictedExpression::new_set(value.tasks.into_iter().map(|t| t.into())),
+            ),
+            #[cfg(not(feature = "use-templates"))]
+            (
+                "readers",
+                format!("{}", value.readers.as_ref()).parse().unwrap(),
+            ),
+            #[cfg(not(feature = "use-templates"))]
+            (
+                "editors",
+                format!("{}", value.editors.as_ref()).parse().unwrap(),
             ),
         ]
         .into_iter()

@@ -28,14 +28,6 @@
 						"name": {
 							"type": "String"
 						},
-						"readers": {
-							"type": "Entity",
-							"name": "Team"
-						},
-						"editors": {
-							"type": "Entity",
-							"name": "Team"
-						},
 						"tasks": {
 							"type": "Set",
 							"element": {
