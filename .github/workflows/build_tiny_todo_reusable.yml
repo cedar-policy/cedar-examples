@@ -5,6 +5,10 @@ on:
         cedar_policy_ref:
           required: false
           type: string
+        cedar_examples_ref:
+          required: false
+          default: "main"
+          type: string
 
 jobs:
   build_and_test_tiny_todo:
@@ -17,6 +21,9 @@ jobs:
     steps:
       - name: Checkout Cedar Examples
         uses: actions/checkout@v3
+        with:
+          repository: cedar-policy/cedar-examples
+          ref: ${{ inputs.cedar_examples_ref }}
       - name: Checkout cedar-policy
         uses: actions/checkout@v3
         with:
