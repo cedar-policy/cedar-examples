@@ -2,6 +2,8 @@
 
 In this tutorial, we introduce Cedar and the Cedar SDK using an example application, TinyTodo, whose users and teams can organize, track, and share their todo lists. We show how to express TinyTodo permissions as Cedar policies and how TinyTodo uses the Cedar authorization engine to ensure that only intended users are granted access. We also suggest extensions to TinyTodo to help you further explore the Cedar SDK.
 
+When you finish this tutorial, we invite you to consider a follow-on which shows [how to implement TinyTodo's policies using Cedar templates](TUTORIAL_TEMPLATE.md).
+
 ## What is TinyTodo?
 
 TinyTodo allows individuals, called `User`s, and groups, called `Team`s, to organize, track, and share their todo lists. `User`s create `List`s which they can populate with tasks. As tasks are completed, they can be checked off the list.
