@@ -168,7 +168,7 @@ impl List {
                 tasks: vec![],
                 readers: readers_uid,
                 editors: writers_uid,
-            }    
+            }
         }
         #[cfg(feature = "use-templates")]
         Self {
