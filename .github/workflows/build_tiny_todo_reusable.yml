@@ -31,6 +31,11 @@ jobs:
           ref: ${{ inputs.cedar_policy_ref }}
           path: ./cedar
 # If we passed a branch for cedar-policy, modify Cargo.toml to use that branch
+# First remove the `version` directive
+      - name: Replace Crates dot IO with Github version
+        if: "${{ inputs.cedar_policy_ref != '' }}"
+        run: cd tinytodo && head Cargo.toml -n $(echo $[$(wc -l Cargo.toml | awk '{ print $1 }') - 1]) > Cargo.temp && cp Cargo.temp Cargo.toml
+# Then add the `git` and `branch` directive
       - name: Replace Crates dot IO with Github version
         if: "${{ inputs.cedar_policy_ref != '' }}"
         run: cd tinytodo && printf "\n[patch.crates-io]\ncedar-policy = { git = 'https://github.com/cedar-policy/cedar.git', branch = '${{ inputs.cedar_policy_ref }}'}" >> Cargo.toml
