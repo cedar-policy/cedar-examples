@@ -375,20 +375,16 @@ impl AppContext {
                     match new_policies.template(tid) {
                         None => {
                             // template not in new policy set
-                            let tidx = tid.clone();
-                            let pidx = p.id().clone();
+                            let pid = p.id();
                             err = true;
-                            error!("Error when reloading policies: Could not find policy template {tidx} to link {pidx}")
+                            error!("Error when reloading policies: Could not find policy template {tid} to link {pid}")
                         }
                         Some(_) => {
-                            // found template in new policy set
-                            match p.template_links() {
-                                None => error!("Error when reloading policies: Template with no matching links"),
-                                Some(vals) => {
-                                    // link against new template, using the same policy ID as the old one
-                                    new_policies.link(tid.clone(), p.id().clone(), vals)?
-                                }
-                            }
+                            // found template in new policy set; link into new policy set
+                            let vals = p.template_links().expect(
+                                "Error when reloading policies: Template with no matching links",
+                            );
+                            new_policies.link(tid.clone(), p.id().clone(), vals)?
                         }
                     }
                 }
