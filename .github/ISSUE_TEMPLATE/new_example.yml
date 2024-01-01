@@ -1,0 +1,38 @@
+name: Suggest a new example
+description: Suggest a new example  
+labels: feature-request
+
+body:
+  - type: textarea
+    attributes:
+      label: Summary
+      description: In one or two sentences, why should this example exist?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Motivation
+      description: Why is this example needed? 
+    validations:
+      required: true
+
+
+  - type: textarea
+    attributes:
+      label: Detailed Design
+      description: Provide enough detail on _how_ this should be implemented such that someone other than yourself could build it. 
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Related Issues
+      description: Add Github issue numbers/URLs that informed or would be impacted by this proposal.
+
+  - type: textarea
+    attributes:
+      label: References
+      description: List articles, resources, prior art, and inspiration for this proposal.
+
+

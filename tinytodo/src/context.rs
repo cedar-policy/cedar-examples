@@ -17,12 +17,13 @@
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use std::path::PathBuf;
-use tracing::{info, trace};
+use tracing::{error, info, trace};
 
 use cedar_policy::{
     Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet,
     PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
 };
+
 use thiserror::Error;
 use tokio::sync::{
     mpsc::{Receiver, Sender},
@@ -39,6 +40,13 @@ use crate::{
     policy_store,
     util::{EntityUid, ListUid, Lists, TYPE_LIST},
 };
+
+#[cfg(feature = "use-templates")]
+use crate::{api::ShareRole, util::UserOrTeamUid};
+#[cfg(feature = "use-templates")]
+use cedar_policy::{PolicyId, SlotId};
+#[cfg(feature = "use-templates")]
+use std::{collections::HashMap, str::FromStr};
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
 
@@ -308,7 +316,7 @@ impl AppContext {
             let tx = send.clone();
             tokio::spawn(async move {
                 info!("Serving application server!");
-                policy_store::spawn_watcher(policies_path, schema_path, tx).await;
+                policy_store::spawn_watcher(policies_path, tx).await;
                 let c = Self {
                     entities,
                     authorizer,
@@ -355,27 +363,122 @@ impl AppContext {
 
     #[tracing::instrument(skip(policy_set))]
     fn update_policy_set(&mut self, policy_set: PolicySet) -> Result<AppResponse> {
-        let policies = rename_from_id_annotation(policy_set)?;
-        self.policies = policies;
-        info!("Reloaded policy set");
+        let mut new_policies = rename_from_id_annotation(policy_set)?;
+        let mut err = false;
+        // for each existing template-linked policy,
+        //   link against the new version of the template in the new policy set if present
+        for p in self.policies.policies() {
+            match p.template_id() {
+                None => (), // not a template-linked policy
+                Some(tid) => {
+                    // template-linked policy
+                    match new_policies.template(tid) {
+                        None => {
+                            // template not in new policy set
+                            let pid = p.id();
+                            err = true;
+                            error!("Error when reloading policies: Could not find policy template {tid} to link {pid}")
+                        }
+                        Some(_) => {
+                            // found template in new policy set; link into new policy set
+                            let vals = p.template_links().expect(
+                                "Error when reloading policies: Template with no matching links",
+                            );
+                            new_policies.link(tid.clone(), p.id().clone(), vals)?
+                        }
+                    }
+                }
+            }
+        }
+        // no error during relinking; now validate policies
+        if !err {
+            let validator = Validator::new(self.schema.clone());
+            let output = validator.validate(&new_policies, ValidationMode::default());
+            if !output.validation_passed() {
+                for e in output.validation_errors() {
+                    error!("Error validating linked policies: {e}")
+                }
+            } else {
+                self.policies = new_policies;
+                info!("Reloaded policy set")
+            }
+        }
         Ok(AppResponse::Unit(()))
+    }
+
+    // Computes the name of the template-linked policy; only relevant with "use-templates" feature enabled
+    // This function is injective, ensuring that different share permissions will have different policy IDs
+    #[cfg(feature = "use-templates")]
+    fn linked_policy_id(
+        role: ShareRole,
+        target: UserOrTeamUid,
+        list: ListUid,
+    ) -> std::result::Result<PolicyId, ParseErrors> {
+        let pid_prefix = match role {
+            ShareRole::Reader => "reader",
+            ShareRole::Editor => "editor",
+        };
+        let target_eid = target.as_ref().id();
+        // Note: A List EID is controlled by TinyTodo, and will always be a number
+        let list_eid = list.as_ref().id();
+        PolicyId::from_str(&format!("{pid_prefix}[{target_eid}][{list_eid}]"))
     }
 
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
-        let list = self.entities.get_list(&r.list)?;
-        let team_uid = list.get_team(r.role).clone();
-        let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
-        target_entity.insert_parent(team_uid);
+        #[cfg(feature = "use-templates")]
+        {
+            // Confirm that the identified list and sharer are known
+            let _list = self.entities.get_list(&r.list)?;
+            let _target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
+            // Link a template to register the new permission
+            let tid = match r.role {
+                ShareRole::Reader => PolicyId::from_str("reader-template")?,
+                ShareRole::Editor => PolicyId::from_str("editor-template")?,
+            };
+            // Construct template linking environment
+            let target_euid: &cedar_policy::EntityUid = r.share_with.as_ref();
+            let list_euid: &cedar_policy::EntityUid = r.list.as_ref();
+            let env: HashMap<SlotId, cedar_policy::EntityUid> = [
+                (SlotId::principal(), target_euid.clone()),
+                (SlotId::resource(), list_euid.clone()),
+            ]
+            .into_iter()
+            .collect();
+            // Link it!
+            let pid = Self::linked_policy_id(r.role, r.share_with, r.list)?;
+            self.policies.link(tid, pid.clone(), env)?;
+            info!("Created policy {pid}");
+        }
+        #[cfg(not(feature = "use-templates"))]
+        {
+            let list = self.entities.get_list(&r.list)?;
+            let team_uid = list.get_team(r.role).clone();
+            let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
+            target_entity.insert_parent(team_uid);
+        }
         Ok(AppResponse::Unit(()))
     }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
-        let list = self.entities.get_list(&r.list)?;
-        let team_uid = list.get_team(r.role).clone();
-        let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
-        target_entity.delete_parent(&team_uid);
+        #[cfg(feature = "use-templates")]
+        {
+            // Confirm that the identified list and un-sharer are known
+            let _list = self.entities.get_list(&r.list)?;
+            let _target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
+            // Unlink the policy that provided the permission
+            let pid = Self::linked_policy_id(r.role, r.unshare_with, r.list)?;
+            self.policies.unlink(pid.clone())?;
+            info!("Removed policy {pid}");
+        }
+        #[cfg(not(feature = "use-templates"))]
+        {
+            let list = self.entities.get_list(&r.list)?;
+            let team_uid = list.get_team(r.role).clone();
+            let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
+            target_entity.delete_parent(&team_uid);
+        }
         Ok(AppResponse::Unit(()))
     }
 
