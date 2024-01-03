@@ -18,7 +18,7 @@ Install the needed python packages, and build the server as follows.
 
 ```shell
 pip3 install -r requirements.txt
-cargo build --release --config 'patch.crates-io.cedar-policy.git="https://github.com/cedar-policy/cedar"'
+cargo build --release
 ```
 
 The Rust executable is stored in `target/release/tiny-todo-server`.
