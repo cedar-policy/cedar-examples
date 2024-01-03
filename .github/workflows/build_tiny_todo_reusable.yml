@@ -30,6 +30,8 @@ jobs:
           repository: cedar-policy/cedar
           ref: ${{ inputs.cedar_policy_ref }}
           path: ./cedar
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
 # If we passed a branch for cedar-policy, modify Cargo.toml to use that branch
       - name: Replace main with Specified Branch
         if: "${{ inputs.cedar_policy_ref != '' }}"
