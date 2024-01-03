@@ -33,7 +33,7 @@ jobs:
 # If we passed a branch for cedar-policy, modify Cargo.toml to use that branch
       - name: Replace Crates dot IO with Github version
         if: "${{ inputs.cedar_policy_ref != '' }}"
-        run: cd tinytodo && printf "\n[patch.crates-io]\ncedar-policy = { git = 'https://github.com/cedar-policy/cedar.git', branch = '${{ inputs.cedar_policy_ref }}'}" >> Cargo.toml
+        run: cd tinytodo && head -n -2 Cargo.toml > Temp.toml ; mv Temp.toml Cargo.toml && printf 'branch = "${{ inputs.cedar_policy_ref }}"\n' >> Cargo.toml
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: cargo fmt
