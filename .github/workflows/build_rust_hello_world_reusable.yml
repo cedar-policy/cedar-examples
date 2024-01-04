@@ -20,18 +20,11 @@ jobs:
         toolchain:
           - stable
     steps:
-steps:
       - name: Checkout Cedar Examples
         uses: actions/checkout@v3
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
-      - name: Checkout cedar-policy
-        uses: actions/checkout@v3
-        with:
-          repository: cedar-policy/cedar
-          ref: ${{ inputs.cedar_policy_ref }}
-          path: ./cedar
 # If we passed a branch for cedar-policy, modify Cargo.toml to use that branch
       - name: Replace Crates dot IO with Github version
         if: "${{ inputs.cedar_policy_ref != '' }}"
@@ -43,9 +36,7 @@ steps:
         run: cargo fmt --all --check
       - name: cargo rustc
         working-directory: ./cedar-rust-hello-world
-        run: |
-             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
-             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
+        run: RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
       - name: cargo test
         working-directory: ./cedar-rust-hello-world
         run: cargo test --verbose
