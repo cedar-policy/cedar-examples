@@ -19,75 +19,6 @@ jobs:
     outputs:
       branch_name: ${{ steps.get_branch_name.outputs.branch_name }}
 
-  run_example_use_cases:
-    name: example-use-cases
-    runs-on: ubuntu-latest
-    needs: get-branch-name
-    strategy:
-      matrix:
-        toolchain:
-          - stable
-    steps:
-      - name: Checkout Cedar Examples
-        uses: actions/checkout@v3
-      - name: Checkout cedar
-        uses: actions/checkout@v3
-        with:
-          repository: cedar-policy/cedar
-          ref: ${{ needs.get-branch-name.outputs.branch_name }}
-          path: ./cedar
-      - name: rustup
-        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - name: build cli
-        working-directory: ./cedar
-        run: cargo build --bin cedar
-      - name: run validation and authorization
-        working-directory: ./cedar-example-use-cases
-        run: |
-             export PATH="$PWD/../cedar/target/debug/":$PATH
-             echo $PATH
-             ./run.sh
-      - name: run validation and authorization for cedar-policy-language-in-action
-        working-directory: ./cedar-policy-language-in-action
-        run: |
-             export PATH="$PWD/../cedar/target/debug/":$PATH
-             echo $PATH
-             ./run.sh
-
-  build_and_test_rust_hello_world:
-    name: rust-hello-world
-    runs-on: ubuntu-latest
-    needs: get-branch-name
-    strategy:
-      matrix:
-        toolchain:
-          - stable
-    steps:
-      - name: Checkout Cedar Examples
-        uses: actions/checkout@v3
-      - name: Checkout cedar
-        uses: actions/checkout@v3
-        with:
-          repository: cedar-policy/cedar
-          ref: ${{ needs.get-branch-name.outputs.branch_name }}
-          path: ./cedar
-      - name: rustup
-        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - name: cargo fmt
-        working-directory: ./cedar-rust-hello-world
-        run: cargo fmt --all --check
-      - name: cargo rustc
-        working-directory: ./cedar-rust-hello-world
-        run: |
-             printf "\npath = \"../cedar/cedar-policy\"" >> Cargo.toml
-             RUSTFLAGS="-D warnings -F unsafe-code" cargo build --verbose
-      - name: cargo test
-        working-directory: ./cedar-rust-hello-world
-        run: cargo test --verbose
-      - name: cargo run
-        working-directory: ./cedar-rust-hello-world
-        run: cargo run --verbose
-
   build_and_test_java_hello_world:
     name: java-hello-world
     runs-on: ubuntu-latest
@@ -120,12 +51,26 @@ jobs:
         working-directory: ./cedar-java-hello-world
         run: ./gradlew test
 
+  run_example_use_cases:
+    name: run_example_use_cases
+    needs: get-branch-name
+    uses: ./.github/workflows/run_example_use_cases_reusable.yml
+    with:
+      cedar_policy_ref: "main" # use the latest commit on main
+      cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
 
+  build_rust_hello_world:
+    name: rust_hello_world
+    needs: get-branch-name
+    uses: ./.github/workflows/build_rust_hello_world_reusable.yml
+    with:
+      cedar_policy_ref: "main" # use the latest commit on main
+      cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
 
-  build_and_test_tiny_todo:
+  build_tiny_todo:
     name: tinytodo
     needs: get-branch-name
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
     with:
       cedar_policy_ref: "main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.head_ref }}"
+      cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
