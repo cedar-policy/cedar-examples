@@ -12,4 +12,4 @@ echo -e "\nTesting document_cloud..."
 validate "document_cloud" "policies.cedar" "document_cloud.cedarschema.json"
 authorize "document_cloud" "policies.cedar" "entities.json"
 
-exit "$ANY_FAILED"
+exit "$any_failed"

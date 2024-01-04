@@ -1,11 +1,9 @@
-#!/bin/bash
-
 # Usage: `source` this script from a testing script in a subdirectory. This
 # will make the `validate` and `authorize` functions available. Use these to
 # test that polices validate and authorizer as expected. The env var
-# `ANY_FAILED` is exported as `0` when this script is sourced. A failing test
-# case causes the `ANY_FAILED` env var to be set to `1`. A passing test does
-# not change the variable. After running all tests `exit "$ANY_FAILED"` to exit
+# `any_failed` is exported as `0` when this script is sourced. A failing test
+# case causes the `any_failed` var to be set to `1`. A passing test does
+# not change the variable. After running all tests `exit "$any_failed"` to exit
 # non-zero for any failing test case.
 
 passed() {
@@ -13,16 +11,16 @@ passed() {
     echo "  ✅ PASS: $message"
 }
 
-export ANY_FAILED=0
+any_failed=0
 failed() {
     local message=$1
     echo "  ❌ FAIL: $message"
-    export ANY_FAILED=1
+    any_failed=1
 }
 
 
 # Call this function to assert that policies in the directory `$1/$2` validate
-# with the schema `$1/$3`. Set `ANY_FAILED` env var to `1` if the policy does
+# with the schema `$1/$3`. Set `any_failed` env var to `1` if the policy does
 # not validate.
 validate() {
     local folder=$1

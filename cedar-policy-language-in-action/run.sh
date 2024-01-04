@@ -12,4 +12,4 @@ echo -e "\nTesting GitApp..."
 validate "GitApp" "gitapp.cedar" "gitapp.cedarschema.json"
 authorize "GitApp" "gitapp.cedar" "gitapp.cedarentities.json"
 
-exit "$ANY_FAILED"
+exit "$any_failed"
