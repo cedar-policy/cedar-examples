@@ -128,3 +128,4 @@ jobs:
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
     with:
       cedar_policy_ref: "main" # use the latest commit on main
+      cedar_examples_ref: "${{ github.head_ref }}"
