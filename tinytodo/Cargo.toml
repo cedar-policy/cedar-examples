@@ -17,10 +17,11 @@ tracing-subscriber = "0.3.17"
 lazy_static = "1.4.0"
 notify = { version = "5.1.0", default-features = false, features = ["macos_kqueue"] }
 
+[features]
+use-templates = []
+
 [dependencies.cedar-policy]
 version = "3.0.0"
 git = "https://github.com/cedar-policy/cedar"
 branch = "main"
-
-[features]
-use-templates = []
+#Do not add any lines below this. CI relies on the previous line being the second-to-last line in the file
