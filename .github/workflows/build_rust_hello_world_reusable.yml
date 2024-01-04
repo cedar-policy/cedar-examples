@@ -14,7 +14,6 @@ jobs:
   build_and_test_rust_hello_world:
     name: rust-hello-world
     runs-on: ubuntu-latest
-    needs: get-branch-name
     strategy:
       matrix:
         toolchain:

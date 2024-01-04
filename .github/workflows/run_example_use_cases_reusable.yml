@@ -14,7 +14,6 @@ jobs:
   run_example_use_cases:
     name: example-use-cases
     runs-on: ubuntu-latest
-    needs: get-branch-name
     strategy:
       matrix:
         toolchain:
