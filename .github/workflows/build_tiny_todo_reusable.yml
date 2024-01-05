@@ -46,8 +46,16 @@ jobs:
       - name: cargo test
         working-directory: ./tinytodo
         run: cargo test --verbose
+      - name: cargo test templates
+        working-directory: ./tinytodo
+        run: cargo test --verbose --features=use-templates
       - name: python test
         working-directory: ./tinytodo
         run: |
           cargo build --release
+          python3 -m unittest
+      - name: python test templates
+        working-directory: ./tinytodo
+        run: |
+          cargo build --release --features=use-templates
           python3 -m unittest
