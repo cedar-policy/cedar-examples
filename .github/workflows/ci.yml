@@ -56,7 +56,7 @@ jobs:
     needs: get-branch-name
     uses: ./.github/workflows/run_example_use_cases_reusable.yml
     with:
-      cedar_policy_ref: "main" # use the latest commit on main
+      cedar_policy_ref: "refs/heads/main" # use the latest commit on main
       cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
 
   build_rust_hello_world:
@@ -64,7 +64,7 @@ jobs:
     needs: get-branch-name
     uses: ./.github/workflows/build_rust_hello_world_reusable.yml
     with:
-      cedar_policy_ref: "main" # use the latest commit on main
+      cedar_policy_ref: "refs/heads/main" # use the latest commit on main
       cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
 
   build_tiny_todo:
@@ -72,5 +72,5 @@ jobs:
     needs: get-branch-name
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
     with:
-      cedar_policy_ref: "main" # use the latest commit on main
+      cedar_policy_ref: "refs/heads/main" # use the latest commit on main
       cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
