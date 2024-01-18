@@ -409,11 +409,7 @@ impl AppContext {
     // Computes the name of the template-linked policy; only relevant with "use-templates" feature enabled
     // This function is injective, ensuring that different share permissions will have different policy IDs
     #[cfg(feature = "use-templates")]
-    fn linked_policy_id(
-        role: ShareRole,
-        target: UserOrTeamUid,
-        list: ListUid,
-    ) -> PolicyId  {
+    fn linked_policy_id(role: ShareRole, target: UserOrTeamUid, list: ListUid) -> PolicyId {
         let pid_prefix = match role {
             ShareRole::Reader => "reader",
             ShareRole::Editor => "editor",
