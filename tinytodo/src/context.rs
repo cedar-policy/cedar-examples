@@ -272,7 +272,7 @@ fn rename_from_id_annotation(ps: PolicySet) -> std::result::Result<PolicySet, Re
         }
     });
     for t in t_iter {
-        let template = t?;
+        let template = t.unwrap_or_else(|never| match never {});
         new_ps.add_template(template)?;
     }
     let p_iter = ps.policies().map(|p| match p.annotation("id") {
@@ -283,7 +283,7 @@ fn rename_from_id_annotation(ps: PolicySet) -> std::result::Result<PolicySet, Re
         }
     });
     for p in p_iter {
-        let policy = p?;
+        let policy = p.unwrap_or_else(|never| match never {});
         new_ps.add(policy)?;
     }
     Ok(new_ps)
