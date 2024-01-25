@@ -19,5 +19,4 @@ notify = { version = "5.1.0", default-features = false, features = ["macos_kqueu
 
 [dependencies.cedar-policy]
 version = "3.0.0"
-git = "https://github.com/cedar-policy/cedar"
-branch = "main"
+
