@@ -24,7 +24,8 @@ mod util;
 use context::AppContext;
 use std::num::ParseIntError;
 use thiserror::Error;
-use tracing::Level;
+use tracing::error;
+use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() {
@@ -37,7 +38,13 @@ async fn main() {
     } else {
         ("./tinytodo.cedarschema.json", "./policies.cedar")
     };
-    let app = AppContext::spawn("./entities.json", schema_path, policies_path).unwrap();
+    let app = match AppContext::spawn("./entities.json", schema_path, policies_path) {
+        Ok(app) => app,
+        Err(e) => {
+            error!("Failed to load entities, policies, or schema: {e}");
+            std::process::exit(1);
+        }
+    };
     let args = std::env::args().collect::<Vec<_>>();
 
     match get_port(&args) {
@@ -50,22 +57,12 @@ async fn main() {
 }
 
 fn init_logger() {
-    if let Ok(var) = std::env::var("RUST_LOG") {
-        let level = match var.as_str() {
-            "debug" => Level::DEBUG,
-            "error" => Level::ERROR,
-            "info" => Level::INFO,
-            "trace" => Level::TRACE,
-            "warn" => Level::WARN,
-            _ => Level::INFO,
-        };
-        let subscriber = tracing_subscriber::FmtSubscriber::builder()
-            .pretty()
-            .with_max_level(level)
-            .finish();
-        if let Err(e) = tracing::subscriber::set_global_default(subscriber) {
-            eprintln!("Error setting up tracing: {e}");
-        }
+    let subscriber = tracing_subscriber::FmtSubscriber::builder()
+        .pretty()
+        .with_env_filter(EnvFilter::from_default_env())
+        .finish();
+    if let Err(e) = tracing::subscriber::set_global_default(subscriber) {
+        eprintln!("Error setting up tracing: {e}");
     }
 }
 
