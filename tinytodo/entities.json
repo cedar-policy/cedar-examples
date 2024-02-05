@@ -2,7 +2,7 @@
   "users": {
     "User::\"kesha\"": {
       "euid": "User::\"kesha\"",
-      "location": "WAS17",
+      "location": "ABC17",
       "joblevel": 5,
       "parents": [
         "Application::\"TinyTodo\"",
@@ -11,7 +11,7 @@
     },
     "User::\"aaron\"": {
       "euid": "User::\"aaron\"",
-      "location": "WAS17",
+      "location": "ABC17",
       "joblevel": 5,
       "parents": [
         "Team::\"interns\"",
@@ -20,7 +20,7 @@
     },
     "User::\"emina\"": {
       "euid": "User::\"emina\"",
-      "location": "SEA33",
+      "location": "DEF33",
       "joblevel": 8,
       "parents": [
         "Application::\"TinyTodo\"",
@@ -29,7 +29,7 @@
     },
     "User::\"andrew\"": {
       "euid": "User::\"andrew\"",
-      "location": "SJC38",
+      "location": "XYZ77",
       "joblevel": 5,
       "parents": [
         "Application::\"TinyTodo\"",
