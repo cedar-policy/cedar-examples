@@ -95,7 +95,8 @@ impl From<User> for Entity {
             euid.into(),
             attrs,
             value.parents.into_iter().map(|euid| euid.into()).collect(),
-        ).unwrap()
+        )
+        .unwrap()
     }
 }
 
