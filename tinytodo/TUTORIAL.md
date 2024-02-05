@@ -19,7 +19,7 @@ To build TinyTodo you need to install Rust and Python3. Download and build the T
 Python3 packages) by doing the following.
 
 
-<pre><code>>git clone https://github.com/cedar-policy/cedar-examples
+<pre><code>> git clone https://github.com/cedar-policy/cedar-examples
 <i>...downloading messages here</i>
 > cd cedar-examples/tinytodo
 > pip3 install -r requirements.txt
@@ -155,7 +155,7 @@ The Cedar language is based on a data model that organizes **entities** into **h
 
 In TinyTodo, we have several entity types: 
 
-* `User` is the type of individual users. In our example run, we have four `User` entities, shown in Figure 2, with EIDs `emina`, `andrew`, `kesha`, and `aaron`, and therefore UIDs `User::"emina"`, `User::"andrew"`, `User::"kesha"`, and `User::"aaron"`, respectively.  
+* `User` is the type of individual users. In our example run, we have four `User` entities, shown in Figure 2, with EIDs `emina`, `andrew`, `kesha`, and `aaron`, and therefore UIDs `User::"emina"`, `User::"andrew"`, `User::"kesha"`, and `User::"aaron"`, respectively. (`User` entities also have attributes, which we'll discuss later.)
 * `Team` is the type of teams of users. As shown in Figure 2, both `User` and `Team` entities may have other `Team` entities as their parents in the entity hierarchy, meaning that they are members of those teams. For example, `User::"andrew"` has parent (is a member of) `Team::"temp"`, and so does `Team::"interns"`. Thanks to the latter, and the transitivity of the reachability operator `in`, we have that `User::"aaron" in Team::"interns"` and also `User::"aaron" in Team::"temp"`.
 * `Action` is a special entity type used for Cedar actions. One example action entity is `Action::"GetList"`, mentioned in *policy 2*. 
 * `List` is the type of task lists; Figure 3 gives the list from our example run. `Lists` have five attributes: the `name` of the list; the `owner`, which is the `User` who created the `List`; the `readers` and `editors` of the list, defined as fresh `Team` entities created when the `List` is; and the individual tasks, defined as a set of records, each with three attributes: `name`, `id`, and `state` (whether the task has been completed).
@@ -191,6 +191,8 @@ Some TinyTodo data, e.g., `User`s and named `Team`s, are defined when the applic
 ```json
 "User::\"aaron\"": {
     "euid": "User::\"aaron\"",
+    "location": "ABC17",
+    "joblevel": 5,
     "parents": [
         "Team::\"interns\"",
         "Application::\"TinyTodo\""
@@ -206,7 +208,7 @@ Some TinyTodo data, e.g., `User`s and named `Team`s, are defined when the applic
 },
 ```
 
-We can see that `User::"aaron"` has no attributes, nor does `Team::"interns"` (as is the case for all `User`s and `Team`s). As also depicted in Figure 2, `User::"aaron"` has among its `parents` the `Team::"interns"`, while `Team::"interns"` has `Team::"temp"` among its parents. Both entities have `Application::"TinyTodo"` as a parent.
+We can see that `User::"aaron"` has two attributes, `location` (a Cedar `String` representing a location code) and a job level (a Cedar `Long` representing a job level). Other `User` entities also have these attributes. Entity `Team::"interns"` has no attributes (as is the case for all `Team`s). As also depicted in Figure 2, `User::"aaron"` has among its `parents` the `Team::"interns"`, while `Team::"interns"` has `Team::"temp"` among its parents. Both entities have `Application::"TinyTodo"` as a parent.
 
 ## TinyTodo logic, with authorization by Cedar
 
@@ -324,10 +326,10 @@ when { principal in resource.editors };
 
 In words, the policies can be described as follows:
 
-1. Any user can perform actions `CreateList`, `GetLists` (to create a list, and enumerate owned lists, respectively).
-2. The `List` owner can perform any action on it (`EditList`, `DeleteList`, `CreateTask`, ...).
-3. A `List` reader can perform read-only actions on it (`GetList`).
-4. A `List` editor can perform read and write actions on it (`GetList`, `UpdateList`, `DeleteTask`, ...).
+0. Any user can perform actions `CreateList`, `GetLists` (to create a list, and enumerate owned lists, respectively).
+1. The `List` owner can perform any action on it (`EditList`, `DeleteList`, `CreateTask`, ...).
+2. A `List` reader can perform read-only actions on it (`GetList`).
+3. A `List` editor can perform read and write actions on it (`GetList`, `UpdateList`, `DeleteTask`, ...).
 
 To see how these policies affect the outcome, suppose user `kesha` attempts to create a task `"write release notes"` for list ID 0, which `andrew` created. This will result in the `create_task` handler being called, which we looked at earlier, which in turn will call `is_authorized` with a Cedar `Request` asking whether principal `User::"kesha"`  can perform action `Action::"CreateTask"` on resource `List::"0"`. The `is_authorized` call will also include the entities `&es` constructed from our `EntityStore`, which the Cedar authorization engine can consult when it evaluates each of the provided policies, one at a time. 
 
@@ -441,6 +443,36 @@ Created list ID 0
 >>> stop_server()
 TinyTodo server stopped on port 8080
 ```
+
+As a final extension, we can add this policy:
+```
+// Policy 6: No access if not high rank and at location DEF, 
+// or at resource's owner's location
+forbid(
+    principal,
+    action,
+    resource is List
+) unless {
+    principal.joblevel > 6 && principal.location like "DEF*" ||
+    principal.location == resource.owner.location
+};
+```
+This policy is another `forbid` that is acting as a kind of "guard rail." It says that no principal is allowed to perform any action on a `List` unless (a) that principal is based at location DEF and is in a leader-level job, or (b) the principal's location is the same as resource's owner's location. Since it's a `forbid` policy, it is not granting access; rather, it revokes some accesses granted by existing `permit` policies. To see this, consider the following interactions:
+```
+>>> set_user(kesha)
+User is now kesha
+>>> create_list("my list")
+Created list ID 0
+>>> share_list(0,andrew,read_only=True)
+Shared list ID 0 with andrew as reader
+>>> set_user(andrew)
+User is now andrew
+>>> get_list(0)
+Access denied. User andrew is not authorized to Get List on [0]
+```
+Here, Kesha creates a list which she shares with Andrew, but then Andrew is not able to view the list. That's because Andrew's location is `XYZ77` while the list's owner's (i.e., Kesha's) location is `ABC17`, and the two do not match. Nor is Andrew based at location DEF with a sufficiently high job level.
+
+Policy 6 is noteworthy for being a classic example of an *attribute-based access control* (ABAC) policy: The decision is based on attributes of the attributes of the principal and resource where these attributes are strings and numbers (rather than entities and groups).
 
 ## Validating Cedar policies
 
@@ -583,7 +615,7 @@ What entities are relevant to policies that could authorize this request? Here a
 
 Providing only the needed entity data can net a significant savings. A nice extension would be to **implement a more optimized `as_entities` method for `EntityStore`,** which takes the `principal` and `resource` elements of a request, and returns back only the relevant `Entities`, following the reasoning above. The process of choosing the relevant entities from the store based on a request is called *entity slicing*.
 
-The main concern with entity slicing is that writing the algorithm for doing it requires thinking about the specific policies we have right now. If we developed future policies, their expectations may require entities not included in the slice. For example, suppose we added *policy 6* which stated 
+The main concern with entity slicing is that writing the algorithm for doing it requires thinking about the specific policies we have right now. If we developed future policies, their expectations may require entities not included in the slice. For example, suppose we added *policy 7* which stated 
 
 ```
 permit(
