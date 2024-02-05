@@ -6,7 +6,18 @@
 				"memberOfTypes": [
 					"Team",
 					"Application"
-				]
+				],
+				"shape": {
+					"type": "Record",
+					"attributes": {
+						"location": {
+							"type": "String"
+						},
+						"joblevel": {
+							"type": "Long"
+						}
+					}
+				}
 			},
 			"Team": {
 				"memberOfTypes": [
