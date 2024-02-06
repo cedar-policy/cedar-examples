@@ -61,6 +61,8 @@ pub trait UserOrTeam {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     euid: UserUid,
+    joblevel: i64,
+    location: String,
     parents: HashSet<EntityUid>,
 }
 
@@ -69,10 +71,12 @@ impl User {
         &self.euid
     }
 
-    pub fn new(euid: UserUid) -> Self {
+    pub fn new(euid: UserUid, joblevel: i64, location: String) -> Self {
         let parent = Application::default().euid().clone();
         Self {
             euid,
+            joblevel,
+            location,
             parents: [parent].into_iter().collect(),
         }
     }
@@ -80,11 +84,21 @@ impl User {
 
 impl From<User> for Entity {
     fn from(value: User) -> Entity {
+        let attrs = [
+            ("joblevel", RestrictedExpression::new_long(value.joblevel)),
+            ("location", RestrictedExpression::new_string(value.location)),
+        ]
+        .into_iter()
+        .map(|(x, v)| (x.into(), v))
+        .collect();
+
         let euid: EntityUid = value.euid.into();
-        Entity::new_no_attrs(
+        Entity::new(
             euid.into(),
+            attrs,
             value.parents.into_iter().map(|euid| euid.into()).collect(),
         )
+        .unwrap()
     }
 }
 

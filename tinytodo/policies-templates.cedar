@@ -44,3 +44,14 @@ permit (
 //     action == Action::"CreateList",
 //     resource == Application::"TinyTodo"
 // );
+//
+// Policy 6: No access if not high rank and at location DEF, 
+// or at resource's owner's location
+// forbid(
+//     principal,
+//     action,
+//     resource is List
+// ) unless {
+//     principal.joblevel > 6 && principal.location like "DEF*" ||
+//     principal.location == resource.owner.location
+// };
