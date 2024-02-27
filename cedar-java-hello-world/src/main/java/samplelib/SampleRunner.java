@@ -30,37 +30,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Documentation for SampleJavaClass.
- */
-public class SampleJavaClass {
-
-    /**
-     * Execute the query "Can principal Alice perform the action View_Photo on resource Pic01".
-     */
-    public boolean sampleMethod() throws AuthException {
-        AuthorizationEngine ae = new BasicAuthorizationEngine();
-        AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
-            "Action::\"View_Photo\"",
-        "Photo::\"pic01\"", new HashMap<>());
-        return ae.isAuthorized(r, buildSlice()).isAllowed();
-    }
-
-    /**
-     * Build the slice of the store the cedar evaluator will see.
-     */
-    private Slice buildSlice() {
-        Set<Policy> p = buildPolicySlice();
-        Set<Entity> e = buildEntitySlice();
-        return new BasicSlice(p, e);
-    }
-
+public class SampleRunner {
     /**
      * Returns the set of policies the evaluation engine will see.
      * In this case, we have one policy, that says:
      * the principal Alice, can perform the action View_Photo, on any resource that's a child of resource Vacation
      */
-    private Set<Policy> buildPolicySlice() {
+    private static Set<Policy> buildPolicySlice() {
         Set<Policy> ps = new HashSet<>();
         String fullPolicy =
             "permit(principal == User::\"Alice\", action == Action::\"View_Photo\", resource in Album::\"Vacation\");";
@@ -68,13 +44,7 @@ public class SampleJavaClass {
         return ps;
     }
 
-    /**
-     * Create the set of entities the evaluation engine will see.
-     * In this case we have one user Alice
-     * One action View_Photo
-     * A resource Vacation that has two children, pic01 and pic02
-     */
-    private Set<Entity> buildEntitySlice() {
+    private static Set<Entity> buildEntitySlice() {
         Set<Entity> e = new HashSet<>();
         Entity album = new Entity(new JsonEUID("Album", "Vacation"), new HashMap<>(), new HashSet<>());
         e.add(album);
@@ -87,36 +57,47 @@ public class SampleJavaClass {
         return e;
     }
 
-    /**
-     * Execute a query with an invalid policy to show errors.
-     */
-    public AuthorizationResponse shouldFail() throws AuthException {
-        AuthorizationEngine ae = new BasicAuthorizationEngine();
+
+    private static boolean testRun(BasicSlice slice, AuthorizationEngine engine) {
         AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
             "Action::\"View_Photo\"",
         "Photo::\"pic01\"", new HashMap<>());
-        AuthorizationResponse resp = ae.isAuthorized(r, buildFailingSlice());
-        return resp;
+        try {
+            AuthorizationResponse resp = engine.isAuthorized(r, slice);
+            return resp.isAllowed();
+        } catch (Exception e) {
+            System.err.println("Error!");
+            return false;
+        }
+
     }
 
-    /**
-     * Build a slice that contains an invalid policy
-     */
-    private Slice buildFailingSlice() {
-        Set<Policy> p = buildUnparseable();
-        Set<Entity> e = buildEntitySlice();
-        return new BasicSlice(p, e);
+    public static void main(String[] args) {
+
+        int NUM_PRE_RUNS = 100;
+        int NUM_RUNS = 100;
+
+        boolean res = true;
+
+        AuthorizationEngine engine = new BasicAuthorizationEngine();
+        BasicSlice slice = new BasicSlice(buildPolicySlice(), buildEntitySlice());
+
+
+        for(int i = 0; i < NUM_PRE_RUNS; i++) {
+            res &= testRun(slice, engine);
+        }
+
+        long start = System.currentTimeMillis();
+
+        for(int i = 0; i < NUM_RUNS; i++) {
+            res &= testRun(slice, engine);
+        }
+
+        // do something
+        long end = System.currentTimeMillis();
+        long executionTime = end - start;
+        System.out.println("execution time: "+executionTime+" ms");
+
+        System.out.println("res: "+res);
     }
-
-
-    /**
-     * Returns a set containing a non-gramatically correct policy
-     */
-    private Set<Policy> buildUnparseable() {
-        Set<Policy> ps = new HashSet<>();
-        ps.add(new Policy("not a policy", "p2"));
-        return ps;
-    }
-
-
 }
