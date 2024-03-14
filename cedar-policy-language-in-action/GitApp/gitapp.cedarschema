@@ -1,0 +1,55 @@
+namespace GitApp {
+  entity Issue;
+  entity User;
+  entity Repo in [Application] = {
+    "admins": Set<User>,
+    "contributors"?: Set<User>,
+    "reporters"?: Set<User>,
+  };
+  entity Application;
+
+  action "addRepoAdmin" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "editIssue" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "deleteIssue" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "forkRepo" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "pushRepo" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "addRepoContributor" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "pullRepo" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "assignIssue" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "closeIssue" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "addRepoReporter" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+  action "addIssue" appliesTo {
+    principal: [User],
+    resource: [Repo]
+  };
+}
