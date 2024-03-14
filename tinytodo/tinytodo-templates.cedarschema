@@ -2,7 +2,7 @@ entity Team in [Team, Application];
 entity List in [Application] = {
   "name": String,
   "owner": User,
-  "tasks": Set <{
+  "tasks": Set<{
     "id": Long,
     "name": String,
     "state": String,
@@ -14,39 +14,19 @@ entity User in [Team, Application] = {
 };
 entity Application;
 
-action "DeleteList" appliesTo {
+action DeleteList, UpdateList, GetList appliesTo {
   principal: [User],
   resource: [List]
 };
-action "DeleteTask" appliesTo {
+action CreateTask, DeleteTask, UpdateTask appliesTo {
   principal: [User],
   resource: [List]
 };
-action "UpdateList" appliesTo {
+action EditShare appliesTo {
   principal: [User],
   resource: [List]
 };
-action "GetLists" appliesTo {
+action CreateList, GetLists appliesTo {
   principal: [User],
   resource: [Application],
-};
-action "EditShare" appliesTo {
-  principal: [User],
-  resource: [List]
-};
-action "GetList" appliesTo {
-  principal: [User],
-  resource: [List]
-};
-action "CreateList" appliesTo {
-  principal: [User],
-  resource: [Application],
-};
-action "CreateTask" appliesTo {
-  principal: [User],
-  resource: [List]
-};
-action "UpdateTask" appliesTo {
-  principal: [User],
-  resource: [List]
 };
