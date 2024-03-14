@@ -1,0 +1,63 @@
+entity Team in [UserGroup];
+entity Issue  = {
+  "repo": Repository,
+  "reporter": User,
+};
+entity Org  = {
+  "members": UserGroup,
+  "owners": UserGroup,
+};
+entity UserGroup in [UserGroup];
+entity Repository  = {
+  "admins": UserGroup,
+  "maintainers": UserGroup,
+  "readers": UserGroup,
+  "triagers": UserGroup,
+  "writers": UserGroup,
+};
+entity User in [UserGroup, Team];
+
+action "push" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "edit_issue" appliesTo {
+  principal: [User],
+  resource: [Issue]
+};
+action "assign_issue" appliesTo {
+  principal: [User],
+  resource: [Issue]
+};
+action "add_reader" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "pull" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "add_writer" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "add_maintainer" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "add_admin" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "add_triager" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "fork" appliesTo {
+  principal: [User],
+  resource: [Repository]
+};
+action "delete_issue" appliesTo {
+  principal: [User],
+  resource: [Issue]
+};

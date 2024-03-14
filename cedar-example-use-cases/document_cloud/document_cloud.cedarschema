@@ -1,0 +1,73 @@
+type ReusedContext = {
+  "is_authenticated": Bool,
+};
+
+entity DocumentShare;
+entity Document  = {
+  "isPrivate": Bool,
+  "manageACL": DocumentShare,
+  "modifyACL": DocumentShare,
+  "owner": User,
+  "publicAccess": String,
+  "viewACL": DocumentShare,
+};
+entity Drive;
+entity Group in [DocumentShare] = {
+  "owner": User,
+};
+entity Public in [DocumentShare];
+entity User in [Group] = {
+  "blocked": Set<User>,
+  "personalGroup": Group,
+};
+
+action "DeleteGroup" appliesTo {
+  principal: [User],
+  resource: [Group],
+  context: ReusedContext
+};
+action "CreateGroup" appliesTo {
+  principal: [User],
+  resource: [Drive],
+  context: ReusedContext
+};
+action "DeleteDocument" appliesTo {
+  principal: [User],
+  resource: [Document],
+  context: ReusedContext
+};
+action "ViewDocument" appliesTo {
+  principal: [User, Public],
+  resource: [Document],
+  context: ReusedContext
+};
+action "EditIsPrivate" appliesTo {
+  principal: [User],
+  resource: [Document],
+  context: ReusedContext
+};
+action "EditPublicAccess" appliesTo {
+  principal: [User],
+  resource: [Document],
+  context: ReusedContext
+};
+action "AddToShareACL" appliesTo {
+  principal: [User],
+  resource: [Document],
+  context: ReusedContext
+};
+action "ModifyGroup" appliesTo {
+  principal: [User],
+  resource: [Group],
+  context: ReusedContext
+};
+action "ModifyDocument" appliesTo {
+  principal: [User],
+  resource: [Document],
+  context: ReusedContext
+};
+action "CreateDocument" appliesTo {
+  principal: [User],
+  resource: [Drive],
+  context: ReusedContext
+};
