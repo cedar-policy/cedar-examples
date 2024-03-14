@@ -1,0 +1,101 @@
+{
+    "": {
+        "entityTypes": {
+            "User": {
+                "memberOfTypes": [
+                    "Group"
+                ],
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "ownedDocuments": {
+                            "type": "Set",
+                            "element": {
+                                "type": "Entity",
+                                "name": "Document"
+                            }
+                        },
+                        "ownedFolders": {
+                            "type": "Set",
+                            "element": {
+                                "type": "Entity",
+                                "name": "Folder"
+                            }
+                        }
+                    }
+                }
+            },
+            "Group": {},
+            "Folder": {
+                "memberOfTypes": [
+                    "Folder"
+                ]
+            },
+            "Document": {
+                "memberOfTypes": [
+                    "Folder"
+                ],
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "isPublic": {
+                            "type": "Boolean"
+                        }
+                    }
+                }
+            }
+        },
+        "actions": {
+            "createDocument": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Folder"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "changeOwner": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "share": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "write": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            },
+            "read": {
+                "appliesTo": {
+                    "resourceTypes": [
+                        "Document"
+                    ],
+                    "principalTypes": [
+                        "User"
+                    ]
+                }
+            }
+        }
+    }
+}
