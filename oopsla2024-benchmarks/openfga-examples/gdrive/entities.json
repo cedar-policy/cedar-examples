@@ -1,0 +1,192 @@
+[
+    {
+        "uid": {
+            "type": "User",
+            "id": "anne"
+        },
+        "attrs": {
+            "documentsAndFoldersWithViewAccess": {
+                "__entity": {
+                    "type": "View",
+                    "id": "User::\"anne\""
+                }
+            },
+            "ownedDocuments": [],
+            "ownedFolders": [
+                {
+                    "__entity": {
+                        "type": "Folder",
+                        "id": "product-2021"
+                    }
+                }
+            ]
+        },
+        "parents": [
+            {
+                "type": "Group",
+                "id": "contoso"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "beth"
+        },
+        "attrs": {
+            "documentsAndFoldersWithViewAccess": {
+                "__entity": {
+                    "type": "View",
+                    "id": "User::\"beth\""
+                }
+            },
+            "ownedDocuments": [],
+            "ownedFolders": []
+        },
+        "parents": [
+            {
+                "type": "Group",
+                "id": "contoso"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "charles"
+        },
+        "attrs": {
+            "documentsAndFoldersWithViewAccess": {
+                "__entity": {
+                    "type": "View",
+                    "id": "User::\"charles\""
+                }
+            },
+            "ownedDocuments": [],
+            "ownedFolders": []
+        },
+        "parents": [
+            {
+                "type": "Group",
+                "id": "fabrikam"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Group",
+            "id": "contoso"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Group",
+            "id": "fabrikam"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Folder",
+            "id": "product-2021"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "View",
+                "id": "Group::\"fabrikam\""
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Document",
+            "id": "public-roadmap"
+        },
+        "attrs": {
+            "isPublic": true
+        },
+        "parents": [
+            {
+                "type": "Folder",
+                "id": "product-2021"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Document",
+            "id": "2021-roadmap"
+        },
+        "attrs": {
+            "isPublic": false
+        },
+        "parents": [
+            {
+                "type": "Folder",
+                "id": "product-2021"
+            },
+            {
+                "type": "View",
+                "id": "User::\"beth\""
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "View",
+            "id": "User::\"anne\""
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "View",
+            "id": "User::\"beth\""
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "View",
+            "id": "User::\"charles\""
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "View",
+            "id": "Group::\"contoso\""
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "View",
+                "id": "User::\"anne\""
+            },
+            {
+                "type": "View",
+                "id": "User::\"beth\""
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "View",
+            "id": "Group::\"fabrikam\""
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "View",
+                "id": "User::\"charles\""
+            }
+        ]
+    }
+]

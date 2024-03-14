@@ -1,0 +1,26 @@
+[
+    {
+        "template_id": "readTemplate",
+        "link_id": "anneAccess",
+        "args": {
+            "?resource": "Repository::\"openfga/openfga\"",
+            "?principal": "User::\"anne\""
+        }
+    },
+    {
+        "template_id": "writeTemplate",
+        "link_id": "bethAccess",
+        "args": {
+            "?resource": "Repository::\"openfga/openfga\"",
+            "?principal": "User::\"beth\""
+        }
+    },
+    {
+        "template_id": "adminTemplate",
+        "link_id": "coreAccess",
+        "args": {
+            "?resource": "Repository::\"openfga/openfga\"",
+            "?principal": "Team::\"openfga/core\""
+        }
+    }
+]
