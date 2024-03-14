@@ -1,7 +1,3 @@
-type ReusedContext = {
-  "is_authenticated": Bool,
-};
-
 entity DocumentShare;
 entity Document  = {
   "isPrivate": Bool,
@@ -24,50 +20,70 @@ entity User in [Group] = {
 action "DeleteGroup" appliesTo {
   principal: [User],
   resource: [Group],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "CreateGroup" appliesTo {
   principal: [User],
   resource: [Drive],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "DeleteDocument" appliesTo {
   principal: [User],
   resource: [Document],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "ViewDocument" appliesTo {
   principal: [User, Public],
   resource: [Document],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "EditIsPrivate" appliesTo {
   principal: [User],
   resource: [Document],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "EditPublicAccess" appliesTo {
   principal: [User],
   resource: [Document],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "AddToShareACL" appliesTo {
   principal: [User],
   resource: [Document],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "ModifyGroup" appliesTo {
   principal: [User],
   resource: [Group],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "ModifyDocument" appliesTo {
   principal: [User],
   resource: [Document],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
 action "CreateDocument" appliesTo {
   principal: [User],
   resource: [Drive],
-  context: ReusedContext
+  context: {
+    "is_authenticated": Bool,
+  }
 };
