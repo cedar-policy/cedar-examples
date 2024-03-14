@@ -16,39 +16,19 @@ entity User in [Team, Application] = {
 };
 entity Team in [Team, Application];
 
-action "DeleteList" appliesTo {
+action DeleteList, GetList, UpdateList appliesTo {
   principal: [User],
   resource: [List]
 };
-action "GetLists" appliesTo {
+action CreateList, GetLists appliesTo {
   principal: [User],
   resource: [Application]
 };
-action "UpdateTask" appliesTo {
+action CreateTask, UpdateTask, DeleteTask appliesTo {
   principal: [User],
   resource: [List]
 };
-action "GetList" appliesTo {
-  principal: [User],
-  resource: [List]
-};
-action "DeleteTask" appliesTo {
-  principal: [User],
-  resource: [List]
-};
-action "UpdateList" appliesTo {
-  principal: [User],
-  resource: [List]
-};
-action "CreateList" appliesTo {
-  principal: [User],
-  resource: [Application]
-};
-action "EditShare" appliesTo {
-  principal: [User],
-  resource: [List]
-};
-action "CreateTask" appliesTo {
+action EditShare appliesTo {
   principal: [User],
   resource: [List]
 };

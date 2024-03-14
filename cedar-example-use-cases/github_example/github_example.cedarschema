@@ -1,4 +1,4 @@
-entity Team in [UserGroup];
+entity Team, UserGroup in [UserGroup];
 entity Issue  = {
   "repo": Repository,
   "reporter": User,
@@ -7,7 +7,6 @@ entity Org  = {
   "members": UserGroup,
   "owners": UserGroup,
 };
-entity UserGroup in [UserGroup];
 entity Repository  = {
   "admins": UserGroup,
   "maintainers": UserGroup,
@@ -17,47 +16,15 @@ entity Repository  = {
 };
 entity User in [UserGroup, Team];
 
-action "push" appliesTo {
+action push, pull, fork appliesTo {
   principal: [User],
   resource: [Repository]
 };
-action "edit_issue" appliesTo {
+action assign_issue, delete_issue, edit_issue appliesTo {
   principal: [User],
   resource: [Issue]
 };
-action "assign_issue" appliesTo {
-  principal: [User],
-  resource: [Issue]
-};
-action "add_reader" appliesTo {
+action add_reader, add_writer, add_maintainer, add_admin, add_triager appliesTo {
   principal: [User],
   resource: [Repository]
-};
-action "pull" appliesTo {
-  principal: [User],
-  resource: [Repository]
-};
-action "add_writer" appliesTo {
-  principal: [User],
-  resource: [Repository]
-};
-action "add_maintainer" appliesTo {
-  principal: [User],
-  resource: [Repository]
-};
-action "add_admin" appliesTo {
-  principal: [User],
-  resource: [Repository]
-};
-action "add_triager" appliesTo {
-  principal: [User],
-  resource: [Repository]
-};
-action "fork" appliesTo {
-  principal: [User],
-  resource: [Repository]
-};
-action "delete_issue" appliesTo {
-  principal: [User],
-  resource: [Issue]
 };

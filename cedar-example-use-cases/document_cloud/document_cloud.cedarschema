@@ -1,4 +1,4 @@
-entity DocumentShare;
+entity DocumentShare, Drive;
 entity Document  = {
   "isPrivate": Bool,
   "manageACL": DocumentShare,
@@ -7,7 +7,6 @@ entity Document  = {
   "publicAccess": String,
   "viewACL": DocumentShare,
 };
-entity Drive;
 entity Group in [DocumentShare] = {
   "owner": User,
 };
@@ -17,70 +16,42 @@ entity User in [Group] = {
   "personalGroup": Group,
 };
 
-action "DeleteGroup" appliesTo {
+action DeleteGroup, ModifyGroup appliesTo {
   principal: [User],
   resource: [Group],
   context: {
     "is_authenticated": Bool,
   }
 };
-action "CreateGroup" appliesTo {
+action CreateGroup appliesTo {
   principal: [User],
   resource: [Drive],
   context: {
     "is_authenticated": Bool,
   }
 };
-action "DeleteDocument" appliesTo {
-  principal: [User],
-  resource: [Document],
-  context: {
-    "is_authenticated": Bool,
-  }
-};
-action "ViewDocument" appliesTo {
+action ViewDocument appliesTo {
   principal: [User, Public],
   resource: [Document],
   context: {
     "is_authenticated": Bool,
   }
 };
-action "EditIsPrivate" appliesTo {
+action AddToShareACL, DeleteDocument, EditIsPrivate, EditPublicAccess appliesTo {
   principal: [User],
   resource: [Document],
   context: {
     "is_authenticated": Bool,
   }
 };
-action "EditPublicAccess" appliesTo {
+action ModifyDocument appliesTo {
   principal: [User],
   resource: [Document],
   context: {
     "is_authenticated": Bool,
   }
 };
-action "AddToShareACL" appliesTo {
-  principal: [User],
-  resource: [Document],
-  context: {
-    "is_authenticated": Bool,
-  }
-};
-action "ModifyGroup" appliesTo {
-  principal: [User],
-  resource: [Group],
-  context: {
-    "is_authenticated": Bool,
-  }
-};
-action "ModifyDocument" appliesTo {
-  principal: [User],
-  resource: [Document],
-  context: {
-    "is_authenticated": Bool,
-  }
-};
-action "CreateDocument" appliesTo {
+action CreateDocument appliesTo {
   principal: [User],
   resource: [Drive],
   context: {
