@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"charles\"",
+    "action": "Action::\"read\"",
+    "resource": "Document::\"2021-roadmap\"",
+    "context": {}
+}

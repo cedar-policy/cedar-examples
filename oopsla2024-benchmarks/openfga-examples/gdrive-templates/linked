@@ -1,0 +1,18 @@
+[
+    {
+        "template_id": "template",
+        "link_id": "bethAccess",
+        "args": {
+            "?resource": "Document::\"2021-roadmap\"",
+            "?principal": "User::\"beth\""
+        }
+    },
+    {
+        "template_id": "template",
+        "link_id": "fabrikamAccess",
+        "args": {
+            "?principal": "Group::\"fabrikam\"",
+            "?resource": "Folder::\"product-2021\""
+        }
+    }
+]

@@ -1,0 +1,48 @@
+From d7be59d3f2193e4669f35547b4ae2004fe9ecedf Mon Sep 17 00:00:00 2001
+From: Craig Disselkoen <cdiss@amazon.com>
+Date: Thu, 21 Dec 2023 20:14:31 +0000
+Subject: [PATCH] Cedar timing patch
+
+---
+ pkg/server/server.go | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/pkg/server/server.go b/pkg/server/server.go
+index 30edaf3..9d47905 100644
+--- a/pkg/server/server.go
++++ b/pkg/server/server.go
+@@ -6,6 +6,7 @@ import (
+ 	"errors"
+ 	"fmt"
+ 	"net/http"
++	"os"
+ 	"sort"
+ 	"strconv"
+ 	"time"
+@@ -621,6 +622,8 @@ func (s *Server) Check(ctx context.Context, req *openfgav1.CheckRequest) (*openf
+ 
+ 	ctx = typesystem.ContextWithTypesystem(ctx, typesys)
+ 
++	cedar_start := time.Now()
++
+ 	checkResolver := graph.NewLocalChecker(
+ 		storagewrappers.NewCombinedTupleReader(s.datastore, req.ContextualTuples.GetTupleKeys()),
+ 		s.checkOptions...,
+@@ -651,6 +654,14 @@ func (s *Server) Check(ctx context.Context, req *openfgav1.CheckRequest) (*openf
+ 		return nil, serverErrors.HandleError("", err)
+ 	}
+ 
++	elapsed := time.Now().Sub(cedar_start)
++	f, err := os.Create("/tmp/openfga_times")
++	if err != nil {
++		panic(err)
++	}
++	fmt.Fprintf(f, "{ \"check_time_micros\": %d }\n", elapsed.Microseconds())
++	f.Close()
++
+ 	queryCount := float64(resp.GetResolutionMetadata().DatastoreQueryCount)
+ 	const methodName = "check"
+ 
+-- 
+2.40.1
+

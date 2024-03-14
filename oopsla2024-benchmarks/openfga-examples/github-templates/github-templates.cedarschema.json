@@ -1,0 +1,124 @@
+{
+    "": {
+        "entityTypes": {
+            "User": {
+                "memberOfTypes": [
+                    "Organization",
+                    "Team",
+                    "OrgPermission"
+                ]
+            },
+            "Organization": {
+                "memberOfTypes": [
+                    "OrgPermission"
+                ],
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "readers": {
+                            "type": "Entity",
+                            "name": "OrgPermission"
+                        },
+                        "writers": {
+                            "type": "Entity",
+                            "name": "OrgPermission"
+                        },
+                        "admins": {
+                            "type": "Entity",
+                            "name": "OrgPermission"
+                        }
+                    }
+                }
+            },
+            "Team": {
+                "memberOfTypes": [
+                    "Team"
+                ]
+            },
+            "Repository": {
+                "shape": {
+                    "type": "Record",
+                    "attributes": {
+                        "owner": {
+                            "type": "Entity",
+                            "name": "Organization"
+                        }
+                    }
+                }
+            },
+            "OrgPermission": {}
+        },
+        "actions": {
+            "read": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                },
+                "memberOf": [
+                    {
+                        "id": "triage"
+                    }
+                ]
+            },
+            "triage": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                },
+                "memberOf": [
+                    {
+                        "id": "write"
+                    }
+                ]
+            },
+            "write": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                },
+                "memberOf": [
+                    {
+                        "id": "maintain"
+                    }
+                ]
+            },
+            "maintain": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                },
+                "memberOf": [
+                    {
+                        "id": "admin"
+                    }
+                ]
+            },
+            "admin": {
+                "appliesTo": {
+                    "principalTypes": [
+                        "User"
+                    ],
+                    "resourceTypes": [
+                        "Repository"
+                    ]
+                }
+            }
+        }
+    }
+}

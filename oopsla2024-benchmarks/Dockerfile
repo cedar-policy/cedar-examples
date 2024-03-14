@@ -1,0 +1,59 @@
+FROM rust:1.74-bookworm
+RUN echo 'deb http://deb.debian.org/debian bookworm-backports main' >> /etc/apt/sources.list
+RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
+    dpkg -i packages-microsoft-prod.deb && \
+    rm packages-microsoft-prod.deb
+RUN apt-get update && apt-get install -y git python3-matplotlib python3-pandas golang-1.21-go dotnet-sdk-6.0 openjdk-17-jdk vim && \
+    rm -rf /var/lib/apt/lists/*
+ENV PATH="${PATH}:/usr/lib/go-1.21/bin"
+
+## Install z3
+RUN wget -q https://github.com/Z3Prover/z3/releases/download/z3-4.12.1/z3-4.12.1-x64-glibc-2.35.zip && \
+    unzip z3-4.12.1-x64-glibc-2.35.zip && \
+    rm z3-4.12.1-x64-glibc-2.35.zip
+ENV PATH="${PATH}:/z3-4.12.1-x64-glibc-2.35/bin"
+
+## Get openfga
+WORKDIR /
+RUN git clone https://github.com/openfga/openfga -b main
+# the openfga commit hash used in our experiments
+RUN cd openfga && git checkout bbb4a07
+COPY openfga-timing.patch openfga/
+RUN cd openfga && git apply openfga-timing.patch
+ENV GOPROXY="direct"
+RUN cd openfga && go build -o ./openfga ./cmd/openfga
+ENV PATH="${PATH}:${HOME}/openfga"
+## run an openfga server for 100ms and then kill it. For some reason this reduces flakiness later on
+RUN timeout 0.1 openfga run --playground-enabled=false --log-level=warn || true
+
+## Install Cedar CLI so it is usable from command line
+RUN cargo install cedar-policy-cli@3.0.1
+
+## Get cedar-benchmarks (benchmark harness and example app code)
+# unfortunately, `COPY src cedar-benchmarks/` doesn't do what we want, it copies
+# the contents of `src` directly into `cedar-benchmarks` without creating a
+# `src` directory.
+# we could start with `COPY . cedar-benchmarks/`, but that pulls in some things
+# we don't want in the image, including whatever target/ directory is currently
+# on the host, which could be quite large. Seemed better to me to explicitly list
+# the things we want copied in. And COPY followed by `RUN rm` doesn't help with
+# image size due to how Docker works (unless we go multi-stage, which I don't
+# think there's justification for in this case).
+WORKDIR /
+COPY Cargo.toml plot.py README.md cedar-benchmarks/
+COPY generators cedar-benchmarks/generators/
+COPY openfga-examples cedar-benchmarks/openfga-examples/
+COPY src cedar-benchmarks/src/
+COPY tinytodo cedar-benchmarks/tinytodo/
+COPY validate_all_benchmarks.sh cedar-benchmarks
+
+## Build Rego version of TinyTodo
+RUN cd cedar-benchmarks/tinytodo/rego && \
+    go mod init TinyTodoRego && \
+    go get github.com/open-policy-agent/opa/rego && \
+    mkdir -p build/bin && \
+    go build -o build/bin/tinytodo cmd/tinytodo/main.go
+
+## Build benchmark harness so it's ready
+WORKDIR /cedar-benchmarks
+RUN cargo clean && cargo build --release
