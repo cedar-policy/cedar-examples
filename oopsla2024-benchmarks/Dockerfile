@@ -1,17 +1,8 @@
 FROM rust:1.74-bookworm
 RUN echo 'deb http://deb.debian.org/debian bookworm-backports main' >> /etc/apt/sources.list
-RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb && \
-    dpkg -i packages-microsoft-prod.deb && \
-    rm packages-microsoft-prod.deb
-RUN apt-get update && apt-get install -y git python3-matplotlib python3-pandas golang-1.21-go dotnet-sdk-6.0 openjdk-17-jdk vim && \
+RUN apt-get update && apt-get install -y git python3-matplotlib python3-pandas golang-1.21-go openjdk-17-jdk vim && \
     rm -rf /var/lib/apt/lists/*
 ENV PATH="${PATH}:/usr/lib/go-1.21/bin"
-
-## Install z3
-RUN wget -q https://github.com/Z3Prover/z3/releases/download/z3-4.12.1/z3-4.12.1-x64-glibc-2.35.zip && \
-    unzip z3-4.12.1-x64-glibc-2.35.zip && \
-    rm z3-4.12.1-x64-glibc-2.35.zip
-ENV PATH="${PATH}:/z3-4.12.1-x64-glibc-2.35/bin"
 
 ## Get openfga
 WORKDIR /
@@ -57,3 +48,4 @@ RUN cd cedar-benchmarks/tinytodo/rego && \
 ## Build benchmark harness so it's ready
 WORKDIR /cedar-benchmarks
 RUN cargo clean && cargo build --release
+
