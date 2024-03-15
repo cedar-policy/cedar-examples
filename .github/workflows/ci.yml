@@ -86,7 +86,7 @@ jobs:
         with:
           push: false
           context: "{{defaultContext}}:oopsla2024-benchmarks"
-          file: "oopsla2024-benchmarks/Dockerfile"
+          file: "{{defaultContext}}:oopsla2024-benchmarks/Dockerfile"
           tags: cedar-benchmarks:latest
           load: true
           cache-from: type=gha
