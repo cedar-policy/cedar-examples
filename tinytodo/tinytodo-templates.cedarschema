@@ -1,0 +1,32 @@
+entity Team in [Team, Application];
+entity List in [Application] = {
+  "name": String,
+  "owner": User,
+  "tasks": Set<{
+    "id": Long,
+    "name": String,
+    "state": String,
+  }>,
+};
+entity User in [Team, Application] = {
+  "joblevel": Long,
+  "location": String,
+};
+entity Application;
+
+action DeleteList, UpdateList, GetList appliesTo {
+  principal: [User],
+  resource: [List]
+};
+action CreateTask, DeleteTask, UpdateTask appliesTo {
+  principal: [User],
+  resource: [List]
+};
+action EditShare appliesTo {
+  principal: [User],
+  resource: [List]
+};
+action CreateList, GetLists appliesTo {
+  principal: [User],
+  resource: [Application],
+};

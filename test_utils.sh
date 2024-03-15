@@ -27,7 +27,7 @@ validate() {
     local policies=$2
     local schema=$3
     echo " Running validation on ${policies}"
-    res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema")"
+    res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human)"
     if [[ $? == 0 ]]
     then
         passed "validate succeeded"
