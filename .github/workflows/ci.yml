@@ -79,14 +79,16 @@ jobs:
     name: OOPSLA2024 benchmarks
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout cedar-examples
+        uses: actions/checkout@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
           push: false
-          context: "{{defaultContext}}:oopsla2024-benchmarks"
-          file: "{{defaultContext}}:oopsla2024-benchmarks/Dockerfile"
+          context: oopsla2024-benchmarks
+          file: oopsla2024-benchmarks/Dockerfile
           tags: cedar-benchmarks:latest
           load: true
           cache-from: type=gha
