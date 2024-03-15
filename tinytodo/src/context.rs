@@ -20,8 +20,8 @@ use std::path::PathBuf;
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, EntityTypeName, ParseErrors, PolicySet,
-    PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
+    Authorizer, Context, Decision, Diagnostics, EntityTypeName, HumanSchemaError, ParseErrors,
+    PolicySet, PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
 };
 
 use thiserror::Error;
@@ -160,8 +160,10 @@ type Result<T> = std::result::Result<T, Error>;
 pub enum ContextError {
     #[error("{0}")]
     IO(#[from] std::io::Error),
-    #[error("Error Parsing Schema: {0}")]
-    Schema(#[from] SchemaError),
+    #[error("Error Parsing Json Schema: {0}")]
+    JsonSchema(#[from] SchemaError),
+    #[error("Error Parsing Human-readable Schema: {0}")]
+    CedarSchema(#[from] HumanSchemaError),
     #[error("Error Parsing PolicySet: {0}")]
     Policy(#[from] ParseErrors),
     #[error("Error Processing PolicySet: {0}")]
@@ -299,7 +301,7 @@ impl AppContext {
         let schema_path = schema_path.into();
         let policies_path = policies_path.into();
         let schema_file = std::fs::File::open(&schema_path)?;
-        let schema = Schema::from_file(schema_file)?;
+        let (schema, _) = Schema::from_file_natural(schema_file)?;
 
         let entities_file = std::fs::File::open(entities_path.into())?;
         let entities = serde_json::from_reader(entities_file)?;
