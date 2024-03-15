@@ -21,7 +21,7 @@ notify = { version = "5.1.0", default-features = false, features = ["macos_kqueu
 use-templates = []
 
 [dependencies.cedar-policy]
-version = "3.0.0"
+version = "4.0.0"
 git = "https://github.com/cedar-policy/cedar"
 branch = "main"
 #Do not add any lines below this. CI relies on the previous line being the second-to-last line in the file
