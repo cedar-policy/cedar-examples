@@ -1,0 +1,219 @@
+[
+    {
+        "uid": {
+            "type": "User",
+            "id": "anne"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "beth"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "charles"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Team",
+                "id": "openfga/core"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "diane"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Team",
+                "id": "openfga/backend"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "erik"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Organization",
+                "id": "openfga"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Team",
+            "id": "openfga/core"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Team",
+            "id": "openfga/backend"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Team",
+                "id": "openfga/core"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Organization",
+            "id": "openfga"
+        },
+        "attrs": {
+            "readers": {
+                "__entity": {
+                    "type": "OrgPermission",
+                    "id": "openfga readers"
+                }
+            },
+            "writers": {
+                "__entity": {
+                    "type": "OrgPermission",
+                    "id": "openfga writers"
+                }
+            },
+            "admins": {
+                "__entity": {
+                    "type": "OrgPermission",
+                    "id": "openfga admins"
+                }
+            }
+        },
+        "parents": [
+            {
+                "__entity": {
+                    "type": "OrgPermission",
+                    "id": "openfga admins"
+                }
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Repository",
+            "id": "openfga/openfga"
+        },
+        "attrs": {
+            "owner": {
+                "__entity": {
+                    "type": "Organization",
+                    "id": "openfga"
+                }
+            }
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "OrgPermission",
+            "id": "openfga readers"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "OrgPermission",
+            "id": "openfga writers"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "OrgPermission",
+            "id": "openfga admins"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Action",
+            "id": "read"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "__entity": {
+                    "type": "Action",
+                    "id": "triage"
+                }
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Action",
+            "id": "triage"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "__entity": {
+                    "type": "Action",
+                    "id": "write"
+                }
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Action",
+            "id": "write"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "__entity": {
+                    "type": "Action",
+                    "id": "maintain"
+                }
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Action",
+            "id": "maintain"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "__entity": {
+                    "type": "Action",
+                    "id": "admin"
+                }
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Action",
+            "id": "admin"
+        },
+        "attrs": {},
+        "parents": []
+    }
+]

@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"beth\"",
+    "action": "Action::\"admin\"",
+    "resource": "Repository::\"openfga/openfga\"",
+    "context": {}
+}
