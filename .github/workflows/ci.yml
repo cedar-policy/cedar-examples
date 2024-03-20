@@ -98,9 +98,4 @@ jobs:
         with:
           image: cedar-benchmarks:latest
           # run a small run, that completes fast, but will still make sure things work properly
-          run: cargo run --release -- bench \
-            --app gdrive,github,tiny-todo,gdrive-templates,github-templates \
-            --engine cedar,open-fga,rego,cedar-opt \
-            --num-hierarchies 3 \
-            --num-requests 3 \
-            --num-entities 1,2,3
+          run: cargo run --release -- bench --app gdrive,github,tiny-todo,gdrive-templates,github-templates --engine cedar,open-fga,rego,cedar-opt --num-hierarchies 3 --num-requests 3 --num-entities 1,2,3
