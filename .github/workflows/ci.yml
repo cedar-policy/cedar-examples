@@ -31,7 +31,7 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '17'
-      - name: Checkout Cedar Examples
+      - name: Checkout cedar-examples
         uses: actions/checkout@v3
       - name: Checkout cedar-java
         uses: actions/checkout@v3
@@ -74,3 +74,28 @@ jobs:
     with:
       cedar_policy_ref: "refs/heads/main" # use the latest commit on main
       cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
+
+  build_and_run_oopsla_benchmarks:
+    name: OOPSLA2024 benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cedar-examples
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: false
+          context: oopsla2024-benchmarks
+          file: oopsla2024-benchmarks/Dockerfile
+          tags: cedar-benchmarks:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Run benchmarks inside Docker container
+        uses: addnab/docker-run-action@v3
+        with:
+          image: cedar-benchmarks:latest
+          # run a small run, that completes fast, but will still make sure things work properly
+          run: cargo run --release -- bench --app gdrive,github,tiny-todo,gdrive-templates,github-templates --engine cedar,open-fga,rego,cedar-opt --num-hierarchies 3 --num-requests 3 --num-entities 1,2,3
