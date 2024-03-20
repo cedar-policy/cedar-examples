@@ -1,0 +1,21 @@
+namespace PhotoApp {
+  entity Album, Role, UserGroup, Application;
+  entity Photo in [Application, Album] = {
+    "labels": Set<String>,
+    "owner": User,
+    "subjects"?: Set<User>,
+  };
+  entity User in [UserGroup, Role];
+
+  action viewPhoto appliesTo {
+    principal: [User],
+    resource: [Photo],
+    context: {
+      "judgingSession"?: Bool,
+    }
+  };
+  action editPhoto, deletePhoto appliesTo {
+    principal: [User],
+    resource: [Photo]
+  };
+}

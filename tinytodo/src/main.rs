@@ -32,11 +32,11 @@ async fn main() {
     init_logger();
     let (schema_path, policies_path) = if cfg!(feature = "use-templates") {
         (
-            "./tinytodo-templates.cedarschema.json",
+            "./tinytodo-templates.cedarschema",
             "./policies-templates.cedar",
         )
     } else {
-        ("./tinytodo.cedarschema.json", "./policies.cedar")
+        ("./tinytodo.cedarschema", "./policies.cedar")
     };
     let app = match AppContext::spawn("./entities.json", schema_path, policies_path) {
         Ok(app) => app,
