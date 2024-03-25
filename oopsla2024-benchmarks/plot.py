@@ -96,6 +96,8 @@ def plot_times(engines_with_data, folder, independent_var=num_entities, small=Fa
     """
 
     plt.figure(clear=True, figsize=[4.8, 3.6] if small else [6.4, 4.8])
+    plt.rc('pdf', fonttype = 42)
+    plt.rc('ps', fonttype = 42)
     print("Average medians across all tested inputs:")
     for (engine, data) in engines_with_data:
         engine.plot_times(data, independent_var=independent_var)
@@ -124,6 +126,8 @@ def plot_times(engines_with_data, folder, independent_var=num_entities, small=Fa
 
 def plot_parents(data, folder, independent_var=num_entities):
     plt.figure(clear=True)
+    plt.rc('pdf', fonttype = 42)
+    plt.rc('ps', fonttype = 42)
     for et in data.data.columns:
         if et.startswith("mean_parents_of"):
             plt.plot(independent_var.data_name, et, 'o-', data=data.data, label=removeprefix(et, 'mean_parents_of_'))
@@ -139,6 +143,8 @@ def plot_parents(data, folder, independent_var=num_entities):
 
 def plot_allows_denies(data, folder, independent_var=num_entities):
     plt.figure(clear=True)
+    plt.rc('pdf', fonttype = 42)
+    plt.rc('ps', fonttype = 42)
     if r'cedar % allows' in data.data:
         label = r'Cedar % allows'
         plt.plot(independent_var.data_name, r'cedar % allows', cedar.median_style, data=data.data, label=label)
@@ -162,6 +168,8 @@ def plot_allows_denies(data, folder, independent_var=num_entities):
 
 def plot_openfga_tuples(data, folder, independent_var=num_entities, alt_data=None, alt_label='(Templates)'):
     plt.figure(clear=True)
+    plt.rc('pdf', fonttype = 42)
+    plt.rc('ps', fonttype = 42)
     plotted = False
     if 'openfga mean_tuples' in data.data:
         plotted = True
