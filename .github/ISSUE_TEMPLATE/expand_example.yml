@@ -16,7 +16,9 @@ body:
       options:
         - cedar-example-use-cases
         - cedar-java-hello-world
+        - cedar-policy-language-in-action
         - cedar-rust-hello-world
+        - oopsla-2024-benchmarks
         - tinytodo
     validations:
       required: true
@@ -41,4 +43,3 @@ body:
       options:
         - label: 👋 I may be able to implement this feature request
         - label: ⚠️ This feature might incur a breaking change
-
