@@ -32,7 +32,9 @@ body:
       options:
         - cedar-example-use-cases
         - cedar-java-hello-world
-        - cear-rust-hello-world
+        - cedar-policy-language-in-action
+        - cedar-rust-hello-world
+        - oopsla2024-benchmarks
         - tinytodo
     validations:
       required: true
@@ -109,4 +111,3 @@ body:
         If you have any additional information, workarounds, etc. for us, use the field below.
         Please note, you can attach screenshots or screen recordings here by
         dragging and dropping files in the field below.
-
