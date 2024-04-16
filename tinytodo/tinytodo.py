@@ -65,7 +65,7 @@ def parse_euid(euid, expected_type):
         else:
             raise Exception('Expected type: %s, got %s' % (expected_type, typ))
     else:
-        raise Exception('Failed to parse euid: {}' % euid)
+        raise Exception('Failed to parse euid: %s' % euid)
 
 
 def attempt_build():
