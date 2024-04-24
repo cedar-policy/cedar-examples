@@ -1,7 +1,7 @@
 // Policy 0: Any User can create a list and see what lists they own
 permit (
     principal,
-    action in [Action::"CreateList", Action::"GetLists"],
+    action == Action::"CreateList",
     resource == Application::"TinyTodo"
 );
 
@@ -15,7 +15,13 @@ permit (
     action == Action::"GetList",
     resource
 )
-when { principal in resource.readers || principal in resource.editors };
+when
+{
+    resource.readers.contains(principal) ||
+    resource.editors.contains(principal) ||
+    resource.reader_teams.containsAny(principal.teams) ||
+    resource.editor_teams.containsAny(principal.teams)
+};
 
 // Policy 3: A User can update a List and its tasks if they are an editor
 permit (
@@ -27,7 +33,11 @@ permit (
          Action::"DeleteTask"],
     resource
 )
-when { principal in resource.editors };
+when
+{
+    resource.editors.contains(principal) ||
+    resource.editor_teams.containsAny(principal.teams)
+};
 
 // Policy 4: Admins can perform any action on any resource
 // @id("admin-omnipotence")
@@ -36,21 +46,32 @@ when { principal in resource.editors };
 //    action,
 //    resource in Application::"TinyTodo"
 // );
-// 
 // Policy 5: Interns may not create new task lists
-// forbid (
-//     principal in Team::"interns",
-//     action == Action::"CreateList",
-//     resource == Application::"TinyTodo"
-// );
-//
-// Policy 6: No access if not high rank and at location DEF, 
+forbid (
+    principal,
+    action == Action::"CreateList",
+    resource == Application::"TinyTodo"
+)
+when { principal.teams.contains(Team::"interns") };
+
+// Policy 6: No access if not high rank and at location DEF,
 // or at resource's owner's location
-// forbid(
-//     principal,
-//     action,
-//     resource is List
-// ) unless {
-//     principal.joblevel > 6 && principal.location like "DEF*" ||
-//     principal.location == resource.owner.location
-// };
+forbid (principal, action, resource is List)
+unless
+{
+    principal.joblevel > 6 &&
+    principal.location like "US/*" ||
+    principal.location == resource.owner.location
+};
+
+// Policy 7: Only team owners can add or remove an admin
+permit (principal, action == Action::"ManageTeamAdmin", resource) when
+{
+  principal == resource.owner  
+};
+
+// Policy 7: Only team admins can add or remove a member
+permit (principal, action == Action::"ManageTeamMember", resource) when
+{
+  resource.admins.contains(principal)
+};
