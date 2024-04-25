@@ -29,21 +29,14 @@ permit (
 )
 when { principal in resource.editors };
 
-// Policy 4: Admins can perform any action on any resource
-// @id("admin-omnipotence")
-// permit (
-//    principal in Team::"admin",
-//    action,
-//    resource in Application::"TinyTodo"
-// );
-// Policy 5: Interns may not create new task lists
+// Policy 4: Interns may not create new task lists
 forbid (
     principal in Team::"interns",
     action == Action::"CreateList",
     resource == Application::"TinyTodo"
 );
 
-// Policy 6: No access if not high rank and at location DEF,
+// Policy 5: No access if not high rank and at location DEF,
 // or at resource's owner's location
 forbid (principal, action, resource is List)
 unless
@@ -53,7 +46,7 @@ unless
     principal.location == resource.owner.location
 };
 
-// Policy 7: Only team owners can add or remove an admin
+// Policy 6: Only team owners can add or remove an admin
 permit (
     principal,
     action == Action::"ManageTeamAdmin",
