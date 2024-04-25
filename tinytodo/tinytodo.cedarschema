@@ -5,10 +5,10 @@ type Task = {
 };
 
 entity List = {
-  "editors": Team,
+  "editors": Set<Team>,
   "name": String,
   "owner": User,
-  "readers": Team,
+  "readers": Set<Team>,
   "tasks": Set <Task>,
 };
 entity Application;
