@@ -15,13 +15,7 @@ permit (
     action == Action::"GetList",
     resource
 )
-when
-{
-    resource.readers.contains(principal) ||
-    resource.editors.contains(principal) ||
-    resource.reader_teams.containsAny(principal.teams) ||
-    resource.editor_teams.containsAny(principal.teams)
-};
+when { principal in resource.readers || principal in resource.editors };
 
 // Policy 3: A User can update a List and its tasks if they are an editor
 permit (
@@ -33,11 +27,7 @@ permit (
          Action::"DeleteTask"],
     resource
 )
-when
-{
-    resource.editors.contains(principal) ||
-    resource.editor_teams.containsAny(principal.teams)
-};
+when { principal in resource.editors };
 
 // Policy 4: Admins can perform any action on any resource
 // @id("admin-omnipotence")
@@ -48,11 +38,10 @@ when
 // );
 // Policy 5: Interns may not create new task lists
 forbid (
-    principal,
+    principal in Team::"interns",
     action == Action::"CreateList",
     resource == Application::"TinyTodo"
-)
-when { principal.teams.contains(Team::"interns") };
+);
 
 // Policy 6: No access if not high rank and at location DEF,
 // or at resource's owner's location
@@ -65,13 +54,17 @@ unless
 };
 
 // Policy 7: Only team owners can add or remove an admin
-permit (principal, action == Action::"ManageTeamAdmin", resource) when
-{
-  principal == resource.owner  
-};
+permit (
+    principal,
+    action == Action::"ManageTeamAdmin",
+    resource
+)
+when { principal == resource.owner };
 
 // Policy 7: Only team admins can add or remove a member
-permit (principal, action == Action::"ManageTeamMember", resource) when
-{
-  resource.admins.contains(principal)
-};
+permit (
+    principal,
+    action == Action::"ManageTeamMember",
+    resource
+)
+when { resource.admins.contains(principal) };

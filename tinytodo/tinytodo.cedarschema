@@ -5,17 +5,14 @@ type Task = {
 };
 
 entity List = {
-  "editors": Set<User>,
-  "editor_teams": Set<Team>,
+  "editors": Team,
   "name": String,
   "owner": User,
-  "readers": Set<User>,
-  "reader_teams": Set<Team>,
+  "readers": Team,
   "tasks": Set <Task>,
 };
 entity Application;
-entity User = {
-  "teams": Set<Team>,
+entity User in Team = {
   "joblevel": Long,
   "location": String,
 };
