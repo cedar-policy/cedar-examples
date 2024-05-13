@@ -24,4 +24,5 @@ use-templates = []
 version = "4.0.0"
 git = "https://github.com/cedar-policy/cedar"
 branch = "main"
+features = ["partial-eval"]
 #Do not add any lines below this. CI relies on the previous line being the second-to-last line in the file

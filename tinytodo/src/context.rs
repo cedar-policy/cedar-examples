@@ -16,12 +16,13 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, EntityTypeName, HumanSchemaError, ParseErrors,
-    PolicySet, PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
+    Authorizer, Context, Decision, Diagnostics, Entities, EntityTypeName, HumanSchemaError,
+    ParseErrors, PolicySet, PolicySetError, Request, RequestBuilder, RestrictedExpression, Schema,
+    SchemaError, ValidationMode, Validator,
 };
 
 use thiserror::Error;
@@ -511,14 +512,41 @@ impl AppContext {
     }
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
-        let t: EntityTypeName = "List".parse().unwrap();
-        self.is_authorized(&r.uid, &*ACTION_GET_LISTS, &*APPLICATION_TINY_TODO)?;
+        let resource_ty: EntityTypeName = "List".parse().unwrap();
+        let entities: Entities = self.entities.as_entities(&self.schema);
+        let partial_request = RequestBuilder::default()
+            .action(Some(ACTION_GET_LIST.as_ref().clone().into()))
+            .principal(Some(cedar_policy::EntityUid::from(EntityUid::from(
+                r.uid.clone(),
+            ))))
+            .build();
+        let partial_response =
+            self.authorizer
+                .is_authorized_partial(&partial_request, &self.policies, &entities);
+
+        let slice = self
+            .entities
+            .euids()
+            .filter(|euid| euid.type_name() == &resource_ty);
 
         Ok(AppResponse::Lists(
-            self.entities
-                .euids()
-                .filter(|euid| euid.type_name() == &t)
-                .filter(|euid| self.is_authorized(&r.uid, &*ACTION_GET_LIST, euid).is_ok())
+                slice
+                .filter(|euid| matches!(
+                    partial_response.reauthorize(
+                        HashMap::from_iter(
+                            std::iter::once(
+                                ("resource".into(), RestrictedExpression::new_entity_uid(cedar_policy::EntityUid::from((*euid).clone())))
+                            )
+                        ),
+                        &self.authorizer,
+                        Request::new(
+                            None,
+                            None,
+                            None,
+                            Context::empty(),
+                            None).expect("should be a valid request"),
+                        &entities),
+                    Ok(r) if matches!(r.decision(), Some(Decision::Allow))))
                 .cloned()
                 .collect::<Vec<EntityUid>>()
                 .into(),
