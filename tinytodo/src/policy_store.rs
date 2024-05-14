@@ -53,7 +53,7 @@ enum Error {
 }
 
 #[derive(Debug)]
-struct ValidationErrors<'a>(Vec<&'a ValidationError<'a>>);
+struct ValidationErrors<'a>(Vec<ValidationError<'a>>);
 
 impl<'a> Display for ValidationErrors<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -65,7 +65,7 @@ impl<'a> Display for ValidationErrors<'a> {
 }
 
 impl Error {
-    pub fn validation<'a>(v: impl Iterator<Item = &'a ValidationError<'a>>) -> Self {
+    pub fn validation<'a>(v: impl Iterator<Item = ValidationError<'a>>) -> Self {
         Self::Validation(ValidationErrors(v.collect()).to_string())
     }
 }
@@ -133,7 +133,7 @@ async fn attempt_policy_reload(w: &PolicySetWatcher) -> Result<PolicySet> {
     if results.validation_passed() {
         Ok(policies)
     } else {
-        Err(Error::validation(results.validation_errors()))
+        Err(Error::validation(results.validation_errors().cloned()))
     }
 }
 
