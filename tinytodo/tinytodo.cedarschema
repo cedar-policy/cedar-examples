@@ -14,13 +14,16 @@ entity User in [Team, Application] = {
   "joblevel": Long,
   "location": String,
 };
-entity Team in [Team, Application];
+entity Team in [Team, Application] = {
+  "owner": User,
+  "admins": Set<User>,
+};
 
 action DeleteList, GetList, UpdateList appliesTo {
   principal: [User],
   resource: [List]
 };
-action CreateList, GetLists appliesTo {
+action CreateList, GetLists, CreateTeam appliesTo {
   principal: [User],
   resource: [Application]
 };
@@ -32,3 +35,13 @@ action EditShare appliesTo {
   principal: [User],
   resource: [List]
 };
+
+type Candidate = {
+  "candidate": User,
+};
+action AddAdmin, RemoveAdmin, AddMember, RemoveMember appliesTo {
+  principal: User,
+  resource: Team,
+  context: Candidate,
+};
+
