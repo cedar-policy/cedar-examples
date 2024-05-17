@@ -9,7 +9,7 @@ This repository contains examples demonstrating the use of [Cedar](https://githu
 | [`cedar-rust-hello-world`][] | Rust | A simple application demonstrating the usage of the [Cedar Rust APIs][] |
 | [`cedar-policy-language-in-action`][] | Cedar | Cedar policies and schemas for the [Cedar policy language in action](https://catalog.workshops.aws/cedar-policy-language-in-action) workshop |
 | [`cedar-example-use-cases`][] |  Cedar  | Cedar policies and schemas for two example applications |
-| [`oopsla2024-benchmarks`][] | Various | Cedar policies and schemas, along with benchmarking code and scripts, used for the performance evaluation of the OOPSLA2024 paper on Cedar |
+| [`oopsla2024-benchmarks`][] | Various | Cedar policies and schemas, along with benchmarking code and scripts, used for the performance evaluation of the [OOPSLA2024 paper on Cedar](https://dl.acm.org/doi/10.1145/3649835) |
 
 ## Security
 
