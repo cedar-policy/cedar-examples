@@ -1,12 +1,14 @@
+type Task = {
+    "id": Long,
+    "name": String,
+    "state": String,
+};
+
 entity Team in [Team, Application];
 entity List in [Application] = {
   "name": String,
   "owner": User,
-  "tasks": Set<{
-    "id": Long,
-    "name": String,
-    "state": String,
-  }>,
+  "tasks": Set<Task>,
 };
 entity User in [Team, Application] = {
   "joblevel": Long,
