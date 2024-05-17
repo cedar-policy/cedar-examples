@@ -22,11 +22,35 @@ use warp::Filter;
 
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
-    objects::{List, TaskState},
+    objects::{List, TaskState, User},
     util::{EntityUid, ListUid, Lists, UserOrTeamUid, UserUid},
 };
 
 type AppChannel = mpsc::Sender<AppQuery>;
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreateUser {
+    pub id: String,
+    pub joblevel: i64,
+    pub location: String,
+}
+
+impl From<CreateUser> for AppQueryKind {
+    fn from(v: CreateUser) -> AppQueryKind {
+        AppQueryKind::CreateUser(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct GetUser {
+    pub id: String,
+}
+
+impl From<GetUser> for AppQueryKind {
+    fn from(v: GetUser) -> AppQueryKind {
+        AppQueryKind::GetUser(v)
+    }
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetList {
@@ -178,45 +202,45 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
     let filter = warp::path("api").and(
         // List CRUD
         (warp::path("list").and(
-            (warp::path("get")
+            warp::path("get")
                 .and(warp::get())
                 .and(with_app(chan.clone()))
                 .and(warp::query::query::<GetList>())
-                .and_then(simple_query::<GetList, List>))
-            .or(warp::path("create")
-                .and(warp::post())
-                .and(with_app(chan.clone()))
-                .and(warp::body::json())
-                .and_then(simple_query::<CreateList, EntityUid>))
-            .or(warp::path("update")
-                .and(warp::post())
-                .and(with_app(chan.clone()))
-                .and(warp::body::json())
-                .and_then(simple_query::<UpdateList, Empty>))
-            .or(warp::path("delete")
-                .and(warp::delete())
-                .and(with_app(chan.clone()))
-                .and(warp::body::json())
-                .and_then(simple_query::<DeleteList, Empty>)),
-        ))
-        .or(
-            // Task CRUD
-            warp::path("task").and(
-                (warp::path("create")
+                .and_then(simple_query::<GetList, List>)
+                .or(warp::path("create")
                     .and(warp::post())
                     .and(with_app(chan.clone()))
                     .and(warp::body::json())
-                    .and_then(simple_query::<CreateTask, i64>))
+                    .and_then(simple_query::<CreateList, EntityUid>))
                 .or(warp::path("update")
                     .and(warp::post())
                     .and(with_app(chan.clone()))
                     .and(warp::body::json())
-                    .and_then(simple_query::<UpdateTask, Empty>))
+                    .and_then(simple_query::<UpdateList, Empty>))
                 .or(warp::path("delete")
                     .and(warp::delete())
                     .and(with_app(chan.clone()))
                     .and(warp::body::json())
-                    .and_then(simple_query::<DeleteTask, Empty>)),
+                    .and_then(simple_query::<DeleteList, Empty>)),
+        ))
+        .or(
+            // Task CRUD
+            warp::path("task").and(
+                warp::path("create")
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<CreateTask, i64>)
+                    .or(warp::path("update")
+                        .and(warp::post())
+                        .and(with_app(chan.clone()))
+                        .and(warp::body::json())
+                        .and_then(simple_query::<UpdateTask, Empty>))
+                    .or(warp::path("delete")
+                        .and(warp::delete())
+                        .and(with_app(chan.clone()))
+                        .and(warp::body::json())
+                        .and_then(simple_query::<DeleteTask, Empty>)),
             ),
         )
         .or(warp::path("lists")
@@ -225,14 +249,26 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
             .and(warp::query::query::<GetLists>())
             .and_then(simple_query::<GetLists, Lists>))
         .or(warp::path("share").and(
-            (warp::post()
+            warp::post()
                 .and(with_app(chan.clone()))
                 .and(warp::body::json())
-                .and_then(simple_query::<AddShare, Empty>))
-            .or(warp::delete()
+                .and_then(simple_query::<AddShare, Empty>)
+                .or(warp::delete()
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<DeleteShare, Empty>)),
+        ))
+        .or(warp::path("user").and(
+            warp::path("create")
+                .and(warp::post())
                 .and(with_app(chan.clone()))
                 .and(warp::body::json())
-                .and_then(simple_query::<DeleteShare, Empty>)),
+                .and_then(simple_query::<CreateList, EntityUid>)
+                .or(warp::path("get")
+                    .and(warp::get())
+                    .and(with_app(chan.clone()))
+                    .and(warp::query::query::<GetUser>())
+                    .and_then(simple_query::<GetUser, User>)),
         )),
     );
 

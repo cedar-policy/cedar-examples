@@ -20,8 +20,9 @@ use std::path::PathBuf;
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, EntityTypeName, HumanSchemaError, ParseErrors,
-    PolicySet, PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
+    Authorizer, Context, Decision, Diagnostics, EntityId, EntityTypeName, HumanSchemaError,
+    ParseErrors, PolicySet, PolicySetError, Request, Schema, SchemaError, ValidationMode,
+    Validator,
 };
 
 use thiserror::Error;
@@ -32,13 +33,13 @@ use tokio::sync::{
 
 use crate::{
     api::{
-        AddShare, CreateList, CreateTask, DeleteList, DeleteShare, DeleteTask, Empty, GetList,
-        GetLists, UpdateList, UpdateTask,
+        AddShare, CreateList, CreateTask, CreateUser, DeleteList, DeleteShare, DeleteTask, Empty,
+        GetList, GetLists, GetUser, UpdateList, UpdateTask,
     },
     entitystore::{EntityDecodeError, EntityStore},
-    objects::List,
+    objects::{List, User},
     policy_store,
-    util::{EntityUid, ListUid, Lists, TYPE_LIST},
+    util::{EntityUid, ListUid, Lists, UserUid, TYPE_LIST, TYPE_USER},
 };
 
 #[cfg(feature = "use-templates")]
@@ -57,6 +58,7 @@ pub enum AppResponse {
     Lists(Lists),
     TaskId(i64),
     Unit(()),
+    User(User),
 }
 
 impl AppResponse {
@@ -108,6 +110,16 @@ impl TryInto<Empty> for AppResponse {
     }
 }
 
+impl TryInto<User> for AppResponse {
+    type Error = Error;
+    fn try_into(self) -> std::result::Result<User, Self::Error> {
+        match self {
+            AppResponse::User(u) => Ok(u),
+            _ => Err(Error::Type),
+        }
+    }
+}
+
 impl TryInto<Lists> for AppResponse {
     type Error = Error;
     fn try_into(self) -> std::result::Result<Lists, Self::Error> {
@@ -140,6 +152,10 @@ pub enum AppQueryKind {
 
     // Policy Set Updates
     UpdatePolicySet(PolicySet),
+
+    // User CRUD
+    CreateUser(CreateUser),
+    GetUser(GetUser),
 }
 
 #[derive(Debug)]
@@ -178,6 +194,8 @@ pub enum ContextError {
 pub enum Error {
     #[error("No Such Entity: {0}")]
     NoSuchEntity(EntityUid),
+    #[error("Duplicate entity: {0}")]
+    DuplicateEntity(EntityUid),
     #[error("Entity Decode Error: {0}")]
     EntityDecode(#[from] EntityDecodeError),
     #[error("Authorization Denied")]
@@ -355,6 +373,8 @@ impl AppContext {
                     AppQueryKind::AddShare(r) => self.add_share(r),
                     AppQueryKind::DeleteShare(r) => self.delete_share(r),
                     AppQueryKind::UpdatePolicySet(set) => self.update_policy_set(set),
+                    AppQueryKind::CreateUser(r) => self.create_user(r),
+                    AppQueryKind::GetUser(r) => self.get_user(r),
                 };
                 if let Err(e) = msg.sender.send(r) {
                     trace!("Failed send response: {:?}", e);
@@ -523,6 +543,37 @@ impl AppContext {
                 .collect::<Vec<EntityUid>>()
                 .into(),
         ))
+    }
+
+    fn create_user(&mut self, r: CreateUser) -> Result<AppResponse> {
+        let u = User::new(
+            UserUid::try_from(EntityUid::from(
+                cedar_policy::EntityUid::from_type_name_and_id(
+                    TYPE_USER.clone(),
+                    EntityId::new(r.id),
+                ),
+            ))
+            .unwrap(),
+            r.joblevel,
+            r.location,
+        );
+        match self.entities.get_user(u.uid()) {
+            Ok(_) => Err(Error::DuplicateEntity(u.uid().clone().into())),
+            Err(_) => {
+                self.entities.insert_user(u);
+                Ok(AppResponse::Unit(()))
+            }
+        }
+    }
+
+    fn get_user(&mut self, r: GetUser) -> Result<AppResponse> {
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(TYPE_USER.clone(), EntityId::new(r.id)),
+        ))
+        .unwrap();
+        self.entities
+            .get_user(&user_id)
+            .map(|v| AppResponse::User(v.clone()))
     }
 
     fn create_list(&mut self, r: CreateList) -> Result<AppResponse> {
