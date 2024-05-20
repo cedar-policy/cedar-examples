@@ -171,6 +171,36 @@ impl EntityStore {
             .get_mut(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
     }
+
+    pub fn add_user_to_team(&mut self, candidate: UserUid, team: TeamUid) -> Result<(), Error> {
+        // TODO: `get_team` and `get_mut` should trivially succeed after
+        // successful authorization
+        let _ = self.get_team(&team)?;
+        match self.users.get_mut(&candidate.clone().into()) {
+            Some(user) => {
+                user.insert_parent(team);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(candidate)),
+        }
+    }
+
+    pub fn remove_user_from_team(
+        &mut self,
+        candidate: UserUid,
+        team: TeamUid,
+    ) -> Result<(), Error> {
+        // TODO: `get_team` and `get_mut` should trivially succeed after
+        // successful authorization
+        let _ = self.get_team(&team)?;
+        match self.users.get_mut(&candidate.clone().into()) {
+            Some(user) => {
+                user.delete_parent(&team);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(candidate)),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]

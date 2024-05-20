@@ -21,8 +21,8 @@ use tracing::{error, info, trace};
 
 use cedar_policy::{
     Authorizer, Context, Decision, Diagnostics, EntityId, EntityTypeName, HumanSchemaError,
-    ParseErrors, PolicySet, PolicySetError, Request, RestrictedExpression, Schema, SchemaError,
-    ValidationMode, Validator,
+    ParseErrors, PolicySet, PolicySetError, Request, Schema, SchemaError, ValidationMode,
+    Validator,
 };
 
 use thiserror::Error;
@@ -33,9 +33,9 @@ use tokio::sync::{
 
 use crate::{
     api::{
-        AddAdmin, AddShare, CreateList, CreateTask, CreateTeam, CreateUser, DeleteList,
+        AddAdmin, AddMember, AddShare, CreateList, CreateTask, CreateTeam, CreateUser, DeleteList,
         DeleteShare, DeleteTask, Empty, GetList, GetLists, GetTeam, GetUser, RemoveAdmin,
-        UpdateList, UpdateTask,
+        RemoveMember, UpdateList, UpdateTask,
     },
     entitystore::{EntityDecodeError, EntityStore},
     objects::{List, Team, User},
@@ -174,6 +174,8 @@ pub enum AppQueryKind {
     GetTeam(GetTeam),
     AddAdmin(AddAdmin),
     RemoveAdmin(RemoveAdmin),
+    AddMember(AddMember),
+    RemoveMember(RemoveMember),
 }
 
 #[derive(Debug)]
@@ -255,6 +257,8 @@ lazy_static! {
     static ref ACTION_DELETE_LIST: EntityUid = r#"Action::"DeleteList""#.parse().unwrap();
     static ref ACTION_ADD_ADMIN: EntityUid = r#"Action::"AddAdmin""#.parse().unwrap();
     static ref ACTION_REMOVE_ADMIN: EntityUid = r#"Action::"RemoveAdmin""#.parse().unwrap();
+    static ref ACTION_ADD_MEMBER: EntityUid = r#"Action::"AddMember""#.parse().unwrap();
+    static ref ACTION_REMOVE_MEMBER: EntityUid = r#"Action::"RemoveMember""#.parse().unwrap();
 }
 
 pub struct AppContext {
@@ -399,6 +403,8 @@ impl AppContext {
                     AppQueryKind::GetTeam(r) => self.get_team(r),
                     AppQueryKind::AddAdmin(r) => self.add_admin(r),
                     AppQueryKind::RemoveAdmin(r) => self.remove_admin(r),
+                    AppQueryKind::AddMember(r) => self.add_member(r),
+                    AppQueryKind::RemoveMember(r) => self.remove_member(r),
                 };
                 if let Err(e) = msg.sender.send(r) {
                     trace!("Failed send response: {:?}", e);
@@ -626,6 +632,76 @@ impl AppContext {
         )?;
 
         self.entities.add_admin(team_id, candidate_id)?;
+
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn remove_member(&mut self, r: RemoveMember) -> Result<AppResponse> {
+        let team_id = TeamUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_TEAM.clone(),
+                EntityId::new(r.team),
+            ),
+        ))
+        .unwrap();
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.user),
+            ),
+        ))
+        .unwrap();
+        let candidate_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.candidate),
+            ),
+        ))
+        .unwrap();
+
+        self.is_authorized_with_context(
+            user_id,
+            &*ACTION_ADD_ADMIN,
+            team_id.clone(),
+            Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
+        )?;
+
+        self.entities.remove_user_from_team(candidate_id, team_id)?;
+
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn add_member(&mut self, r: AddMember) -> Result<AppResponse> {
+        let team_id = TeamUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_TEAM.clone(),
+                EntityId::new(r.team),
+            ),
+        ))
+        .unwrap();
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.user),
+            ),
+        ))
+        .unwrap();
+        let candidate_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.candidate),
+            ),
+        ))
+        .unwrap();
+
+        self.is_authorized_with_context(
+            user_id,
+            &*ACTION_ADD_MEMBER,
+            team_id.clone(),
+            Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
+        )?;
+
+        self.entities.add_user_to_team(candidate_id, team_id)?;
 
         Ok(AppResponse::Unit(()))
     }

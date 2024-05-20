@@ -102,6 +102,32 @@ impl From<RemoveAdmin> for AppQueryKind {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct AddMember {
+    pub team: String,
+    pub user: String,
+    pub candidate: String,
+}
+
+impl From<AddMember> for AppQueryKind {
+    fn from(value: AddMember) -> Self {
+        AppQueryKind::AddMember(value)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RemoveMember {
+    pub team: String,
+    pub user: String,
+    pub candidate: String,
+}
+
+impl From<RemoveMember> for AppQueryKind {
+    fn from(value: RemoveMember) -> Self {
+        AppQueryKind::RemoveMember(value)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct GetList {
     pub uid: UserUid,
     pub list: ListUid,
@@ -340,7 +366,13 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                         .and(warp::delete())
                         .and(with_app(chan.clone()))
                         .and(warp::body::json())
-                        .and_then(simple_query::<RemoveAdmin, Empty>))),
+                        .and_then(simple_query::<RemoveAdmin, Empty>)))
+                .or(warp::path("member")
+                    .and(warp::path("add"))
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<AddAdmin, Empty>)),
         )),
     );
 
