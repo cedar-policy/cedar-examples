@@ -22,7 +22,7 @@ use warp::Filter;
 
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
-    objects::{List, TaskState, User},
+    objects::{List, TaskState, Team, User},
     util::{EntityUid, ListUid, Lists, UserOrTeamUid, UserUid},
 };
 
@@ -49,6 +49,29 @@ pub struct GetUser {
 impl From<GetUser> for AppQueryKind {
     fn from(v: GetUser) -> AppQueryKind {
         AppQueryKind::GetUser(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreateTeam {
+    pub owner: String,
+    pub id: String,
+}
+
+impl From<CreateTeam> for AppQueryKind {
+    fn from(v: CreateTeam) -> AppQueryKind {
+        AppQueryKind::CreateTeam(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct GetTeam {
+    pub id: String,
+}
+
+impl From<GetTeam> for AppQueryKind {
+    fn from(v: GetTeam) -> AppQueryKind {
+        AppQueryKind::GetTeam(v)
     }
 }
 
@@ -263,12 +286,24 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                 .and(warp::post())
                 .and(with_app(chan.clone()))
                 .and(warp::body::json())
-                .and_then(simple_query::<CreateList, EntityUid>)
+                .and_then(simple_query::<CreateUser, Empty>)
                 .or(warp::path("get")
                     .and(warp::get())
                     .and(with_app(chan.clone()))
                     .and(warp::query::query::<GetUser>())
                     .and_then(simple_query::<GetUser, User>)),
+        ))
+        .or(warp::path("team").and(
+            warp::path("create")
+                .and(warp::post())
+                .and(with_app(chan.clone()))
+                .and(warp::body::json())
+                .and_then(simple_query::<CreateTeam, Empty>)
+                .or(warp::path("get")
+                    .and(warp::get())
+                    .and(with_app(chan.clone()))
+                    .and(warp::query::query::<GetTeam>())
+                    .and_then(simple_query::<GetTeam, Team>)),
         )),
     );
 

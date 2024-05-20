@@ -33,13 +33,13 @@ use tokio::sync::{
 
 use crate::{
     api::{
-        AddShare, CreateList, CreateTask, CreateUser, DeleteList, DeleteShare, DeleteTask, Empty,
-        GetList, GetLists, GetUser, UpdateList, UpdateTask,
+        AddShare, CreateList, CreateTask, CreateTeam, CreateUser, DeleteList, DeleteShare,
+        DeleteTask, Empty, GetList, GetLists, GetTeam, GetUser, UpdateList, UpdateTask,
     },
     entitystore::{EntityDecodeError, EntityStore},
-    objects::{List, User},
+    objects::{List, Team, User},
     policy_store,
-    util::{EntityUid, ListUid, Lists, UserUid, TYPE_LIST, TYPE_USER},
+    util::{EntityUid, ListUid, Lists, TeamUid, UserUid, TYPE_LIST, TYPE_TEAM, TYPE_USER},
 };
 
 #[cfg(feature = "use-templates")]
@@ -59,6 +59,7 @@ pub enum AppResponse {
     TaskId(i64),
     Unit(()),
     User(User),
+    Team(Team),
 }
 
 impl AppResponse {
@@ -120,6 +121,16 @@ impl TryInto<User> for AppResponse {
     }
 }
 
+impl TryInto<Team> for AppResponse {
+    type Error = Error;
+    fn try_into(self) -> std::result::Result<Team, Self::Error> {
+        match self {
+            AppResponse::Team(t) => Ok(t),
+            _ => Err(Error::Type),
+        }
+    }
+}
+
 impl TryInto<Lists> for AppResponse {
     type Error = Error;
     fn try_into(self) -> std::result::Result<Lists, Self::Error> {
@@ -156,6 +167,10 @@ pub enum AppQueryKind {
     // User CRUD
     CreateUser(CreateUser),
     GetUser(GetUser),
+
+    // Team CRUD
+    CreateTeam(CreateTeam),
+    GetTeam(GetTeam),
 }
 
 #[derive(Debug)]
@@ -375,6 +390,8 @@ impl AppContext {
                     AppQueryKind::UpdatePolicySet(set) => self.update_policy_set(set),
                     AppQueryKind::CreateUser(r) => self.create_user(r),
                     AppQueryKind::GetUser(r) => self.get_user(r),
+                    AppQueryKind::CreateTeam(r) => self.create_team(r),
+                    AppQueryKind::GetTeam(r) => self.get_team(r),
                 };
                 if let Err(e) = msg.sender.send(r) {
                     trace!("Failed send response: {:?}", e);
@@ -543,6 +560,32 @@ impl AppContext {
                 .collect::<Vec<EntityUid>>()
                 .into(),
         ))
+    }
+
+    fn create_team(&mut self, r: CreateTeam) -> Result<AppResponse> {
+        let u = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.owner),
+            ),
+        ))
+        .unwrap();
+        let t = TeamUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(TYPE_TEAM.clone(), EntityId::new(r.id)),
+        ))
+        .unwrap();
+        self.entities.insert_team(Team::new(t, u));
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn get_team(&mut self, r: GetTeam) -> Result<AppResponse> {
+        let team_id = TeamUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(TYPE_USER.clone(), EntityId::new(r.id)),
+        ))
+        .unwrap();
+        self.entities
+            .get_team(&team_id)
+            .map(|v| AppResponse::Team(v.clone()))
     }
 
     fn create_user(&mut self, r: CreateUser) -> Result<AppResponse> {
