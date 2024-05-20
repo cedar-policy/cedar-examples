@@ -84,6 +84,26 @@ impl EntityStore {
         self.lists.insert(e.uid().clone().into(), e);
     }
 
+    pub fn add_admin(&mut self, e: TeamUid, c: UserUid) -> Result<(), Error> {
+        match self.teams.get_mut(&e.clone().into()) {
+            Some(t) => {
+                t.add_admin(c);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(e)),
+        }
+    }
+
+    pub fn remove_admin(&mut self, e: TeamUid, c: UserUid) -> Result<(), Error> {
+        match self.teams.get_mut(&e.clone().into()) {
+            Some(t) => {
+                t.remove_admin(c);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(e)),
+        }
+    }
+
     pub fn delete_entity(&mut self, e: impl AsRef<EntityUid>) -> Result<(), Error> {
         let r = e.as_ref();
         if self.users.contains_key(r) {

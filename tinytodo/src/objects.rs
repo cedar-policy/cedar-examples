@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use cedar_policy::{Entity, EvalResult, RestrictedExpression};
 use serde::{Deserialize, Serialize};
@@ -134,15 +134,28 @@ impl Team {
     pub fn uid(&self) -> &TeamUid {
         &self.uid
     }
+
+    pub fn add_admin(&mut self, candidate: UserUid) {
+        self.admins.insert(candidate);
+    }
+
+    pub fn remove_admin(&mut self, candidate: UserUid) {
+        self.admins.remove(&candidate);
+    }
 }
 
 impl From<Team> for Entity {
     fn from(team: Team) -> Entity {
         let euid: EntityUid = team.uid.into();
-        Entity::new_no_attrs(
+        Entity::new(
             euid.into(),
+            HashMap::from_iter([(
+                "admins".to_owned(),
+                RestrictedExpression::new_set(team.admins.into_iter().map(|u| u.into())),
+            )]),
             team.parents.into_iter().map(|euid| euid.into()).collect(),
         )
+        .unwrap()
     }
 }
 
