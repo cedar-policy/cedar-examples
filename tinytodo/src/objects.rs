@@ -149,10 +149,13 @@ impl From<Team> for Entity {
         let euid: EntityUid = team.uid.into();
         Entity::new(
             euid.into(),
-            HashMap::from_iter([(
-                "admins".to_owned(),
-                RestrictedExpression::new_set(team.admins.into_iter().map(|u| u.into())),
-            )]),
+            HashMap::from_iter([
+                (
+                    "admins".to_owned(),
+                    RestrictedExpression::new_set(team.admins.into_iter().map(|u| u.into())),
+                ),
+                ("owner".to_owned(), team.owner.into()),
+            ]),
             team.parents.into_iter().map(|euid| euid.into()).collect(),
         )
         .unwrap()
