@@ -1,6 +1,0 @@
-{
-    "principal": "User::\"Alice\"",
-    "action": "Action::\"UpdateWorkspace\"",
-    "resource": "Workspace::\"workspace-1\"",
-    "context": {}
-}
