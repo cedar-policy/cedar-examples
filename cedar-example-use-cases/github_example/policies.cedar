@@ -69,8 +69,6 @@ permit (
      Action::"add_admin"],
   resource
 )
-when
-{ principal in resource.admins };
-
+when { principal in resource.admins };
 //We use the same permissions for org owners, and rely on placing them in the admins group for every repository in the org
 //The other option is to duplicate all policies for the org base permissions (with a separate heirarchy for each org)
