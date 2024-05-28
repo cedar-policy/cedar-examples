@@ -21,6 +21,7 @@ notify = { version = "5.1.0", default-features = false, features = ["macos_kqueu
 use-templates = []
 
 [dependencies.cedar-policy]
+features = ["partial-eval"]
 version = "4.0.0"
 git = "https://github.com/cedar-policy/cedar"
 branch = "main"

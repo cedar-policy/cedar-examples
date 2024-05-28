@@ -23,7 +23,7 @@ use warp::Filter;
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
     objects::{List, TaskState, Team, User},
-    util::{EntityUid, ListUid, Lists, UserOrTeamUid, UserUid},
+    util::{EntityUid, ListUid, Lists, Teams, UserOrTeamUid, UserUid},
 };
 
 type AppChannel = mpsc::Sender<AppQuery>;
@@ -222,6 +222,28 @@ impl From<GetLists> for AppQueryKind {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct GetMemberTeams {
+    pub uid: UserUid,
+}
+
+impl From<GetMemberTeams> for AppQueryKind {
+    fn from(v: GetMemberTeams) -> AppQueryKind {
+        AppQueryKind::GetMemberTeams(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct GetAdminTeams {
+    pub uid: UserUid,
+}
+
+impl From<GetAdminTeams> for AppQueryKind {
+    fn from(v: GetAdminTeams) -> AppQueryKind {
+        AppQueryKind::GetAdminTeams(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct UpdateTask {
     pub uid: UserUid,
     pub list: ListUid,
@@ -372,7 +394,16 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                     .and(warp::post())
                     .and(with_app(chan.clone()))
                     .and(warp::body::json())
-                    .and_then(simple_query::<AddAdmin, Empty>)),
+                    .and_then(simple_query::<AddAdmin, Empty>))
+                .or(warp::path("manage")
+                    .and(warp::path("member"))
+                    .and(with_app(chan.clone()))
+                    .and(warp::query::query::<GetMemberTeams>())
+                    .and_then(simple_query::<GetMemberTeams, Teams>)
+                    .or(warp::path("admin")
+                        .and(with_app(chan.clone()))
+                        .and(warp::query::query::<GetAdminTeams>())
+                        .and_then(simple_query::<GetAdminTeams, Teams>))),
         )),
     );
 
