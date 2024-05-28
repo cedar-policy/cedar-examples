@@ -10,7 +10,7 @@ ABC Tech resources are `Workspace` objects. Each of these objects has associated
 
 ## Tag matching
 
-ABC Tech tags are organized in to _tag groups_ -- the group name is effectively a tag key. Each group has a set of associated string values. For example, the tag group `country` might have potential values `italy`, `germany` and `USA`, and a workspace or user with this tag may have any or all of these potential values. The tag value `ALL` is special: It says that the associated tag should be considered as having all possible tag values. For example, if `country` had tag value `[ "ALL" ]` then it matches `italy`, `germany`, and `USA`, all.
+ABC Tech tags are organized in to _tag groups_ -- the group name is effectively a tag key. Each group has a set of associated string values. For example, the tag group `country` might have potential values `Italy`, `Germany` and `USA`, and a workspace or user with this tag may have any or all of these potential values. The tag value `ALL` is special: It says that the associated tag should be considered as having all possible tag values. For example, if `country` had tag value `[ "ALL" ]` then it matches all of `Italy`, `Germany`, and `USA`.
 
 A `User`'s tags are collected by its `allowedTagsForRole` attribute, which is a record. The record has one attribute for each possible role in the system; these attributes are optional since not all users will be in all roles. Each role attribute is itself a record, whose attributes are the names of all possible tag groups; as with roles, these attributes are optional since not all users will have all tags. Each tag group attribute is associated with a set of strings, i.e., the values for that tag.
 
