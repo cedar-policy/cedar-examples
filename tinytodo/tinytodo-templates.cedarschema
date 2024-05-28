@@ -5,7 +5,11 @@ type Task = {
 };
 type Tasks = Set<Task>;
 
-entity Team in [Team, Application];
+entity Team in [Team, Application] {
+  "owner": User,
+  "admins": Set<User>,
+}
+
 entity List in [Application] = {
   "name": String,
   "owner": User,
