@@ -1,7 +1,7 @@
 # Cedar Example Use Cases
 
 This repository contains Cedar policies that model the authorization logic of two example applications.
-[Document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. [GitHub example](./github_example/) mimics GitHub's repository access permissions.
+The [document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. The [GitHub example](./github_example/) mimics GitHub's repository access permissions.
 
 ## Quick Start
 
@@ -28,9 +28,9 @@ Use the `run.sh` script to validate the policies and run every authorization tes
 
 | File  | Description |
 | ------------- | ------------- |
-| `policies.cedar`  | Cedar policies for authorization management  |
-| `entities.json`  | Example entity store  |
-| `*.cedarschema.json` | Example schema |
+| `policies.cedar`  | Cedar policies  |
+| `entities.json`  | Sample entity store  |
+| `policies.cedarschema` | Cedar schema |
 | `allow_requests` | Allowed requests |
 | `deny_requests` | Denied requests |
-| `README.md` | A tutorial walking through the example application |
+| `README.md` | A tutorial walking through the application |

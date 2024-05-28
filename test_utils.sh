@@ -64,4 +64,19 @@ authorize() {
     done
 }
 
+# Call this function to assert that policies in the directory `$1/$2` are formatted. 
+# Set `any_failed` env var to `1` if a policy is not formatted.
+format() {
+    local folder=$1
+    local policies=$2
+    echo " Checking formatting of ${policies}"
+    res="$(cedar format --policies "$folder/$policies" --check)"
+    if [[ $? == 0 ]]
+    then
+        passed "format check succeeded"
+    else
+        failed "format check on ${policies} with result: ${res}"
+    fi
+}
+
 echo "Using $(cedar --version)"
