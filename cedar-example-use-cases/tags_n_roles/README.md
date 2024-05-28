@@ -4,7 +4,7 @@ Hypothetical example for a company ABC Technologies.
 
 ## Basic model
 
-ABC Tech principals are `User`s. Users have one or more `Role`s. This is indicated in the entity hierarchy (the `User` is `in` each of their `Role`s). A role has a corresponding `Action` group whose name mentions the roles; the member `Actions` of the group are the actions that members of the role can carry out. For each role the user is a member of, the user has a set of associated _tags_. The associated tags are collected as optional attributes in the `User` entity, as discussed below.
+ABC Tech principals are `User`s. Users have one or more `Role`s. This is indicated in the entity hierarchy (the `User` is `in` each of their `Role`s). A role has a corresponding `Action` group whose name mentions the roles; the member `Action`s of the group are the actions that members of the role can carry out. For each role the user is a member of, the user has a set of associated _tags_. The associated tags are collected as optional attributes in the `User` entity, as discussed below.
 
 ABC Tech resources are `Workspace` objects. Each of these objects has associated tags, also stored as optional attributes, similarly to users. At a high level: If a user is a member of a role, and their tags associated with the role _match_ the tags on a resource, then they are permitted to carry out any of the role's associated actions on that resource.
 
