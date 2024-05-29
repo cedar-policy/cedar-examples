@@ -379,11 +379,13 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                     .and(warp::query::query::<GetTeam>())
                     .and_then(simple_query::<GetTeam, Team>))
                 .or(warp::path("admin")
-                    .and(warp::path("add"))
-                    .and(warp::post())
-                    .and(with_app(chan.clone()))
-                    .and(warp::body::json())
-                    .and_then(simple_query::<AddAdmin, Empty>)
+                    .and(
+                        warp::path("add")
+                            .and(warp::post())
+                            .and(with_app(chan.clone()))
+                            .and(warp::body::json())
+                            .and_then(simple_query::<AddAdmin, Empty>),
+                    )
                     .or(warp::path("remove")
                         .and(warp::delete())
                         .and(with_app(chan.clone()))
@@ -395,15 +397,16 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                     .and(with_app(chan.clone()))
                     .and(warp::body::json())
                     .and_then(simple_query::<AddAdmin, Empty>))
-                .or(warp::path("manage")
-                    .and(warp::path("member"))
-                    .and(with_app(chan.clone()))
-                    .and(warp::query::query::<GetMemberTeams>())
-                    .and_then(simple_query::<GetMemberTeams, Teams>)
-                    .or(warp::path("admin")
+                .or(warp::path("manage").and(
+                    warp::path("member")
                         .and(with_app(chan.clone()))
-                        .and(warp::query::query::<GetAdminTeams>())
-                        .and_then(simple_query::<GetAdminTeams, Teams>))),
+                        .and(warp::query::query::<GetMemberTeams>())
+                        .and_then(simple_query::<GetMemberTeams, Teams>)
+                        .or(warp::path("admin")
+                            .and(with_app(chan.clone()))
+                            .and(warp::query::query::<GetAdminTeams>())
+                            .and_then(simple_query::<GetAdminTeams, Teams>)),
+                )),
         )),
     );
 
