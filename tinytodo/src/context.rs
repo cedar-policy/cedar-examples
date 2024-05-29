@@ -417,9 +417,9 @@ impl AppContext {
             ShareRole::Reader => "reader",
             ShareRole::Editor => "editor",
         };
-        let target_eid = target.as_ref().id();
+        let target_eid = target.as_ref().id().escaped();
         // Note: A List EID is controlled by TinyTodo, and will always be a number
-        let list_eid = list.as_ref().id();
+        let list_eid = list.as_ref().id().escaped();
         PolicyId::new(&format!("{pid_prefix}[{target_eid}][{list_eid}]"))
     }
 
