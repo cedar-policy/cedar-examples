@@ -20,9 +20,8 @@ use std::path::PathBuf;
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    schema_error::SchemaError, Authorizer, Context, Decision, Diagnostics, EntityTypeName,
-    HumanSchemaError, ParseErrors, PolicySet, PolicySetError, Request, Schema, ValidationMode,
-    Validator,
+    schema_error::SchemaError, Authorizer, Context, Decision, Diagnostics, HumanSchemaError,
+    ParseErrors, PolicySet, PolicySetError, Request, Schema, ValidationMode, Validator,
 };
 
 use thiserror::Error;
@@ -39,7 +38,7 @@ use crate::{
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
     policy_store,
-    util::{EntityUid, ListUid, Lists, TYPE_LIST},
+    util::{EntityUid, ListUid, TYPE_LIST},
 };
 
 #[cfg(feature = "use-templates")]
@@ -55,7 +54,7 @@ use std::collections::HashMap;
 pub enum AppResponse {
     GetList(Box<List>),
     Euid(EntityUid),
-    Lists(Lists),
+    Lists(Vec<List>),
     TaskId(i64),
     Unit(()),
 }
@@ -109,9 +108,9 @@ impl TryInto<Empty> for AppResponse {
     }
 }
 
-impl TryInto<Lists> for AppResponse {
+impl TryInto<Vec<List>> for AppResponse {
     type Error = Error;
-    fn try_into(self) -> std::result::Result<Lists, Self::Error> {
+    fn try_into(self) -> std::result::Result<Vec<List>, Self::Error> {
         match self {
             AppResponse::Lists(l) => Ok(l),
             _ => Err(Error::Type),
@@ -512,16 +511,17 @@ impl AppContext {
     }
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
-        let t: EntityTypeName = "List".parse().unwrap();
         self.is_authorized(&r.uid, &*ACTION_GET_LISTS, &*APPLICATION_TINY_TODO)?;
 
         Ok(AppResponse::Lists(
             self.entities
-                .euids()
-                .filter(|euid| euid.type_name() == &t)
-                .filter(|euid| self.is_authorized(&r.uid, &*ACTION_GET_LIST, euid).is_ok())
+                .get_lists()
+                .filter(|t| {
+                    self.is_authorized(&r.uid, &*ACTION_GET_LIST, t.uid())
+                        .is_ok()
+                })
                 .cloned()
-                .collect::<Vec<EntityUid>>()
+                .collect::<Vec<List>>()
                 .into(),
         ))
     }

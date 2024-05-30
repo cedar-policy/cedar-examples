@@ -23,7 +23,7 @@ use warp::Filter;
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
     objects::{List, TaskState},
-    util::{EntityUid, ListUid, Lists, UserOrTeamUid, UserUid},
+    util::{EntityUid, ListUid, UserOrTeamUid, UserUid},
 };
 
 type AppChannel = mpsc::Sender<AppQuery>;
@@ -223,7 +223,7 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
             .and(warp::path("get"))
             .and(with_app(chan.clone()))
             .and(warp::query::query::<GetLists>())
-            .and_then(simple_query::<GetLists, Lists>))
+            .and_then(simple_query::<GetLists, Vec<List>>))
         .or(warp::path("share").and(
             (warp::post()
                 .and(with_app(chan.clone()))
