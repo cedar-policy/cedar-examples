@@ -37,6 +37,10 @@ pub struct EntityStore {
 }
 
 impl EntityStore {
+    pub fn get_lists(&self) -> impl Iterator<Item = &List> {
+        self.lists.values()
+    }
+
     pub fn euids(&self) -> impl Iterator<Item = &EntityUid> {
         self.users
             .keys()

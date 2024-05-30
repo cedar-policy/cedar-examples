@@ -40,7 +40,7 @@ use crate::{
     entitystore::{EntityDecodeError, EntityStore},
     objects::{List, Team, User},
     policy_store,
-    util::{EntityUid, ListUid, Lists, TeamUid, Teams, UserUid, TYPE_LIST, TYPE_TEAM, TYPE_USER},
+    util::{EntityUid, ListUid, TeamUid, Teams, UserUid, TYPE_LIST, TYPE_TEAM, TYPE_USER},
 };
 
 #[cfg(feature = "use-templates")]
@@ -54,7 +54,7 @@ use cedar_policy::{PolicyId, SlotId};
 pub enum AppResponse {
     GetList(Box<List>),
     Euid(EntityUid),
-    Lists(Lists),
+    Lists(Vec<List>),
     TaskId(i64),
     Unit(()),
     User(User),
@@ -131,9 +131,9 @@ impl TryInto<Team> for AppResponse {
     }
 }
 
-impl TryInto<Lists> for AppResponse {
+impl TryInto<Vec<List>> for AppResponse {
     type Error = Error;
-    fn try_into(self) -> std::result::Result<Lists, Self::Error> {
+    fn try_into(self) -> std::result::Result<Vec<List>, Self::Error> {
         match self {
             AppResponse::Lists(l) => Ok(l),
             _ => Err(Error::Type),
@@ -479,9 +479,9 @@ impl AppContext {
             ShareRole::Reader => "reader",
             ShareRole::Editor => "editor",
         };
-        let target_eid = target.as_ref().id();
+        let target_eid = target.as_ref().id().escaped();
         // Note: A List EID is controlled by TinyTodo, and will always be a number
-        let list_eid = list.as_ref().id();
+        let list_eid = list.as_ref().id().escaped();
         PolicyId::new(&format!("{pid_prefix}[{target_eid}][{list_eid}]"))
     }
 
@@ -578,11 +578,13 @@ impl AppContext {
 
         Ok(AppResponse::Lists(
             self.entities
-                .euids()
-                .filter(|euid| euid.type_name() == &*TYPE_LIST)
-                .filter(|euid| self.is_authorized(&r.uid, &*ACTION_GET_LIST, euid).is_ok())
+                .get_lists()
+                .filter(|t| {
+                    self.is_authorized(&r.uid, &*ACTION_GET_LIST, t.uid())
+                        .is_ok()
+                })
                 .cloned()
-                .collect::<Vec<EntityUid>>()
+                .collect::<Vec<List>>()
                 .into(),
         ))
     }
