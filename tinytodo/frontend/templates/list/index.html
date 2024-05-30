@@ -1,0 +1,84 @@
+{% extends "main.html" %}
+{% block title %} List Viewer {% endblock %}
+{% block body %}
+
+<h1>{{name}}</h1>
+<h2>Contents</h2>
+<ul>
+    {% for item in items %}
+        <li>{{item.name}} 
+            <form style="display:inline" action="/list/delete_task" method="POST">
+                <input type="hidden" name="task_id" value="{{item.id}}"/>
+                <input type="hidden" name="list_id" value="{{id}}"/>
+                <input class="inlineSubmit" type="submit" value="[X]"/>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+<h3> Add item: </h3>
+<form action="/list/add_item" method="POST">
+    <p><input type="hidden" name="name" value="{{id}}"/></p>
+    <p><input type="text" name="item"/></p>
+    <p><input type="submit" value="add"/></p>
+</form>
+
+<h2>Sharing</h2>
+<h3>Readers</h3>
+Current Readers<br/>
+<ul>
+    {% for user in readers %}
+        <li>
+            {{ user.username }} 
+            <form action="/list/unshare" method="post" style="display: inline;">
+                <input type="hidden" name="list_id" value="{{id}}"/>
+                <input type="hidden" name="share_kind" value="reader"/>
+                <input type="hidden" name="user_id" value="{{user.id}}"/>
+                <input class="inlineSubmit" type="submit" value="[remove]"/>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+Add reader:
+<form action="/list/share_with" method="POST">
+    <p><input type="hidden" name="list_id" value="{{id}}"/></p>
+    <p><input type="hidden" name="share_kind" value="reader"/></p>
+    <p><select name="user_id">
+            {% for user in users %}
+                <option value="{{user.id}}">
+                    {{user.username}}
+                </option>
+            {% endfor %}
+    </select></p>
+    <p><input type="submit" value="add"/></p>
+</form>
+
+<h3>Editors</h3>
+Current Editors<br/>
+<ul>
+    {% for user in editors%}
+        <li>
+            {{ user.username }} 
+            <form action="/list/unshare" method="post" style="display: inline;">
+                <input type="hidden" name="list_id" value="{{id}}"/>
+                <input type="hidden" name="share_kind" value="editor"/>
+                <input type="hidden" name="user_id" value="{{user.id}}"/>
+                <input class="inlineSubmit" type="submit" value="[remove]"/>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+Add editor:
+<form action="/list/share_with" method="POST">
+    <p><input type="hidden" name="list_id" value="{{id}}"/></p>
+    <p><input type="hidden" name="share_kind" value="editor"/></p>
+    <p><select name="user_id">
+            {% for user in users %}
+                <option value="{{user.id}}">
+                    {{user.username}}
+                </option>
+            {% endfor %}
+    </select></p>
+    <p><input type="submit" value="add"/></p>
+</form>
+
+{% endblock %}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>>TinyTodo - {% block title %}{% endblock %} </title>
+    <link type="text/css" rel="stylesheet"
+    href="{{ url_for('static', filename='hello.css')}}"
+    />
+</head>
+<body>
+    <ul class="navbar">
+        <li><a href="/">home</a></li>
+        {% if user is defined %}
+        <li>
+            <a href="/user?name={{uid}}">user info</a>
+        </li>
+        {% endif %}
+        <li><a href="/lists">my lists</a></li>
+        <li><a href="/teams">my teams</a></li>
+        <li>
+            {% if user is defined %}
+            Welcome {{user}}. <a href="/logout">logout</a>
+            {% else %}
+            <a href="/login">login</a>
+            {% endif %}
+        </li>
+    </ul>
+    {% block body %} {% endblock %}
+</body>
+</html>

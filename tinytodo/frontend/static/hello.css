@@ -1,0 +1,28 @@
+
+ul.navbar {
+    list-style: none
+}
+
+ul.navbar li {
+    display: inline-block;
+    padding: 0 7px;
+    position: relative;
+}
+
+ul.navbar li:not(:last-child)::after {
+    content: "";
+    border: 1px solid #e2e2e2;
+    border-width: 1px 1px 0 0 ;
+    position: absolute;
+    right: -3px;
+    top: 0;
+    height: 100%;
+}
+
+.inlineSubmit {
+    background: none;
+    border: none;
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+}

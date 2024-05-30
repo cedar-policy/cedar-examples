@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+{% block title %}
+Lists
+{% endblock %}
+{% block body %}
+<a href="/list/create">Create a new list</a>
+<h1>Your Lists</h1>
+<ul>
+    {% for list in lists %}
+    <li>
+        <a href="/list/read?name={{list}}">{{list}}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}
