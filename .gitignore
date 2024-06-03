@@ -23,3 +23,7 @@ cedar-rust-hello-world/target/*
 # Don't check build files for tinytodo
 tinytodo/Cargo.lock
 tinytodo/target/*
+
+# Don't check build files for cedar-discord
+cedar-example-use-cases/discord/Cargo.lock
+cedar-example-use-cases/discord/target/*

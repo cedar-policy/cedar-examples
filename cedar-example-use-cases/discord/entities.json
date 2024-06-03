@@ -1,0 +1,58 @@
+[
+  {
+    "uid": {
+      "type": "Server",
+      "id": "general"
+    },
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "Permission",
+      "id": "SendMessage"
+    },
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "Role",
+      "id": "everyone"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Permission",
+        "id": "SendMessage"
+      }
+    ]
+  },
+
+  {
+    "uid": {
+      "type": "User",
+      "id": "yihong"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Role",
+        "id": "everyone"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "User",
+      "id": "oflatt"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Role",
+        "id": "owner"
+      }
+    ]
+  }
+]

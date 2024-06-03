@@ -1,0 +1,6 @@
+{
+  "principal": "User::\"yihong\"",
+  "action": "Action::\"ManageRole\"",
+  "resource": "Role::\"everyone\"",
+  "context": {}
+}

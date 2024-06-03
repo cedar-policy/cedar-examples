@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"oflatt\"",
+    "action": "Action::\"ManageRole\"",
+    "resource": "Role::\"everyone\"",
+    "context": {}
+}

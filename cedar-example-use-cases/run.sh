@@ -20,4 +20,10 @@ validate "tags_n_roles" "policies.cedar" "policies.cedarschema"
 authorize "tags_n_roles" "policies.cedar" "entities.json" "policies.cedarschema"
 format "tags_n_roles" "policies.cedar"
 
+# Discord
+echo -e "\nTesting Discord..."
+validate "discord" "policies.cedar" "policies.cedarschema"
+authorize "discord" "policies.cedar" "entities.json" "policies.cedarschema"
+format "discord" "policies.cedar"
+
 exit "$any_failed"

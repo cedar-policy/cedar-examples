@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"yihong\"",
+    "action": "Action::\"KickMember\"",
+    "resource": "Server::\"test\"",
+    "context": {}
+}

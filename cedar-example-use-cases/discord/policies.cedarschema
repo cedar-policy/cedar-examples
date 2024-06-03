@@ -1,0 +1,28 @@
+// discord permissions, (e.g. SendMessage)
+entity Permission;
+
+// discord roles, (e.g. the default "everyone" role)
+// discord roles have user-configurable permissions
+entity Role in [Permission];
+
+// discord users, the entity id being the user id
+// discord users may have multiple roles
+entity User in [Role];
+
+// TODO: add Channels
+// permissions in discord are specific to channels
+
+// a discord server
+// currently, we only consider a single server "test"
+entity Server;
+
+
+action SendMessage, KickMember appliesTo {
+  principal: [User],
+  resource:  [Server]
+};
+
+action ManageRole appliesTo {
+  principal: [User],
+  resource:  [Role]
+};

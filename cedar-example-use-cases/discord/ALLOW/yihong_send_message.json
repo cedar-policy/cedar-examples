@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"yihong\"",
+    "action": "Action::\"SendMessage\"",
+    "resource": "Server::\"test\"",
+    "context": {}
+}
