@@ -46,8 +46,6 @@ use crate::{
 use crate::{api::ShareRole, util::UserOrTeamUid};
 #[cfg(feature = "use-templates")]
 use cedar_policy::{PolicyId, SlotId};
-#[cfg(feature = "use-templates")]
-use std::collections::HashMap;
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
 
