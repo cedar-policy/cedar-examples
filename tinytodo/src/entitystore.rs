@@ -41,6 +41,10 @@ impl EntityStore {
         self.lists.values()
     }
 
+    pub fn get_teams(&self) -> impl Iterator<Item = &Team> {
+        self.teams.values()
+    }
+
     pub fn euids(&self) -> impl Iterator<Item = &EntityUid> {
         self.users
             .keys()

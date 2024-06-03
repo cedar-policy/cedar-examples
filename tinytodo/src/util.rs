@@ -334,18 +334,6 @@ impl std::fmt::Display for EntityUid {
     }
 }
 
-
-#[derive(Debug, Clone, Serialize)]
-#[repr(transparent)]
-#[serde(transparent)]
-pub struct Teams(Vec<EntityUid>);
-
-impl From<Vec<EntityUid>> for Teams {
-    fn from(value: Vec<EntityUid>) -> Self {
-        Self(value)
-    }
-}
-
 impl From<cedar_policy::EntityUid> for EntityUid {
     fn from(value: cedar_policy::EntityUid) -> Self {
         Self(value)

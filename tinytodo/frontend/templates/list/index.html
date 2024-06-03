@@ -21,7 +21,23 @@
     <p><input type="text" name="item"/></p>
     <p><input type="submit" value="add"/></p>
 </form>
+<h2>Sharing</h2>
+Add reader:
+<form action="/list/share_with" method="POST">
+    <p><input type="hidden" name="list_id" value="{{id}}"/></p>
+    <p><input type="hidden" name="share_kind" value="Reader"/></p>
+    <p><input type="text" name="user"/></p>
+    <p><input type="submit" value="add"/></p>
+</form>
+Add editor:
+<form action="/list/share_with" method="POST">
+    <p><input type="hidden" name="list_id" value="{{id}}"/></p>
+    <p><input type="hidden" name="share_kind" value="Editor"/></p>
+    <p><input type="text" name="user"/></p>
+    <p><input type="submit" value="add"/></p>
+</form>
 
+<!--
 <h2>Sharing</h2>
 <h3>Readers</h3>
 Current Readers<br/>
@@ -80,5 +96,6 @@ Add editor:
     </select></p>
     <p><input type="submit" value="add"/></p>
 </form>
+-->
 
 {% endblock %}

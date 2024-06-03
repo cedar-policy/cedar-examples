@@ -115,16 +115,29 @@ impl UserOrTeam for User {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Team {
     uid: TeamUid,
+    name: Option<String>,
     owner: UserUid,
     admins: HashSet<UserUid>,
     parents: HashSet<EntityUid>,
 }
 
 impl Team {
-    pub fn new(euid: TeamUid, owner: UserUid) -> Team {
+    pub fn new_wo_name(euid: TeamUid, owner: UserUid) -> Team {
         let parent = Application::default().euid().clone();
         Self {
             uid: euid,
+            name: None,
+            owner: owner.clone(),
+            admins: [owner].into_iter().collect(),
+            parents: [parent].into_iter().collect(),
+        }
+    }
+
+    pub fn new_w_name(euid: TeamUid, name: &str, owner: UserUid) -> Team {
+        let parent = Application::default().euid().clone();
+        Self {
+            uid: euid,
+            name: Some(name.to_owned()),
             owner: owner.clone(),
             admins: [owner].into_iter().collect(),
             parents: [parent].into_iter().collect(),
@@ -190,9 +203,9 @@ impl List {
         #[cfg(not(feature = "use-templates"))]
         {
             let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-            let readers = Team::new(readers_uid.clone(), owner.clone());
+            let readers = Team::new_wo_name(readers_uid.clone(), owner.clone());
             let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-            let writers = Team::new(writers_uid.clone(), owner.clone());
+            let writers = Team::new_wo_name(writers_uid.clone(), owner.clone());
             store.insert_team(readers);
             store.insert_team(writers);
             Self {

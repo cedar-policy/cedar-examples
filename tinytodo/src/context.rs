@@ -16,7 +16,7 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
@@ -40,7 +40,7 @@ use crate::{
     entitystore::{EntityDecodeError, EntityStore},
     objects::{List, Team, User},
     policy_store,
-    util::{EntityUid, ListUid, TeamUid, Teams, UserUid, TYPE_LIST, TYPE_TEAM, TYPE_USER},
+    util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_LIST, TYPE_TEAM, TYPE_USER},
 };
 
 #[cfg(feature = "use-templates")]
@@ -59,7 +59,7 @@ pub enum AppResponse {
     Unit(()),
     User(User),
     Team(Team),
-    Teams(Teams),
+    Teams(Vec<Team>),
 }
 
 impl AppResponse {
@@ -141,9 +141,9 @@ impl TryInto<Vec<List>> for AppResponse {
     }
 }
 
-impl TryInto<Teams> for AppResponse {
+impl TryInto<Vec<Team>> for AppResponse {
     type Error = Error;
-    fn try_into(self) -> std::result::Result<Teams, Self::Error> {
+    fn try_into(self) -> std::result::Result<Vec<Team>, Self::Error> {
         match self {
             AppResponse::Teams(l) => Ok(l),
             _ => Err(Error::Type),
@@ -609,7 +609,7 @@ impl AppContext {
                 &self.authorizer,
                 self.make_dummy_request(),
                 &entities),
-            Ok(r) if matches!(r.decision(), Some(Decision::Allow)))
+            Ok(r) if !matches!(r.decision(), Some(Decision::Deny)))
     }
 
     fn get_admin_teams(&self, r: GetAdminTeams) -> Result<AppResponse> {
@@ -622,12 +622,7 @@ impl AppContext {
             .context(
                 Context::from_pairs(std::iter::once((
                     "candidate".to_owned(),
-                    RestrictedExpression::new_entity_uid(
-                        cedar_policy::EntityUid::from_type_name_and_id(
-                            TYPE_USER.clone(),
-                            cedar_policy::EntityId::new(""),
-                        ),
-                    ),
+                    RestrictedExpression::from_str(r#"unknown("candidate")"#).unwrap(),
                 )))
                 .unwrap(),
             )
@@ -659,24 +654,23 @@ impl AppContext {
             &entities,
         );
 
-        let slice = self
-            .entities
-            .euids()
-            .filter(|euid| euid.type_name() == &*TYPE_TEAM);
+        let slice = self.entities.get_teams();
 
         Ok(AppResponse::Teams(
             slice
-                .filter(|euid| {
-                    self.reauthorize_with_concrete_resource(&partial_response_add, euid, &entities)
-                        || self.reauthorize_with_concrete_resource(
-                            &partial_response_remove,
-                            euid,
-                            &entities,
-                        )
+                .filter(|t| {
+                    self.reauthorize_with_concrete_resource(
+                        &partial_response_add,
+                        &t.uid().clone().into(),
+                        &entities,
+                    ) || self.reauthorize_with_concrete_resource(
+                        &partial_response_remove,
+                        &t.uid().clone().into(),
+                        &entities,
+                    )
                 })
                 .cloned()
-                .collect::<Vec<EntityUid>>()
-                .into(),
+                .collect::<Vec<Team>>(),
         ))
     }
 
@@ -690,12 +684,7 @@ impl AppContext {
             .context(
                 Context::from_pairs(std::iter::once((
                     "candidate".to_owned(),
-                    RestrictedExpression::new_entity_uid(
-                        cedar_policy::EntityUid::from_type_name_and_id(
-                            TYPE_USER.clone(),
-                            cedar_policy::EntityId::new(""),
-                        ),
-                    ),
+                    RestrictedExpression::from_str(r#"unknown("candidate")"#).unwrap(),
                 )))
                 .unwrap(),
             )
@@ -727,24 +716,23 @@ impl AppContext {
             &entities,
         );
 
-        let slice = self
-            .entities
-            .euids()
-            .filter(|euid| euid.type_name() == &*TYPE_TEAM);
+        let slice = self.entities.get_teams();
 
         Ok(AppResponse::Teams(
             slice
-                .filter(|euid| {
-                    self.reauthorize_with_concrete_resource(&partial_response_add, euid, &entities)
-                        || self.reauthorize_with_concrete_resource(
-                            &partial_response_remove,
-                            euid,
-                            &entities,
-                        )
+                .filter(|t| {
+                    self.reauthorize_with_concrete_resource(
+                        &partial_response_add,
+                        &t.uid().clone().into(),
+                        &entities,
+                    ) || self.reauthorize_with_concrete_resource(
+                        &partial_response_remove,
+                        &t.uid().clone().into(),
+                        &entities,
+                    )
                 })
                 .cloned()
-                .collect::<Vec<EntityUid>>()
-                .into(),
+                .collect::<Vec<Team>>(),
         ))
     }
 
@@ -756,32 +744,23 @@ impl AppContext {
             ),
         ))
         .unwrap();
-        let t = TeamUid::try_from(EntityUid::from(
-            cedar_policy::EntityUid::from_type_name_and_id(TYPE_TEAM.clone(), EntityId::new(r.id)),
-        ))
-        .unwrap();
-        self.entities.insert_team(Team::new(t, u));
+        let t = self
+            .entities
+            .fresh_euid::<TeamUid>(TYPE_TEAM.clone())
+            .unwrap();
+        self.entities.insert_team(Team::new_w_name(t, &r.id, u));
         Ok(AppResponse::Unit(()))
     }
 
     fn get_team(&mut self, r: GetTeam) -> Result<AppResponse> {
-        let team_id = TeamUid::try_from(EntityUid::from(
-            cedar_policy::EntityUid::from_type_name_and_id(TYPE_TEAM.clone(), EntityId::new(r.id)),
-        ))
-        .unwrap();
+        let team_id = r.uid;
         self.entities
             .get_team(&team_id)
             .map(|v| AppResponse::Team(v.clone()))
     }
 
     fn add_admin(&mut self, r: AddAdmin) -> Result<AppResponse> {
-        let team_id = TeamUid::try_from(EntityUid::from(
-            cedar_policy::EntityUid::from_type_name_and_id(
-                TYPE_TEAM.clone(),
-                EntityId::new(r.team),
-            ),
-        ))
-        .unwrap();
+        let team_id = r.team;
         let user_id = UserUid::try_from(EntityUid::from(
             cedar_policy::EntityUid::from_type_name_and_id(
                 TYPE_USER.clone(),
@@ -834,7 +813,7 @@ impl AppContext {
 
         self.is_authorized_with_context(
             user_id,
-            &*ACTION_ADD_ADMIN,
+            &*ACTION_REMOVE_MEMBER,
             team_id.clone(),
             Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
         )?;
@@ -880,13 +859,7 @@ impl AppContext {
     }
 
     fn remove_admin(&mut self, r: RemoveAdmin) -> Result<AppResponse> {
-        let team_id = TeamUid::try_from(EntityUid::from(
-            cedar_policy::EntityUid::from_type_name_and_id(
-                TYPE_TEAM.clone(),
-                EntityId::new(r.team),
-            ),
-        ))
-        .unwrap();
+        let team_id = r.team;
         let user_id = UserUid::try_from(EntityUid::from(
             cedar_policy::EntityUid::from_type_name_and_id(
                 TYPE_USER.clone(),
@@ -904,7 +877,7 @@ impl AppContext {
 
         self.is_authorized_with_context(
             user_id,
-            &*ACTION_ADD_ADMIN,
+            &*ACTION_REMOVE_ADMIN,
             team_id.clone(),
             Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
         )?;

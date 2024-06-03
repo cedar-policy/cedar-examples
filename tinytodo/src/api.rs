@@ -23,7 +23,7 @@ use warp::Filter;
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
     objects::{List, TaskState, Team, User},
-    util::{EntityUid, ListUid, Teams, UserOrTeamUid, UserUid},
+    util::{EntityUid, ListUid, TeamUid, UserOrTeamUid, UserUid},
 };
 
 type AppChannel = mpsc::Sender<AppQuery>;
@@ -66,7 +66,7 @@ impl From<CreateTeam> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetTeam {
-    pub id: String,
+    pub uid: TeamUid,
 }
 
 impl From<GetTeam> for AppQueryKind {
@@ -77,7 +77,7 @@ impl From<GetTeam> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AddAdmin {
-    pub team: String,
+    pub team: TeamUid,
     pub user: String,
     pub candidate: String,
 }
@@ -90,7 +90,7 @@ impl From<AddAdmin> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct RemoveAdmin {
-    pub team: String,
+    pub team: TeamUid,
     pub user: String,
     pub candidate: String,
 }
@@ -368,45 +368,44 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                     .and_then(simple_query::<GetUser, User>)),
         ))
         .or(warp::path("team").and(
-            warp::path("create")
+            (warp::path("create")
                 .and(warp::post())
                 .and(with_app(chan.clone()))
                 .and(warp::body::json())
-                .and_then(simple_query::<CreateTeam, Empty>)
-                .or(warp::path("get")
-                    .and(warp::get())
-                    .and(with_app(chan.clone()))
-                    .and(warp::query::query::<GetTeam>())
-                    .and_then(simple_query::<GetTeam, Team>))
-                .or(warp::path("admin")
-                    .and(
-                        warp::path("add")
-                            .and(warp::post())
-                            .and(with_app(chan.clone()))
-                            .and(warp::body::json())
-                            .and_then(simple_query::<AddAdmin, Empty>),
-                    )
-                    .or(warp::path("remove")
-                        .and(warp::delete())
-                        .and(with_app(chan.clone()))
-                        .and(warp::body::json())
-                        .and_then(simple_query::<RemoveAdmin, Empty>)))
-                .or(warp::path("member")
-                    .and(warp::path("add"))
+                .and_then(simple_query::<CreateTeam, Empty>))
+            .or(warp::path("get")
+                .and(warp::get())
+                .and(with_app(chan.clone()))
+                .and(warp::query::query::<GetTeam>())
+                .and_then(simple_query::<GetTeam, Team>))
+            .or(warp::path("admin").and(
+                (warp::path("add")
                     .and(warp::post())
                     .and(with_app(chan.clone()))
                     .and(warp::body::json())
                     .and_then(simple_query::<AddAdmin, Empty>))
-                .or(warp::path("manage").and(
-                    warp::path("member")
+                .or(warp::path("remove")
+                    .and(warp::delete())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<RemoveAdmin, Empty>)),
+            ))
+            .or(warp::path("member")
+                .and(warp::path("add"))
+                .and(warp::post())
+                .and(with_app(chan.clone()))
+                .and(warp::body::json())
+                .and_then(simple_query::<AddAdmin, Empty>))
+            .or(warp::path("manage").and(
+                warp::path("member")
+                    .and(with_app(chan.clone()))
+                    .and(warp::query::query::<GetMemberTeams>())
+                    .and_then(simple_query::<GetMemberTeams, Vec<Team>>)
+                    .or(warp::path("admin")
                         .and(with_app(chan.clone()))
-                        .and(warp::query::query::<GetMemberTeams>())
-                        .and_then(simple_query::<GetMemberTeams, Teams>)
-                        .or(warp::path("admin")
-                            .and(with_app(chan.clone()))
-                            .and(warp::query::query::<GetAdminTeams>())
-                            .and_then(simple_query::<GetAdminTeams, Teams>)),
-                )),
+                        .and(warp::query::query::<GetAdminTeams>())
+                        .and_then(simple_query::<GetAdminTeams, Vec<Team>>)),
+            )),
         )),
     );
 
@@ -466,7 +465,7 @@ where
     let kind = q.into();
     let q = AppQuery::new(kind, send);
     app.send(q).await?;
-    let resp = recv.await??;
+    let resp: AppResponse = recv.await??;
     let resp = resp.try_into()?;
     Ok(resp)
 }

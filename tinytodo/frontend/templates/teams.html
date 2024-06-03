@@ -4,19 +4,19 @@
 {% block body %}
 <h1> My Teams </h1>
 <a href="/team/create">Create a new team</a>
-<h1>Teams you can add/remove members</h1>
+<h1>Teams you can add/remove admins</h1>
 <ul>
     {% for team in admin_teams %}
     <li>
-        <a href="/team/?get={{team.id}}">{{team}}</a>
+        <a href="/team/read?uid={{team.uid}}">{{team.name}}</a>
     </li>
     {% endfor %}
 </ul>
-<h1>Teams you can add/remove admins</h1>
+<h1>Teams you can add/remove members</h1>
 <ul>
     {% for team in member_teams %}
     <li>
-        <a href="/team/?get={{team.id}}">{{team}}</a>
+        <a href="/team/read?uid={{team.uid}}">{{team.name}}</a>
     </li>
     {% endfor %}
 </ul>
