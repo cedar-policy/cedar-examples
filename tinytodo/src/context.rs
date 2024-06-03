@@ -20,8 +20,9 @@ use std::{collections::HashMap, path::PathBuf};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    schema_error::SchemaError, Authorizer, Context, Decision, Diagnostics, Entities, HumanSchemaError, ParseErrors, PolicySet, PolicySetError, Request,
-    RequestBuilder, RestrictedExpression, Schema, ValidationMode, Validator,
+    schema_error::SchemaError, Authorizer, Context, Decision, Diagnostics, Entities,
+    HumanSchemaError, ParseErrors, PolicySet, PolicySetError, Request, RequestBuilder,
+    RestrictedExpression, Schema, ValidationMode, Validator,
 };
 
 use thiserror::Error;
