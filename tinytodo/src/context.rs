@@ -512,6 +512,7 @@ impl AppContext {
     }
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
+        self.is_authorized(&r.uid, &*ACTION_GET_LISTS, &*APPLICATION_TINY_TODO)?;
         let entities: Entities = self.entities.as_entities(&self.schema);
         let partial_request = RequestBuilder::default()
             .action(Some(ACTION_GET_LIST.as_ref().clone().into()))

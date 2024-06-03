@@ -23,7 +23,7 @@ action DeleteList, GetList, UpdateList appliesTo {
   principal: [User],
   resource: [List]
 };
-action CreateList appliesTo {
+action CreateList, GetLists appliesTo {
   principal: [User],
   resource: [Application]
 };
