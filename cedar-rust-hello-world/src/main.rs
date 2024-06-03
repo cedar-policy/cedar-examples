@@ -360,21 +360,20 @@ fn execute_query(request: &Request, policies: &PolicySet, entities: Entities) ->
     authorizer.is_authorized(request, &policies, &entities)
 }
 
-fn validate() {
-    println!("Example: Validating a Policy");
-    let src = r#"
-    permit(
-        principal == User::"bob",
-        action == Action::"view",
-        resource == Album::"trip"
-    )
-    when {
+fn schema() -> Schema {
+    // first we show the schema in cedar schema language
+    let schema = r#"
+entity UserGroup;
+entity User in [UserGroup] = {
+  "age": Long
+};
+    "#;
+    let (natural_schema, warnings) = Schema::from_str_natural(schema).unwrap();
+    assert_eq!(warnings.count(), 0);
+    eprintln!("natural: {}", natural_schema.to_json_str_pretty().unwrap());
 
-        principal.age > 18
-
-    };
-"#;
-    let sc = r#"
+    // now we show the json format
+    let schema_json = r#"
     {
         "": {
             "entityTypes": {
@@ -417,9 +416,25 @@ fn validate() {
         }
     }
         "#;
+    Schema::from_str(schema_json).unwrap()
+}
 
+fn validate() {
+    println!("Example: Validating a Policy");
+    let src = r#"
+    permit(
+        principal == User::"bob",
+        action == Action::"view",
+        resource == Album::"trip"
+    )
+    when {
+
+        principal.age > 18
+
+    };
+"#;
     let p = PolicySet::from_str(src).unwrap();
-    let schema = Schema::from_str(sc).unwrap();
+    let schema = schema();
     let validator = Validator::new(schema);
 
     let result = Validator::validate(&validator, &p, ValidationMode::default());

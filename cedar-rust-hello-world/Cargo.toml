@@ -9,4 +9,4 @@ publish = false
 serde_json = "1.0"
 
 [dependencies.cedar-policy]
-version = "3.0.0"
+path = "../../cedar/cedar-policy"
