@@ -17,8 +17,8 @@ This example expects that the [`cedar`](https://github.com/cedar-policy/cedar) r
 Install the needed python packages in a virtual environment, and build the server as follows.
 
 ```shell
-python3 -m venv /tmp/tinytodo
-source /tmp/tinytodo/bin/activate
+python3 -m venv ./venv
+source ./venv/bin/activate
 pip3 install -r requirements.txt
 cargo build --release
 ```
