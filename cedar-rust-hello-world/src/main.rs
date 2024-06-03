@@ -361,62 +361,21 @@ fn execute_query(request: &Request, policies: &PolicySet, entities: Entities) ->
 }
 
 fn schema() -> Schema {
-    // first we show the schema in cedar schema language
     let schema = r#"
 entity UserGroup;
 entity User in [UserGroup] = {
   "age": Long
 };
+entity Album;
+action view appliesTo {
+  principal: [User],
+  resource: [Album]
+};
     "#;
+    // the schema can be parsed in rust:
     let (natural_schema, warnings) = Schema::from_str_natural(schema).unwrap();
     assert_eq!(warnings.count(), 0);
-    eprintln!("natural: {}", natural_schema.to_json_str_pretty().unwrap());
-
-    // now we show the json format
-    let schema_json = r#"
-    {
-        "": {
-            "entityTypes": {
-                "User": {
-                    "shape": {
-                        "type": "Record",
-                        "attributes": {
-                            "age": {
-                                "type": "Long"
-                            }
-                        }
-                    },
-                    "memberOfTypes": [
-                        "UserGroup"
-                    ]
-                },
-
-                "UserGroup": {
-                    "memberOfTypes": []
-                },
-
-                "Album": {
-                    "memberOfTypes": [
-                        "Album"
-                    ]
-                }
-            },
-            "actions": {
-                "view": {
-                    "appliesTo": {
-                        "resourceTypes": [
-                            "Album"
-                        ],
-                        "principalTypes": [
-                            "User"
-                        ]
-                    }
-                }
-            }
-        }
-    }
-        "#;
-    Schema::from_str(schema_json).unwrap()
+    natural_schema
 }
 
 fn validate() {
@@ -468,7 +427,7 @@ fn annotate() {
     let ans = execute_query(&request, &policies, Entities::empty());
     for reason in ans.diagnostics().reason() {
         //print all the annotations
-        for (key, value) in policies.policy(&reason).unwrap().annotations() {
+        for (key, value) in policies.policy(reason).unwrap().annotations() {
             println!("PolicyID: {}\tKey:{} \tValue:{}", reason, key, value);
         }
     }
