@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"Joe\"",
+    "action": "Action::\"ReadWorkspace\"",
+    "resource": "Workspace::\"workspace-1\"",
+    "context": {}
+}

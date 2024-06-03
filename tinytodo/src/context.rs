@@ -20,9 +20,8 @@ use std::{collections::HashMap, path::PathBuf};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, Entities, EntityTypeName, HumanSchemaError,
-    ParseErrors, PolicySet, PolicySetError, Request, RequestBuilder, RestrictedExpression, Schema,
-    SchemaError, ValidationMode, Validator,
+    schema_error::SchemaError, Authorizer, Context, Decision, Diagnostics, Entities, HumanSchemaError, ParseErrors, PolicySet, PolicySetError, Request,
+    RequestBuilder, RestrictedExpression, Schema, ValidationMode, Validator,
 };
 
 use thiserror::Error;
@@ -39,7 +38,7 @@ use crate::{
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
     policy_store,
-    util::{EntityUid, ListUid, Lists, TYPE_LIST},
+    util::{EntityUid, ListUid, TYPE_LIST},
 };
 
 #[cfg(feature = "use-templates")]
@@ -55,7 +54,7 @@ use std::collections::HashMap;
 pub enum AppResponse {
     GetList(Box<List>),
     Euid(EntityUid),
-    Lists(Lists),
+    Lists(Vec<List>),
     TaskId(i64),
     Unit(()),
 }
@@ -109,9 +108,9 @@ impl TryInto<Empty> for AppResponse {
     }
 }
 
-impl TryInto<Lists> for AppResponse {
+impl TryInto<Vec<List>> for AppResponse {
     type Error = Error;
-    fn try_into(self) -> std::result::Result<Lists, Self::Error> {
+    fn try_into(self) -> std::result::Result<Vec<List>, Self::Error> {
         match self {
             AppResponse::Lists(l) => Ok(l),
             _ => Err(Error::Type),
@@ -417,9 +416,9 @@ impl AppContext {
             ShareRole::Reader => "reader",
             ShareRole::Editor => "editor",
         };
-        let target_eid = target.as_ref().id();
+        let target_eid = target.as_ref().id().escaped();
         // Note: A List EID is controlled by TinyTodo, and will always be a number
-        let list_eid = list.as_ref().id();
+        let list_eid = list.as_ref().id().escaped();
         PolicyId::new(&format!("{pid_prefix}[{target_eid}][{list_eid}]"))
     }
 
@@ -512,7 +511,6 @@ impl AppContext {
     }
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
-        let resource_ty: EntityTypeName = "List".parse().unwrap();
         let entities: Entities = self.entities.as_entities(&self.schema);
         let partial_request = RequestBuilder::default()
             .action(Some(ACTION_GET_LIST.as_ref().clone().into()))
@@ -524,18 +522,15 @@ impl AppContext {
             self.authorizer
                 .is_authorized_partial(&partial_request, &self.policies, &entities);
 
-        let slice = self
-            .entities
-            .euids()
-            .filter(|euid| euid.type_name() == &resource_ty);
+        let slice = self.entities.get_lists();
 
         Ok(AppResponse::Lists(
                 slice
-                .filter(|euid| matches!(
+                .filter(|t| matches!(
                     partial_response.reauthorize(
                         HashMap::from_iter(
                             std::iter::once(
-                                ("resource".into(), RestrictedExpression::new_entity_uid(cedar_policy::EntityUid::from((*euid).clone())))
+                                ("resource".into(), RestrictedExpression::new_entity_uid(EntityUid::from(t.uid().clone()).into()))
                             )
                         ),
                         &self.authorizer,
@@ -548,8 +543,7 @@ impl AppContext {
                         &entities),
                     Ok(r) if matches!(r.decision(), Some(Decision::Allow))))
                 .cloned()
-                .collect::<Vec<EntityUid>>()
-                .into(),
+                .collect::<Vec<List>>(),
         ))
     }
 

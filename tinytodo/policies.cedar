@@ -6,8 +6,12 @@ permit (
 );
 
 // Policy 1: A User can perform any action on a List they own
-permit (principal, action, resource)
-when { resource is List && resource.owner == principal };
+permit (
+  principal,
+  action,
+  resource is List
+)
+when { resource.owner == principal };
 
 // Policy 2: A User can see a List if they are either a reader or editor
 permit (

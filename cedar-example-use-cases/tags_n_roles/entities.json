@@ -1,0 +1,104 @@
+[
+    {
+        "uid": {
+            "type": "Role",
+            "id": "Role-A"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Role",
+            "id": "Role-B"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "Joe"
+        },
+        "attrs": {
+            "allowedTagsForRole": {
+                "Role-A": {
+                    "production_status": [
+                        "production"
+                    ],
+                    "country": [
+                        "germany"
+                    ],
+                    "stage": [
+                        "reporting"
+                    ]
+                },
+                "Role-B": {
+                    "production_status": [
+                        "test"
+                    ],
+                    "country": [
+                        "italy"
+                    ],
+                    "stage": [
+                        "valuation"
+                    ]
+                }
+            }
+        },
+        "parents": [
+            {
+                "type": "Role",
+                "id": "Role-A"
+            },
+            {
+                "type": "Role",
+                "id": "Role-B"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "Alice"
+        },
+        "attrs": {
+            "allowedTagsForRole": {
+                "Role-B": {
+                    "production_status": [
+                        "production"
+                    ],
+                    "country": [
+                        "ALL"
+                    ],
+                    "stage": [
+                        "valuation"
+                    ]
+                }
+            }
+        },
+        "parents": [
+            {
+                "type": "Role",
+                "id": "Role-B"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Workspace",
+            "id": "workspace-1"
+        },
+        "attrs": {
+            "tags": {
+                "production_status": [
+                    "production"
+                ],
+                "country": [
+                    "germany"
+                ]
+            }
+        },
+        "parents": []
+    }
+]

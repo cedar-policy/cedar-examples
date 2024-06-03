@@ -43,12 +43,18 @@ authorize() {
     local folder=$1
     local policies=$2
     local entities=$3
+    local schema=$4
     echo " Running authorization on ${policies}"
     for decision in ALLOW DENY
     do
         for file in "$folder/$decision"/*.json
         do
-            IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies"  --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
+            if [ -z "$schema" ]
+            then
+                IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies"  --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
+            else
+                IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
+            fi
             res="${tmp_array[0]}"
             unset tmp_array[0]
             unset tmp_array[1]
@@ -62,6 +68,21 @@ authorize() {
             fi
         done
     done
+}
+
+# Call this function to assert that policies in the directory `$1/$2` are formatted. 
+# Set `any_failed` env var to `1` if a policy is not formatted.
+format() {
+    local folder=$1
+    local policies=$2
+    echo " Checking formatting of ${policies}"
+    res="$(cedar format --policies "$folder/$policies" --check)"
+    if [[ $? == 0 ]]
+    then
+        passed "format check succeeded"
+    else
+        failed "format check on ${policies} with result: ${res}"
+    fi
 }
 
 echo "Using $(cedar --version)"
