@@ -357,25 +357,7 @@ fn print_response(ans: Response) {
 /// This uses the waterford API to call the authorization engine.
 fn execute_query(request: &Request, policies: &PolicySet, entities: Entities) -> Response {
     let authorizer = Authorizer::new();
-    authorizer.is_authorized(request, &policies, &entities)
-}
-
-fn schema() -> Schema {
-    let schema = r#"
-entity UserGroup;
-entity User in [UserGroup] = {
-  "age": Long
-};
-entity Album;
-action view appliesTo {
-  principal: [User],
-  resource: [Album]
-};
-    "#;
-    // the schema can be parsed in rust:
-    let (natural_schema, warnings) = Schema::from_str_natural(schema).unwrap();
-    assert_eq!(warnings.count(), 0);
-    natural_schema
+    authorizer.is_authorized(request, policies, &entities)
 }
 
 fn validate() {
@@ -393,7 +375,21 @@ fn validate() {
     };
 "#;
     let p = PolicySet::from_str(src).unwrap();
-    let schema = schema();
+
+    let schema_text = r#"
+entity UserGroup;
+entity User in [UserGroup] = {
+  "age": Long
+};
+entity Album;
+action view appliesTo {
+  principal: [User],
+  resource: [Album]
+};
+    "#;
+    // the schema can be parsed in rust:
+    let (schema, warnings) = Schema::from_str_natural(schema_text).unwrap();
+    assert_eq!(warnings.count(), 0);
     let validator = Validator::new(schema);
 
     let result = Validator::validate(&validator, &p, ValidationMode::default());
