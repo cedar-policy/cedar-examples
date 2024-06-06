@@ -74,6 +74,7 @@ jobs:
     with:
       cedar_policy_ref: "refs/heads/main" # use the latest commit on main
       cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
+      cedar_examples_repo: "${{ github.repository }}" # use the current PR's source repo
 
   build_and_run_oopsla_benchmarks:
     name: OOPSLA2024 benchmarks
