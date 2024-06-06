@@ -1,25 +1,44 @@
-// discord permissions, (e.g. SendMessage)
-entity Permission;
+// deny a discord permission, (e.g. Deny::"SendMessage")
+entity Deny;
 
-// discord roles, (e.g. the default "everyone" role)
+// allow a discord permission, (e.g. Allow::"SendMessage")
+entity Allow;
+
+// discord roles for a server
+// (e.g. Role::"everyone" is the default role)
 // discord roles have user-configurable permissions
-entity Role in [Permission];
+entity Role in [Allow, Deny];
 
-// discord users, the entity id being the user id
-// discord users may have multiple roles
-entity User in [Role];
+// discord roles with channel-specific permissions
+// (e.g. Role::"everyone-annoucements")
+// ChannelRole permissions take precedent over Role permissions
+entity ChannelRole in [Allow, Deny];
 
-// TODO: add Channels
-// permissions in discord are specific to channels
 
-// a discord server
-// currently, we only consider a single server "test"
-entity Server;
+// For each user, store an entity whose parents
+// are the roles a user has.
+entity Roles in [Role];
+
+// For each user, store an entity whose parents
+// are all the channel-specific roles a user has
+entity ChannelRoles in [ChannelRole];
+
+// every user has roles and channel-specific roles
+entity User = {
+  roles: Roles,
+  channel_roles: ChannelRoles,
+  // a user is specific to a channel
+  // if Cedar had a `Map` data structure, we could store
+  // channel_roles: Map<Channel, ChannelRoles> instead
+  channel: Channel,
+};
+
+entity Channel;
 
 
 action SendMessage, KickMember appliesTo {
   principal: [User],
-  resource:  [Server]
+  resource:  [Channel]
 };
 
 action ManageRole appliesTo {

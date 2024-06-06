@@ -1,7 +1,15 @@
 [
   {
     "uid": {
-      "type": "Server",
+      "type": "Channel",
+      "id": "announcements"
+    },
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "Channel",
       "id": "general"
     },
     "attrs": {},
@@ -9,7 +17,15 @@
   },
   {
     "uid": {
-      "type": "Permission",
+      "type": "Allow",
+      "id": "SendMessage"
+    },
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "Deny",
       "id": "SendMessage"
     },
     "attrs": {},
@@ -23,16 +39,28 @@
     "attrs": {},
     "parents": [
       {
-        "type": "Permission",
+        "type": "Allow",
         "id": "SendMessage"
       }
     ]
   },
-
   {
     "uid": {
-      "type": "User",
-      "id": "yihong"
+      "type": "ChannelRole",
+      "id": "everyone-announcements"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Deny",
+        "id": "SendMessage"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "Roles",
+      "id": "yihong-roles"
     },
     "attrs": {},
     "parents": [
@@ -44,15 +72,65 @@
   },
   {
     "uid": {
-      "type": "User",
-      "id": "oflatt"
+      "type": "ChannelRoles",
+      "id": "yihong-announcements-roles"
     },
     "attrs": {},
     "parents": [
       {
-        "type": "Role",
-        "id": "owner"
+        "type": "ChannelRole",
+        "id": "everyone-announcements"
       }
     ]
+  },
+  {
+    "uid": {
+      "type": "ChannelRoles",
+      "id": "yihong-general-roles"
+    },
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "User",
+      "id": "yihong-announcements"
+    },
+    "attrs": {
+      "roles": {
+        "type": "Roles",
+        "id": "yihong-roles"
+      },
+      "channel_roles": {
+        "type": "ChannelRoles",
+        "id": "yihong-announcements-roles"
+      },
+      "channel": {
+        "type": "Channel",
+        "id": "announcements"
+      }
+    },
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "User",
+      "id": "yihong-general"
+    },
+    "attrs": {
+      "roles": {
+        "type": "Roles",
+        "id": "yihong-roles"
+      },
+      "channel_roles": {
+        "type": "ChannelRoles",
+        "id": "yihong-general-roles"
+      },
+      "channel": {
+        "type": "Channel",
+        "id": "general"
+      }
+    },
+    "parents": []
   }
 ]

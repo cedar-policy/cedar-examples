@@ -1,6 +1,6 @@
 {
-    "principal": "User::\"yihong\"",
+    "principal": "User::\"yihong-general\"",
     "action": "Action::\"SendMessage\"",
-    "resource": "Server::\"test\"",
+    "resource": "Channel::\"general\"",
     "context": {}
 }
