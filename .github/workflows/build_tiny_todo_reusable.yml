@@ -19,14 +19,10 @@ jobs:
         toolchain:
           - stable
     steps:
-      - name: Dump Github context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
       - name: Checkout Cedar Examples
         uses: actions/checkout@v3
         with:
-          repository: "cedar-policy/cedar-examples"
+          repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
 # If we passed a branch for cedar-policy, modify Cargo.toml to use that branch
       - name: Replace main with Specified Branch
