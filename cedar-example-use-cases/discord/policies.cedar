@@ -28,9 +28,5 @@ when
 };
 
 // Allow any action by the owner of the server
-permit (
-  principal,
-  action,
-  resource == Role::"everyone"
-)
+permit (principal, action, resource)
 when { principal.roles in Role::"owner" };
