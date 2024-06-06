@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"oflatt-announcements\"",
+    "action": "Action::\"SendMessage\"",
+    "resource": "Channel::\"announcements\"",
+    "context": {}
+}

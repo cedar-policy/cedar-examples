@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"oflatt-general\"",
+    "action": "Action::\"SendMessage\"",
+    "resource": "Channel::\"general\"",
+    "context": {}
+}

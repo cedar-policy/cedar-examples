@@ -8,8 +8,7 @@ when
   // the user's channel matches the resource
   (principal.channel == resource) &&
   // the channel-specific roles this user has allow it
-  (principal.channel_roles in Allow::"SendMessage" &&
-   !(principal.channel_roles in Deny::"SendMessage"))
+  (principal.channel_roles in Allow::"SendMessage")
 };
 
 permit (
@@ -25,8 +24,7 @@ when
   (!(principal.channel_roles in Allow::"SendMessage" ||
     principal.channel_roles in Deny::"SendMessage")) &&
   // the global roles give the user permission
-  (principal.roles in Allow::"SendMessage") &&
-  !(principal.roles in Deny::"SendMessage")
+  (principal.roles in Allow::"SendMessage")
 };
 
 // Allow any action by the owner of the server

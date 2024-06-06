@@ -2,7 +2,6 @@
 
 This repository contains a model of the [discord permissions system](https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ).
 
-
 In brief, the discord permission system has a notion of "Roles",
 which are sets of permissions.
 Users can have multiple Roles.
@@ -16,22 +15,47 @@ but also the permissions associated with that role per channel (ChannelRole).
 
 In this example, we implement this functionality by using
 Cedar's parent system to build a DAG.
-We then query reachability in the DAG using the `in` construct.
-
-```
- Permission::"SendMessage"    Permission::"KickMember" 
-         ▲        ▲                     ▲              
-         │        └───────────────────┐ │              
-         │                            │ │              
-   Role::"everyone"              Role::"admin"         
-         ▲                             ▲
-         │                             │
-   User::"yihong"                User::"oflatt"
-```
-
-
 We can then user Cedar's `in` construct to check if the permission
 is reachable from a given user.
 Note that it's currently unclear if this is the best way to use
 Cedar for discord's permissions model. Another approach is to generate
 many Cedar policies, one per role and permission pair.
+
+Here is the DAG representing roles:
+
+```
+ Allow::"SendMessage"          Allow::"KickMember"
+        ▲                                        
+        │                                        
+        │                                        
+  Role::"everyone"              Role::"admin"    
+        ▲   ▲                          ▲         
+        │   └──────────────────────┐   │         
+        │                          │   │         
+ Roles::"yihong"               Roles::"oflatt"   
+```
+
+The "admin" role is special, and don't need to be connected
+to each of the `Allow` permissions.
+
+In addition, we build a dag representing channel-specific permissions.
+In particular, in the `announcements` channel we forbid everyone from sending messages.
+As usual, the "admin" role overrides this in the cedar policy.
+
+```
+Disallow::"SendMessage"                                                        
+          ▲                                                                     
+          │                                                                     
+          │                                                                     
+ChannelRole::"everyone-announcements"                                       
+       ▲           ▲                                                  
+       │           └─────────────────────────┐                        
+       │                                     │                        
+ChannelRoles::"yihong-announcements"       ChannelRoles::"oflatt-announcements" 
+```
+
+Each `User` has a `Roles` reference.
+Each `User` and `Channel` combination has a `ChannelRoles` reference.
+The cedar policy can then first check channel roles, which override normal roles.
+It can then check normal roles when channel roles are not set.
+

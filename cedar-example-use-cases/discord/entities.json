@@ -60,7 +60,7 @@
   {
     "uid": {
       "type": "Roles",
-      "id": "yihong-roles"
+      "id": "yihong"
     },
     "attrs": {},
     "parents": [
@@ -99,7 +99,7 @@
     "attrs": {
       "roles": {
         "type": "Roles",
-        "id": "yihong-roles"
+        "id": "yihong"
       },
       "channel_roles": {
         "type": "ChannelRoles",
@@ -120,7 +120,7 @@
     "attrs": {
       "roles": {
         "type": "Roles",
-        "id": "yihong-roles"
+        "id": "yihong"
       },
       "channel_roles": {
         "type": "ChannelRoles",
@@ -136,7 +136,7 @@
   {
     "uid": {
       "type": "Roles",
-      "id": "oflatt-roles"
+      "id": "oflatt"
     },
     "attrs": {},
     "parents": [
@@ -179,7 +179,7 @@
     "attrs": {
       "roles": {
         "type": "Roles",
-        "id": "oflatt-roles"
+        "id": "oflatt"
       },
       "channel_roles": {
         "type": "ChannelRoles",
@@ -200,7 +200,7 @@
     "attrs": {
       "roles": {
         "type": "Roles",
-        "id": "oflatt-roles"
+        "id": "oflatt"
       },
       "channel_roles": {
         "type": "ChannelRoles",
