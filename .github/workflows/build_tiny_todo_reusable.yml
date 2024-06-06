@@ -9,10 +9,6 @@ on:
           required: false
           default: "main"
           type: string
-        cedar_examples_repo:
-          required: false
-          default: "cedar-policy/cedar-examples"
-          type: string
 
 jobs:
   build_and_test_tiny_todo:
@@ -30,7 +26,7 @@ jobs:
       - name: Checkout Cedar Examples
         uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.cedar_examples_repo }}
+          repository: "cedar-policy/cedar-examples"
           ref: ${{ inputs.cedar_examples_ref }}
 # If we passed a branch for cedar-policy, modify Cargo.toml to use that branch
       - name: Replace main with Specified Branch

@@ -73,8 +73,7 @@ jobs:
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
     with:
       cedar_policy_ref: "refs/heads/main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
-      cedar_examples_repo: "${{ github.repository }}" # use the current PR's source repo
+      cedar_examples_ref: "${{ github.href }}" # use the current PR's commit
 
   build_and_run_oopsla_benchmarks:
     name: OOPSLA2024 benchmarks
