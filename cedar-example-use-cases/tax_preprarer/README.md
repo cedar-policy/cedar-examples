@@ -4,7 +4,7 @@ This use-case simulates an organization that prepares taxes for its clients.
 
 ## Use-case
 
-A Deloitte `Professional` needs to access a `Client`'s `Document` in order to prepare their taxes. There are two rules that grant access:
+A `Professional` needs to access a `Client`'s `Document` in order to prepare their taxes. There are two rules that grant access:
 
 1. That the `Professional` has been granted access to the document. This could be because 
     
