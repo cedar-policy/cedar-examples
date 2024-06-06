@@ -1,21 +1,18 @@
 // Allow SendMessage when the user has the SendMessage permission
 permit (
-  principal,
+  principal in Permission::"SendMessage",
   action == Action::"SendMessage",
   resource == Server::"test"
-)
-when { principal in Permission::"SendMessage" };
+);
 
 permit (
-  principal,
+  principal in Permission::"KickMember",
   action == Action::"KickMember",
   resource == Server::"test"
-)
-when { principal in Permission::"KickMember" };
+);
 
 permit (
-  principal,
+  principal in Role::"owner",
   action == Action::"ManageRole",
   resource == Role::"everyone"
-)
-when { principal in Role::"owner" };
+);
