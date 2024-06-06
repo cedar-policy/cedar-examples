@@ -28,19 +28,19 @@ Here is the DAG representing roles:
         ▲                                        
         │                                        
         │                                        
-  Role::"everyone"              Role::"admin"    
+  Role::"everyone"              Role::"owner"    
         ▲   ▲                          ▲         
         │   └──────────────────────┐   │         
         │                          │   │         
  Roles::"yihong"               Roles::"oflatt"   
 ```
 
-The "admin" role is special, and don't need to be connected
+The "owner" role is special, and don't need to be connected
 to each of the `Allow` permissions.
 
 In addition, we build a dag representing channel-specific permissions.
 In particular, in the `announcements` channel we forbid everyone from sending messages.
-As usual, the "admin" role overrides this in the cedar policy.
+As usual, the "owner" role overrides this in the cedar policy.
 
 ```
 Disallow::"SendMessage"                                                        
