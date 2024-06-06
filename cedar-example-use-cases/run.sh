@@ -20,4 +20,16 @@ validate "tags_n_roles" "policies.cedar" "policies.cedarschema"
 authorize "tags_n_roles" "policies.cedar" "entities.json" "policies.cedarschema"
 format "tags_n_roles" "policies.cedar"
 
+# Hotel chains
+echo -e "\nTesting Hotels (static)..."
+validate "hotel_chains/static" "policies.cedar" "policies.cedarschema"
+authorize "hotel_chains/static" "policies.cedar" "entities.json" "policies.cedarschema"
+#format "hotel_chains/static" "policies.cedar"
+
+# Hotel chains
+echo -e "\nTesting Hotels (templated)..."
+validate "hotel_chains/templated" "policies.cedar" "policies.cedarschema" "linked"
+authorize "hotel_chains/templated" "policies.cedar" "entities.json" "policies.cedarschema" "linked"
+#format "hotel_chains/static" "policies.cedar"
+
 exit "$any_failed"
