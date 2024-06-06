@@ -26,8 +26,14 @@ validate() {
     local folder=$1
     local policies=$2
     local schema=$3
+    local links=$4
     echo " Running validation on ${policies}"
-    res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human)"
+    if [ -z "$links" ]
+    then
+        res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human)"
+    else
+       res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human -k "$folder/$links" )"
+    fi
     if [[ $? == 0 ]]
     then
         passed "validate succeeded"
@@ -44,16 +50,20 @@ authorize() {
     local policies=$2
     local entities=$3
     local schema=$4
+    local links=$5
     echo " Running authorization on ${policies}"
     for decision in ALLOW DENY
     do
         for file in "$folder/$decision"/*.json
         do
-            if [ -z "$schema" ]
+            if [ -z "$schema" -a -z "$links" ]
             then
                 IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies"  --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
-            else
+            elif [ -z "$links" ]
+            then
                 IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
+            else
+                IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies" -k "$folder/$links" --schema "$folder/$schema" --schema-format human --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
             fi
             res="${tmp_array[0]}"
             unset tmp_array[0]
