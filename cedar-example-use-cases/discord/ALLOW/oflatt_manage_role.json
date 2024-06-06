@@ -1,5 +1,5 @@
 {
-    "principal": "User::\"oflatt\"",
+    "principal": "User::\"oflatt-general\"",
     "action": "Action::\"ManageRole\"",
     "resource": "Role::\"everyone\"",
     "context": {}

@@ -132,5 +132,85 @@
       }
     },
     "parents": []
+  },
+  {
+    "uid": {
+      "type": "Roles",
+      "id": "oflatt-roles"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "Role",
+        "id": "everyone"
+      },
+      {
+        "type": "Role",
+        "id": "owner"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "ChannelRoles",
+      "id": "oflatt-announcements-roles"
+    },
+    "attrs": {},
+    "parents": [
+      {
+        "type": "ChannelRole",
+        "id": "everyone-announcements"
+      }
+    ]
+  },
+  {
+    "uid": {
+      "type": "ChannelRoles",
+      "id": "oflatt-general-roles"
+    },
+    "attrs": {},
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "User",
+      "id": "oflatt-announcements"
+    },
+    "attrs": {
+      "roles": {
+        "type": "Roles",
+        "id": "oflatt-roles"
+      },
+      "channel_roles": {
+        "type": "ChannelRoles",
+        "id": "oflatt-announcements-roles"
+      },
+      "channel": {
+        "type": "Channel",
+        "id": "announcements"
+      }
+    },
+    "parents": []
+  },
+  {
+    "uid": {
+      "type": "User",
+      "id": "oflatt-general"
+    },
+    "attrs": {
+      "roles": {
+        "type": "Roles",
+        "id": "oflatt-roles"
+      },
+      "channel_roles": {
+        "type": "ChannelRoles",
+        "id": "oflatt-general-roles"
+      },
+      "channel": {
+        "type": "Channel",
+        "id": "general"
+      }
+    },
+    "parents": []
   }
 ]
