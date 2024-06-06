@@ -1,12 +1,22 @@
 # Cedar Discord Example
 
-This repository contains a limited model of the [discord permissions system](https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ).
+This repository contains a model of the [discord permissions system](https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ).
 
 
-The file `src/main.rs` sets up example users and demonstrates they have different permissions based on the different roles.
-Discord is interesting because users may have multiple roles and some users may also set the permissions of other roles dynamically.
+In brief, the discord permission system has a notion of "Roles",
+which are sets of permissions.
+Users can have multiple Roles.
+Roles can allow or disallow permissions, such as sending messages.
+
+Adding more complexity, Discord allows users to configure
+the permissions associated with a role for a particular channel.
+Not only does discord store the permissions associated with a role,
+but also the permissions associated with that role per channel (ChannelRole).
+
+
 In this example, we implement this functionality by using
-Cedar's parent system to build a DAG that looks something like this:
+Cedar's parent system to build a DAG.
+We then query reachability in the DAG using the `in` construct.
 
 ```
  Permission::"SendMessage"    Permission::"KickMember" 
