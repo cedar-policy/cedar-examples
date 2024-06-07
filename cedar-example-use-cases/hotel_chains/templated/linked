@@ -1,0 +1,50 @@
+[
+    {
+        "template_id": "ViewReservation",
+        "link_id": "AliceViewG",
+        "args": {
+            "?principal": "User::\"Alice\"",
+            "?resource": "Hotel::\"G\""
+        }
+    },
+    {
+        "template_id": "MemberReservation",
+        "link_id": "AliceMemberGreen",
+        "args": {
+            "?principal": "User::\"Alice\"",
+            "?resource": "Property::\"Green\""
+        }
+    },
+    {
+        "template_id": "AdminReservation",
+        "link_id": "BobAdminRRes",
+        "args": {
+            "?principal": "User::\"Bob\"",
+            "?resource": "Hotel::\"R\""
+        }
+    },
+    {
+        "template_id": "AdminPropertyOrHotel",
+        "link_id": "BobAdminRProp",
+        "args": {
+            "?principal": "User::\"Bob\"",
+            "?resource": "Hotel::\"R\""
+        }
+    },
+    {
+        "template_id": "AdminReservation",
+        "link_id": "BobAdminGreenRes",
+        "args": {
+            "?principal": "User::\"Bob\"",
+            "?resource": "Property::\"Green\""
+        }
+    },
+    {
+        "template_id": "AdminPropertyOrHotel",
+        "link_id": "BobAdminGreenProp",
+        "args": {
+            "?principal": "User::\"Bob\"",
+            "?resource": "Property::\"Green\""
+        }
+    }
+]
