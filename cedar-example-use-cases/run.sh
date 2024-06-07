@@ -20,6 +20,18 @@ validate "tags_n_roles" "policies.cedar" "policies.cedarschema"
 authorize "tags_n_roles" "policies.cedar" "entities.json" "policies.cedarschema"
 format "tags_n_roles" "policies.cedar"
 
+# Sales org static
+echo -e "\nTesting Sales Orgs (static)..."
+validate "sales_orgs/static" "policies.cedar" "policies.cedarschema"
+authorize "sales_orgs/static" "policies.cedar" "entities.json" "policies.cedarschema"
+#format "sales_orgs/static" "policies.cedar"
+
+# Sales org templated
+echo -e "\nTesting Sales Orgs (templated)..."
+validate "sales_orgs/templated" "policies.cedar" "policies.cedarschema" "linked"
+authorize "sales_orgs/templated" "policies.cedar" "entities.json" "policies.cedarschema" "linked"
+#format "sales_orgs/templated" "policies.cedar"
+
 # Hotel chains
 echo -e "\nTesting Hotels (static)..."
 validate "hotel_chains/static" "policies.cedar" "policies.cedarschema"

@@ -1,0 +1,4 @@
+These policies were systematically converted from the `static/` policies
+by replacing each policy that references `resource.viewers`, `resource.editors`, etc. with a template-linked policy instead. Then, each user that would have been a member of `resource.viewers` is linked against the relevant templates instead.
+
+One interesting thing here is that you have to remember to link _all_ of the policies for each viewer, whereas in the `static/` policies just require updating the resource's `viewers` attribute a single time. Having to remember to do multiple links is a source of potential bugs, especially as new templates might get added over time, since the code needs to be updated to perform the links.
