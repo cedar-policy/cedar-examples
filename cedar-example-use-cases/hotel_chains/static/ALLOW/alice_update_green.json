@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"Alice\"",
+    "action": "Action::\"updateReservation\"",
+    "resource": "Reservation::\"Green-Res1\"",
+    "context": {}
+}
