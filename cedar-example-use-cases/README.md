@@ -1,7 +1,11 @@
 # Cedar Example Use Cases
 
-This repository contains Cedar policies that model the authorization logic of two example applications.
-The [document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. The [GitHub example](./github_example/) mimics GitHub's repository access permissions.
+This repository contains Cedar policies that model the authorization logic of six example applications.
+* The [document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. 
+* The [GitHub example](./github_example) mimics GitHub's repository access permissions.
+* The [Hotel chains example](./hotel_chains) models permissions according to the hierarchy of a hotel chain.
+* The [Tags & roles example](./tags_n_roles) implements tag-based access control -- access is granted according to matching tags between principals and resources, where principal-side tags are attached to roles a principal can play.
+* The [Tax preparer example](./tax_preprarer) grants access to sensitive documents based on a principal's organizational memberships, so long as overall consent has been provided by the doc owner.
 
 ## Quick Start
 
@@ -29,8 +33,11 @@ Use the `run.sh` script to validate the policies and run every authorization tes
 | File  | Description |
 | ------------- | ------------- |
 | `policies.cedar`  | Cedar policies  |
+| `linked`  | Cedar policy-template links  |
 | `entities.json`  | Sample entity store  |
 | `policies.cedarschema` | Cedar schema |
-| `allow_requests` | Allowed requests |
-| `deny_requests` | Denied requests |
+| `ALLOW` | Allowed requests |
+| `DENY` | Denied requests |
 | `README.md` | A tutorial walking through the application |
+
+For some examples, there exist both `static` and `templated` versions of the policies, stored in different subfolders.
