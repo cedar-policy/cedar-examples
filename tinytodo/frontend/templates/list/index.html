@@ -9,7 +9,7 @@
         <li>{{item.name}} 
             <form style="display:inline" action="/list/delete_task" method="POST">
                 <input type="hidden" name="task_id" value="{{item.id}}"/>
-                <input type="hidden" name="list_id" value="{{id}}"/>
+                <input type="hidden" name="name" value="{{id}}"/>
                 <input class="inlineSubmit" type="submit" value="[X]"/>
             </form>
         </li>

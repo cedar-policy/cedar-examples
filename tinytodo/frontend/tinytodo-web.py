@@ -39,9 +39,9 @@ def get_lists():
 @APP.route('/teams')
 def get_teams():
     r = requests.get('http://localhost:8080/api/team/manage/member/get', params= {'uid': 'User::"{0}"'.format(flask.session['username'])})
-    member_teams = r.json()
+    member_teams = list(filter(lambda x: x['name'] is not None, r.json()))
     r = requests.get('http://localhost:8080/api/team/manage/admin/get', params= {'uid': 'User::"{0}"'.format(flask.session['username'])})
-    admin_teams = r.json()
+    admin_teams = list(filter(lambda x: x['name'] is not None, r.json()))
     return render_page('teams.html', member_teams=member_teams, admin_teams=admin_teams)
 
 @APP.route('/list/create', methods=['GET'])
@@ -76,7 +76,36 @@ def add_item():
         'list': list_uid,
         'name': task_name,
     }
-    requests.post('http://localhost:8080/api/task/create', json=data)
+    r = requests.post('http://localhost:8080/api/task/create', json=data)
+    if r.status_code == 200:
+        body = r.json()
+        if is_error(body):
+            if is_authz_denied(body):
+                return flask.redirect(f'/auth_denied')
+            else:
+                print('Error: %s' % body['error'])
+    return flask.redirect(f'/lists')
+
+@APP.route('/list/delete_task', methods=['POST'])
+def delete_item():
+    user = 'User::"{0}"'.format(flask.session['username'])
+    list_uid = flask.request.form['name']
+    task_name = flask.request.form['task_id']
+    data = {
+        'uid': user,
+        'list': list_uid,
+        'task': task_name,
+    }
+    r = requests.delete('http://localhost:8080/api/task/delete', json=data)
+    print(r)
+    print(data)
+    if r.status_code == 200:
+        body = r.json()
+        if is_error(body):
+            if is_authz_denied(body):
+                return flask.redirect(f'/auth_denied')
+            else:
+                print('Error: %s' % body['error'])
     return flask.redirect(f'/lists')
 
 @APP.route('/list/share_with', methods = ['POST'])
@@ -89,6 +118,13 @@ def share_with():
         'role': flask.request.form['share_kind']
     }
     r = requests.post('http://localhost:8080/api/share', json=data)
+    if r.status_code == 200:
+        body = r.json()
+        if is_error(body):
+            if is_authz_denied(body):
+                return flask.redirect(f'/auth_denied')
+            else:
+                print('Error: %s' % body['error'])
     return flask.redirect(f'/lists')
 
 @APP.route('/team/create', methods=['GET'])
@@ -144,9 +180,35 @@ def add_admin():
     requests.post('http://localhost:8080/api/team/admin/add', json=data)
     return flask.redirect(f'/teams')
 
+@APP.route('/team/remove_member', methods=['POST'])
+def remove_member():
+    data = {
+        'team': flask.request.form['name'],
+        'user': flask.session['username'],
+        'candidate': flask.request.form['candidate']
+    }
+    r = requests.delete('http://localhost:8080/api/team/member/remove', json=data)
+    if r.status_code == 200:
+        body = r.json()
+        if is_error(body):
+            if is_authz_denied(body):
+                return flask.redirect(f'/auth_denied')
+            else:
+                print('Error: %s' % body['error'])
+    return flask.redirect(f'/teams')
+
+@APP.route('/team/add_member', methods=['POST'])
+def add_member():
+    data = {
+        'team': flask.request.form['name'],
+        'user': flask.session['username'],
+        'candidate': flask.request.form['candidate']
+    }
+    requests.post('http://localhost:8080/api/team/member/add', json=data)
+    return flask.redirect(f'/teams')
+
 def is_error(body):
     return type(body) is dict and 'error' in body
-
 
 def is_authz_denied(body):
     return 'error' in body and body['error'] == 'Authorization Denied'

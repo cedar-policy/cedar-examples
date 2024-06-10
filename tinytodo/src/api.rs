@@ -323,21 +323,21 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
         .or(
             // Task CRUD
             warp::path("task").and(
-                warp::path("create")
+                (warp::path("create")
                     .and(warp::post())
                     .and(with_app(chan.clone()))
                     .and(warp::body::json())
-                    .and_then(simple_query::<CreateTask, i64>)
-                    .or(warp::path("update")
-                        .and(warp::post())
-                        .and(with_app(chan.clone()))
-                        .and(warp::body::json())
-                        .and_then(simple_query::<UpdateTask, Empty>))
-                    .or(warp::path("delete")
-                        .and(warp::delete())
-                        .and(with_app(chan.clone()))
-                        .and(warp::body::json())
-                        .and_then(simple_query::<DeleteTask, Empty>)),
+                    .and_then(simple_query::<CreateTask, i64>))
+                .or(warp::path("update")
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<UpdateTask, Empty>))
+                .or(warp::path("delete")
+                    .and(warp::delete())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<DeleteTask, Empty>)),
             ),
         )
         .or(warp::path("lists")
@@ -346,14 +346,14 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
             .and(warp::query::query::<GetLists>())
             .and_then(simple_query::<GetLists, Vec<List>>))
         .or(warp::path("share").and(
-            warp::post()
+            (warp::post()
                 .and(with_app(chan.clone()))
                 .and(warp::body::json())
-                .and_then(simple_query::<AddShare, Empty>)
-                .or(warp::delete()
-                    .and(with_app(chan.clone()))
-                    .and(warp::body::json())
-                    .and_then(simple_query::<DeleteShare, Empty>)),
+                .and_then(simple_query::<AddShare, Empty>))
+            .or(warp::delete()
+                .and(with_app(chan.clone()))
+                .and(warp::body::json())
+                .and_then(simple_query::<DeleteShare, Empty>)),
         ))
         .or(warp::path("user").and(
             warp::path("create")
@@ -390,12 +390,18 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                     .and(warp::body::json())
                     .and_then(simple_query::<RemoveAdmin, Empty>)),
             ))
-            .or(warp::path("member")
-                .and(warp::path("add"))
-                .and(warp::post())
-                .and(with_app(chan.clone()))
-                .and(warp::body::json())
-                .and_then(simple_query::<AddAdmin, Empty>))
+            .or(warp::path("member").and(
+                (warp::path("add")
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<AddMember, Empty>))
+                .or(warp::path("remove")
+                    .and(warp::delete())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<RemoveMember, Empty>)),
+            ))
             .or(warp::path("manage").and(
                 warp::path("member")
                     .and(with_app(chan.clone()))

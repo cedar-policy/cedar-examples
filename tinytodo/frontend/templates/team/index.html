@@ -17,22 +17,22 @@
 <form action="/team/remove_admin" method="POST">
     <p><input type="hidden" name="name" value="{{id}}"/></p>
     <p><input type="text" name="candidate"/></p>
-    <p><input type="submit" value="add"/></p>
+    <p><input type="submit" value="remove"/></p>
 </form>
 
 <h2>Members</h2>
 
-<h3> Add Admin: </h3>
+<h3> Add Member: </h3>
 <form action="/team/add_member" method="POST">
     <p><input type="hidden" name="name" value="{{id}}"/></p>
     <p><input type="text" name="candidate"/></p>
     <p><input type="submit" value="add"/></p>
 </form>
 
-<h3> Remove Admin: </h3>
+<h3> Remove Member: </h3>
 <form action="/team/remove_member" method="POST">
     <p><input type="hidden" name="name" value="{{id}}"/></p>
     <p><input type="text" name="candidate"/></p>
-    <p><input type="submit" value="add"/></p>
+    <p><input type="submit" value="remove"/></p>
 </form>
 {% endblock %}
