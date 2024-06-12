@@ -330,7 +330,7 @@ In words, the policies can be described as follows:
 
 0. Any user can perform actions `CreateList`, `GetLists` (to create a list, and enumerate owned lists, respectively).
 1. The `List` owner can perform any action on it (`EditList`, `DeleteList`, `CreateTask`, ...).
-2. A `List` reader and editor can perform read actions on it (`GetList`).
+2. A `List` reader or editor can perform read actions on it (`GetList`).
 3. A `List` editor can perform write actions on it (`UpdateList`, `CreateTask`, `DeleteTask`, ...).
 
 To see how these policies affect the outcome, suppose user `kesha` attempts to create a task `"write release notes"` for list ID 0, which `andrew` created. This will result in the `create_task` handler being called, which we looked at earlier, which in turn will call `is_authorized` with a Cedar `Request` asking whether principal `User::"kesha"`  can perform action `Action::"CreateTask"` on resource `List::"0"`. The `is_authorized` call will also include the entities `&es` constructed from our `EntityStore`, which the Cedar authorization engine can consult when it evaluates each of the provided policies, one at a time. 
