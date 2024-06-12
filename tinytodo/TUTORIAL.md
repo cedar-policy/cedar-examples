@@ -214,7 +214,7 @@ We can see that `User::"aaron"` has two attributes, `location` (a Cedar `String`
 
 ## TinyTodo logic, with authorization by Cedar
 
-The TinyTodo server uses the `Warp` package for writing web applications, which builds on top of Rust’s standard `tokio` framework for asynchronous/multithreaded computation. The `main` method in `main.rs` begins by invoking `AppContext::spawn(...)`, defined in `context.rs`, which reads in TinyTodo’s initial `User` and `Team` entities (in `entities.json`), schema (in `tinytodo.cedarschema.json`, discussed later), and Cedar policies (in `policies.cedar`). The results are stored in fields of the `AppContext` object. The `spawn(...)` method then starts a thread listening for HTTP connections. When a HTTP request comes in, it is parsed into a Warp `AppQueryKind` object (see `context.rs` and `api.rs`) by the `serve` method in `context.rs` and dispatched to the appropriate handler. Each handler authorizes the request against the Cedar policies before carrying out the application logic. Doing so nicely separates authorization from application code — as we will see later, we can add, update, and analyze the policies without changing the application.
+The TinyTodo server uses the `Warp` package for writing web applications, which builds on top of Rust’s standard `tokio` framework for asynchronous/multithreaded computation. The `main` method in `main.rs` begins by invoking `AppContext::spawn(...)`, defined in `context.rs`, which reads in TinyTodo’s initial `User` and `Team` entities (in `entities.json`), schema (in `tinytodo.cedarschema`, discussed later), and Cedar policies (in `policies.cedar`). The results are stored in fields of the `AppContext` object. The `spawn(...)` method then starts a thread listening for HTTP connections. When a HTTP request comes in, it is parsed into a Warp `AppQueryKind` object (see `context.rs` and `api.rs`) by the `serve` method in `context.rs` and dispatched to the appropriate handler. Each handler authorizes the request against the Cedar policies before carrying out the application logic. Doing so nicely separates authorization from application code — as we will see later, we can add, update, and analyze the policies without changing the application.
 
 ### Handling a request
 
@@ -330,8 +330,8 @@ In words, the policies can be described as follows:
 
 0. Any user can perform actions `CreateList`, `GetLists` (to create a list, and enumerate owned lists, respectively).
 1. The `List` owner can perform any action on it (`EditList`, `DeleteList`, `CreateTask`, ...).
-2. A `List` reader can perform read-only actions on it (`GetList`).
-3. A `List` editor can perform read and write actions on it (`GetList`, `UpdateList`, `DeleteTask`, ...).
+2. A `List` reader and editor can perform read actions on it (`GetList`).
+3. A `List` editor can perform write actions on it (`UpdateList`, `CreateTask`, `DeleteTask`, ...).
 
 To see how these policies affect the outcome, suppose user `kesha` attempts to create a task `"write release notes"` for list ID 0, which `andrew` created. This will result in the `create_task` handler being called, which we looked at earlier, which in turn will call `is_authorized` with a Cedar `Request` asking whether principal `User::"kesha"`  can perform action `Action::"CreateTask"` on resource `List::"0"`. The `is_authorized` call will also include the entities `&es` constructed from our `EntityStore`, which the Cedar authorization engine can consult when it evaluates each of the provided policies, one at a time. 
 
@@ -448,7 +448,7 @@ TinyTodo server stopped on port 8080
 
 As a final extension, we can add this policy:
 ```
-// Policy 6: No access if not high rank and at location DEF, 
+// Policy 6: No access if not high rank and at location that starts with DEF, 
 // or at resource's owner's location
 forbid(
     principal,
@@ -459,7 +459,7 @@ forbid(
     principal.location == resource.owner.location
 };
 ```
-This policy is another `forbid` that is acting as a kind of "guard rail." It says that no principal is allowed to perform any action on a `List` unless (a) that principal is based at location DEF and is in a leader-level job, or (b) the principal's location is the same as resource's owner's location. Since it's a `forbid` policy, it is not granting access; rather, it revokes some accesses granted by existing `permit` policies. To see this, consider the following interactions:
+This policy is another `forbid` that is acting as a kind of "guard rail." It says that no principal is allowed to perform any action on a `List` unless (a) that principal is based at a location that starts with DEF and is in a leader-level job, or (b) the principal's location is the same as resource's owner's location. Since it's a `forbid` policy, it is not granting access; rather, it revokes some accesses granted by existing `permit` policies. To see this, consider the following interactions:
 ```
 >>> set_user(kesha)
 User is now kesha
@@ -472,13 +472,13 @@ User is now andrew
 >>> get_list(0)
 Access denied. User andrew is not authorized to Get List on [0]
 ```
-Here, Kesha creates a list which she shares with Andrew, but then Andrew is not able to view the list. That's because Andrew's location is `XYZ77` while the list's owner's (i.e., Kesha's) location is `ABC17`, and the two do not match. Nor is Andrew based at location DEF with a sufficiently high job level.
+Here, Kesha creates a list which she shares with Andrew, but then Andrew is not able to view the list. That's because Andrew's location is `XYZ77` while the list's owner's (i.e., Kesha's) location is `ABC17`, and the two do not match. Nor is Andrew based at a location that starts with DEF with a sufficiently high job level.
 
 Policy 6 is noteworthy for being a classic example of an *attribute-based access control* (ABAC) policy: The decision is based on attributes of the attributes of the principal and resource where these attributes are strings and numbers (rather than entities and groups).
 
 ## Validating Cedar policies
 
-When the `AppContext::spawn(...)` method reads in the Cedar policies (and renames them according to their `@id` annotations, if present), it also reads in a Cedar *schema* against which it validates the policies. After reading in the `schema` from the file `tinytodo.cedarschema.json`, the method creates a `Validator` object (from the `cedar-policy-validator` package) and invokes its `validator.validate` method. Here is the `spawn` method, where you can see the code for this.
+When the `AppContext::spawn(...)` method reads in the Cedar policies (and renames them according to their `@id` annotations, if present), it also reads in a Cedar *schema* against which it validates the policies. After reading in the `schema` from the file `tinytodo.cedarschema`, the method creates a `Validator` object (from the `cedar-policy-validator` package) and invokes its `validator.validate` method. Here is the `spawn` method, where you can see the code for this.
 
 ```rust
 pub fn spawn(
@@ -503,73 +503,40 @@ If the policies were inconsistent with the schema, `output.validation_passed` wo
 
 ### Schemas
 
-A Cedar schema has two parts, the `entityTypes` and the `actions`. The first describes the type structure of the various entity types: What attributes they have, and how they can be organized in the entity hierarchy. The second enumerates the names of the actions that the application uses, and assumptions about the entity types for the `principal` and `resource` components of requests that involve each action.
+A Cedar schema has three parts: types, entities, and actions. The first (`type`) describes the structure of a given value. This can be in the form of a primitive, a collection, or a group of attributes. The second (`entity`) describes the type structure of the various entity types: What attributes they have, and how they can be organized in the entity hierarchy. The third (`action`) enumerates the names of the actions that the application uses, and assumptions about the entity types for the `principal` and `resource` components of requests that involve each action.
 
-Looking at `tinytodo.cedarschema.json`, here’s the part of the `entityTypes` that defines the structure of the `List` entity. The `memberOfTypes` attribute indicates that `List` can have `Application` entities as its parents in the entity hierarchy, which validates that individual lists will have the entity `Application::"TinyTodo"` as their parent. The `shape` part describes the attributes of a `List` entity using JSON schema-like format. You can see how entity `List::"0"` in Figure 3 matches this described shape.
-
-```json
-"List": {
-    "memberOfTypes": [
-        "Application"
-    ],
-    "shape": {
-        "type": "Record",
-        "attributes": {
-            "owner": {
-                "type": "Entity",
-                "name": "User"
-            },
-            "name": {
-                "type": "String"
-            },
-            "readers": {
-                "type": "Entity",
-                "name": "Team"
-            },
-            "editors": {
-                "type": "Entity",
-                "name": "Team"
-            },
-            "tasks": {
-                "type": "Set",
-                "element": {
-                    "type": "Record",
-                    "attributes": {
-                        "name": {
-                            "type": "String"
-                        },
-                        "id": {
-                            "type": "Long"
-                        },
-                        "state": {
-                            "type": "String"
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-```
-
-Here is a snippet of the `actions` part of `tinytodo.cedarschema.json`, describing two TinyTodo actions, `Action::"CreateList"` and `Action::"CreateTask"`. 
+Looking at the `tinytodo.cedarschema`, here's the definition of the `List` entity. After the `in` keyword and within the square brackets is `Application` which indicates that `List` can have those entities as its parents in the entity hierarchy. In our application, individual lists have `Application::"TinyTodo"` as their parent which validates under this schema. Within the braces in the definition describes the attributes of a `List` entity. You can see how entity `List::"0"` in Figure 3 matches this described shape.
 
 ```json
-"CreateList" : {
-    "appliesTo" : {
-        "principalTypes" : [ "User" ],
-        "resourceTypes" : [ "Application" ]
-    }
-},
-"CreateTask" : { 
-    "appliesTo" : { 
-        "principalTypes" : [ "User" ],
-        "resourceTypes" : [ "List" ]
-    }
-},
+type Task = {
+    "id": Long,
+    "name": String,
+    "state": String,
+};
+
+type Tasks = Set<Task>;
+entity List in [Application] = {
+  "editors": Team,
+  "name": String,
+  "owner": User,
+  "readers": Team,
+  "tasks": Tasks,
+};
+```
+Here is a snippet of the actions portion of `tinytodo.cedarschema`, describing three TinyTodo actions, `Action::"CreateList"`, `Action::"GetLists"`, and `Action::"EditShare"`.
+
+```json
+action CreateList, GetLists appliesTo {
+  principal: [User],
+  resource: [Application]
+};
+action EditShare appliesTo {
+  principal: [User],
+  resource: [List]
+};
 ```
 
-The `appliesTo` part enumerates the allowed entity types for the principal and resource components of a request involving the given action. The schema states that `Action::"CreateList"` requests should have `User` entities for the principal part and `Application` entities for the `resource` part, whereas `Action::"CreateTask"` should have `User`s and `List`s for those parts. 
+After the `action` keyword is a single action or list of actions that this schema `appliesTo`. Within the braces is the principal and resource components of a request involving the given action. The schema states that `Action::"CreateList"` and `Action::"GetLists"` requests should have `User` entities for the principal part and `Application` entities for the `resource` part, whereas `Action::"EditShare"` should have `User`s and `List`s for those parts. 
 
 In general, it’s up to the application to make sure that `appliesTo` assumptions in the schema are adhered to. TinyTodo checks these assumptions in the deserialization code when it creates objects like `CreateTask` (shown earlier) from an HTTP request. Because `CreateTask` and other request objects indicate the precise type of UID that’s expected, e.g., `UserUid` or `ListUid`, the deserialization code will confirm that what’s received from the client has the right entity type.
 
