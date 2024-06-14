@@ -41,18 +41,27 @@
   "teams": {
     "Team::\"temp\"": {
       "uid": "Team::\"temp\"",
+      "owner": "User::\"emina\"",
+      "admins": ["User::\"emina\""],
+      "name": "temp",
       "parents": [
         "Application::\"TinyTodo\""
       ]
     },
     "Team::\"admin\"": {
       "uid": "Team::\"admin\"",
+      "owner": "User::\"emina\"",
+      "admins": ["User::\"emina\""],
+      "name": "admin",
       "parents": [
         "Application::\"TinyTodo\""
       ]
     },
     "Team::\"interns\"": {
       "uid": "Team::\"interns\"",
+      "owner": "User::\"emina\"",
+      "admins": ["User::\"emina\""],
+      "name": "interns",
       "parents": [
         "Application::\"TinyTodo\"",
         "Team::\"temp\""

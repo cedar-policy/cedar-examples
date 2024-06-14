@@ -255,6 +255,12 @@ impl From<UserOrTeamUid> for EntityUid {
     }
 }
 
+impl From<UserUid> for RestrictedExpression {
+    fn from(value: UserUid) -> Self {
+        RestrictedExpression::new_entity_uid(value.as_ref().clone().into())
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 #[serde(try_from = "EntityUid")]
 #[serde(into = "EntityUid")]
@@ -265,6 +271,12 @@ impl TryFrom<EntityUid> for TeamUid {
     type Error = EntityTypeError;
     fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
         entity_type_check(&TYPE_TEAM, got, Self)
+    }
+}
+
+impl From<TeamUid> for RestrictedExpression {
+    fn from(value: TeamUid) -> Self {
+        RestrictedExpression::new_entity_uid(value.as_ref().clone().into())
     }
 }
 

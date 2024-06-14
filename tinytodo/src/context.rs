@@ -16,12 +16,13 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, HumanSchemaError, ParseErrors, PolicySet,
-    PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
+    Authorizer, Context, Decision, Diagnostics, Entities, EntityId, HumanSchemaError, ParseErrors,
+    PartialResponse, PolicySet, PolicySetError, Request, RequestBuilder, RestrictedExpression,
+    Schema, SchemaError, ValidationMode, Validator,
 };
 
 use thiserror::Error;
@@ -32,21 +33,20 @@ use tokio::sync::{
 
 use crate::{
     api::{
-        AddShare, CreateList, CreateTask, DeleteList, DeleteShare, DeleteTask, Empty, GetList,
-        GetLists, UpdateList, UpdateTask,
+        AddAdmin, AddMember, AddShare, CreateList, CreateTask, CreateTeam, CreateUser, DeleteList,
+        DeleteShare, DeleteTask, Empty, GetAdminTeams, GetList, GetLists, GetMemberTeams, GetTeam,
+        GetUser, RemoveAdmin, RemoveMember, UpdateList, UpdateTask,
     },
     entitystore::{EntityDecodeError, EntityStore},
-    objects::List,
+    objects::{List, Team, User},
     policy_store,
-    util::{EntityUid, ListUid, TYPE_LIST},
+    util::{EntityUid, ListUid, TeamUid, UserUid, TYPE_LIST, TYPE_TEAM, TYPE_USER},
 };
 
 #[cfg(feature = "use-templates")]
 use crate::{api::ShareRole, util::UserOrTeamUid};
 #[cfg(feature = "use-templates")]
 use cedar_policy::{PolicyId, SlotId};
-#[cfg(feature = "use-templates")]
-use std::collections::HashMap;
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
 
@@ -57,6 +57,9 @@ pub enum AppResponse {
     Lists(Vec<List>),
     TaskId(i64),
     Unit(()),
+    User(User),
+    Team(Team),
+    Teams(Vec<Team>),
 }
 
 impl AppResponse {
@@ -108,11 +111,41 @@ impl TryInto<Empty> for AppResponse {
     }
 }
 
+impl TryInto<User> for AppResponse {
+    type Error = Error;
+    fn try_into(self) -> std::result::Result<User, Self::Error> {
+        match self {
+            AppResponse::User(u) => Ok(u),
+            _ => Err(Error::Type),
+        }
+    }
+}
+
+impl TryInto<Team> for AppResponse {
+    type Error = Error;
+    fn try_into(self) -> std::result::Result<Team, Self::Error> {
+        match self {
+            AppResponse::Team(t) => Ok(t),
+            _ => Err(Error::Type),
+        }
+    }
+}
+
 impl TryInto<Vec<List>> for AppResponse {
     type Error = Error;
     fn try_into(self) -> std::result::Result<Vec<List>, Self::Error> {
         match self {
             AppResponse::Lists(l) => Ok(l),
+            _ => Err(Error::Type),
+        }
+    }
+}
+
+impl TryInto<Vec<Team>> for AppResponse {
+    type Error = Error;
+    fn try_into(self) -> std::result::Result<Vec<Team>, Self::Error> {
+        match self {
+            AppResponse::Teams(l) => Ok(l),
             _ => Err(Error::Type),
         }
     }
@@ -140,6 +173,20 @@ pub enum AppQueryKind {
 
     // Policy Set Updates
     UpdatePolicySet(PolicySet),
+
+    // User CRUD
+    CreateUser(CreateUser),
+    GetUser(GetUser),
+
+    // Team CRUD
+    CreateTeam(CreateTeam),
+    GetTeam(GetTeam),
+    AddAdmin(AddAdmin),
+    RemoveAdmin(RemoveAdmin),
+    AddMember(AddMember),
+    RemoveMember(RemoveMember),
+    GetMemberTeams(GetMemberTeams),
+    GetAdminTeams(GetAdminTeams),
 }
 
 #[derive(Debug)]
@@ -178,6 +225,8 @@ pub enum ContextError {
 pub enum Error {
     #[error("No Such Entity: {0}")]
     NoSuchEntity(EntityUid),
+    #[error("Duplicate entity: {0}")]
+    DuplicateEntity(EntityUid),
     #[error("Entity Decode Error: {0}")]
     EntityDecode(#[from] EntityDecodeError),
     #[error("Authorization Denied")]
@@ -217,6 +266,10 @@ lazy_static! {
     static ref ACTION_CREATE_LIST: EntityUid = r#"Action::"CreateList""#.parse().unwrap();
     static ref ACTION_UPDATE_LIST: EntityUid = r#"Action::"UpdateList""#.parse().unwrap();
     static ref ACTION_DELETE_LIST: EntityUid = r#"Action::"DeleteList""#.parse().unwrap();
+    static ref ACTION_ADD_ADMIN: EntityUid = r#"Action::"AddAdmin""#.parse().unwrap();
+    static ref ACTION_REMOVE_ADMIN: EntityUid = r#"Action::"RemoveAdmin""#.parse().unwrap();
+    static ref ACTION_ADD_MEMBER: EntityUid = r#"Action::"AddMember""#.parse().unwrap();
+    static ref ACTION_REMOVE_MEMBER: EntityUid = r#"Action::"RemoveMember""#.parse().unwrap();
 }
 
 pub struct AppContext {
@@ -355,6 +408,16 @@ impl AppContext {
                     AppQueryKind::AddShare(r) => self.add_share(r),
                     AppQueryKind::DeleteShare(r) => self.delete_share(r),
                     AppQueryKind::UpdatePolicySet(set) => self.update_policy_set(set),
+                    AppQueryKind::CreateUser(r) => self.create_user(r),
+                    AppQueryKind::GetUser(r) => self.get_user(r),
+                    AppQueryKind::CreateTeam(r) => self.create_team(r),
+                    AppQueryKind::GetTeam(r) => self.get_team(r),
+                    AppQueryKind::AddAdmin(r) => self.add_admin(r),
+                    AppQueryKind::RemoveAdmin(r) => self.remove_admin(r),
+                    AppQueryKind::AddMember(r) => self.add_member(r),
+                    AppQueryKind::RemoveMember(r) => self.remove_member(r),
+                    AppQueryKind::GetAdminTeams(r) => self.get_admin_teams(r),
+                    AppQueryKind::GetMemberTeams(r) => self.get_member_teams(r),
                 };
                 if let Err(e) = msg.sender.send(r) {
                     trace!("Failed send response: {:?}", e);
@@ -526,6 +589,330 @@ impl AppContext {
         ))
     }
 
+    fn reauthorize_with_concrete_resource(
+        &self,
+        partial_response: &PartialResponse,
+        euid: &EntityUid,
+        entities: &Entities,
+    ) -> bool {
+        matches!(
+            partial_response.reauthorize(
+                HashMap::from_iter(
+                    std::iter::once(
+                        ("resource".into(), RestrictedExpression::new_entity_uid(cedar_policy::EntityUid::from((*euid).clone())))
+                    )
+                ),
+                &self.authorizer,
+                &entities),
+            Ok(r) if !matches!(r.decision(), Some(Decision::Deny)))
+    }
+
+    fn get_admin_teams(&self, r: GetAdminTeams) -> Result<AppResponse> {
+        let entities = self.entities.as_entities(&self.schema);
+        let partial_request_add = RequestBuilder::default()
+            .action(Some(ACTION_ADD_ADMIN.as_ref().clone().into()))
+            .principal(Some(cedar_policy::EntityUid::from(EntityUid::from(
+                r.uid.clone(),
+            ))))
+            .context(
+                Context::from_pairs(std::iter::once((
+                    "candidate".to_owned(),
+                    RestrictedExpression::from_str(r#"unknown("candidate")"#).unwrap(),
+                )))
+                .unwrap(),
+            )
+            .build();
+        let partial_request_remove = RequestBuilder::default()
+            .action(Some(ACTION_REMOVE_ADMIN.as_ref().clone().into()))
+            .principal(Some(cedar_policy::EntityUid::from(EntityUid::from(
+                r.uid.clone(),
+            ))))
+            .context(
+                Context::from_pairs(std::iter::once((
+                    "candidate".to_owned(),
+                    RestrictedExpression::new_entity_uid(
+                        cedar_policy::EntityUid::from_type_name_and_id(
+                            TYPE_USER.clone(),
+                            cedar_policy::EntityId::new(""),
+                        ),
+                    ),
+                )))
+                .unwrap(),
+            )
+            .build();
+        let partial_response_add =
+            self.authorizer
+                .is_authorized_partial(&partial_request_add, &self.policies, &entities);
+        let partial_response_remove = self.authorizer.is_authorized_partial(
+            &partial_request_remove,
+            &self.policies,
+            &entities,
+        );
+
+        let slice = self.entities.get_teams();
+
+        Ok(AppResponse::Teams(
+            slice
+                .filter(|t| {
+                    self.reauthorize_with_concrete_resource(
+                        &partial_response_add,
+                        &t.uid().clone().into(),
+                        &entities,
+                    ) || self.reauthorize_with_concrete_resource(
+                        &partial_response_remove,
+                        &t.uid().clone().into(),
+                        &entities,
+                    )
+                })
+                .cloned()
+                .collect::<Vec<Team>>(),
+        ))
+    }
+
+    fn get_member_teams(&self, r: GetMemberTeams) -> Result<AppResponse> {
+        let entities = self.entities.as_entities(&self.schema);
+        let partial_request_add = RequestBuilder::default()
+            .action(Some(ACTION_ADD_MEMBER.as_ref().clone().into()))
+            .principal(Some(cedar_policy::EntityUid::from(EntityUid::from(
+                r.uid.clone(),
+            ))))
+            .context(
+                Context::from_pairs(std::iter::once((
+                    "candidate".to_owned(),
+                    RestrictedExpression::from_str(r#"unknown("candidate")"#).unwrap(),
+                )))
+                .unwrap(),
+            )
+            .build();
+        let partial_request_remove = RequestBuilder::default()
+            .action(Some(ACTION_REMOVE_MEMBER.as_ref().clone().into()))
+            .principal(Some(cedar_policy::EntityUid::from(EntityUid::from(
+                r.uid.clone(),
+            ))))
+            .context(
+                Context::from_pairs(std::iter::once((
+                    "candidate".to_owned(),
+                    RestrictedExpression::new_entity_uid(
+                        cedar_policy::EntityUid::from_type_name_and_id(
+                            TYPE_USER.clone(),
+                            cedar_policy::EntityId::new(""),
+                        ),
+                    ),
+                )))
+                .unwrap(),
+            )
+            .build();
+        let partial_response_add =
+            self.authorizer
+                .is_authorized_partial(&partial_request_add, &self.policies, &entities);
+        let partial_response_remove = self.authorizer.is_authorized_partial(
+            &partial_request_remove,
+            &self.policies,
+            &entities,
+        );
+
+        let slice = self.entities.get_teams();
+
+        Ok(AppResponse::Teams(
+            slice
+                .filter(|t| {
+                    self.reauthorize_with_concrete_resource(
+                        &partial_response_add,
+                        &t.uid().clone().into(),
+                        &entities,
+                    ) || self.reauthorize_with_concrete_resource(
+                        &partial_response_remove,
+                        &t.uid().clone().into(),
+                        &entities,
+                    )
+                })
+                .cloned()
+                .collect::<Vec<Team>>(),
+        ))
+    }
+
+    fn create_team(&mut self, r: CreateTeam) -> Result<AppResponse> {
+        let u = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.owner),
+            ),
+        ))
+        .unwrap();
+        let t = self
+            .entities
+            .fresh_euid::<TeamUid>(TYPE_TEAM.clone())
+            .unwrap();
+        self.entities.insert_team(Team::new_w_name(t, &r.id, u));
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn get_team(&mut self, r: GetTeam) -> Result<AppResponse> {
+        let team_id = r.uid;
+        self.entities
+            .get_team(&team_id)
+            .map(|v| AppResponse::Team(v.clone()))
+    }
+
+    fn add_admin(&mut self, r: AddAdmin) -> Result<AppResponse> {
+        let team_id = r.team;
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.user),
+            ),
+        ))
+        .unwrap();
+        let candidate_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.candidate),
+            ),
+        ))
+        .unwrap();
+
+        self.is_authorized_with_context(
+            user_id,
+            &*ACTION_ADD_ADMIN,
+            team_id.clone(),
+            Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
+        )?;
+
+        self.entities.add_admin(team_id, candidate_id)?;
+
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn remove_member(&mut self, r: RemoveMember) -> Result<AppResponse> {
+        let team_id = TeamUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_TEAM.clone(),
+                EntityId::new(r.team),
+            ),
+        ))
+        .unwrap();
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.user),
+            ),
+        ))
+        .unwrap();
+        let candidate_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.candidate),
+            ),
+        ))
+        .unwrap();
+
+        self.is_authorized_with_context(
+            user_id,
+            &*ACTION_REMOVE_MEMBER,
+            team_id.clone(),
+            Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
+        )?;
+
+        self.entities.remove_user_from_team(candidate_id, team_id)?;
+
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn add_member(&mut self, r: AddMember) -> Result<AppResponse> {
+        let team_id = TeamUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_TEAM.clone(),
+                EntityId::new(r.team),
+            ),
+        ))
+        .unwrap();
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.user),
+            ),
+        ))
+        .unwrap();
+        let candidate_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.candidate),
+            ),
+        ))
+        .unwrap();
+
+        self.is_authorized_with_context(
+            user_id,
+            &*ACTION_ADD_MEMBER,
+            team_id.clone(),
+            Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
+        )?;
+
+        self.entities.add_user_to_team(candidate_id, team_id)?;
+
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn remove_admin(&mut self, r: RemoveAdmin) -> Result<AppResponse> {
+        let team_id = r.team;
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.user),
+            ),
+        ))
+        .unwrap();
+        let candidate_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(
+                TYPE_USER.clone(),
+                EntityId::new(r.candidate),
+            ),
+        ))
+        .unwrap();
+
+        self.is_authorized_with_context(
+            user_id,
+            &*ACTION_REMOVE_ADMIN,
+            team_id.clone(),
+            Context::from_pairs([("candidate".to_owned(), candidate_id.clone().into())]).unwrap(),
+        )?;
+
+        self.entities.remove_admin(team_id, candidate_id)?;
+
+        Ok(AppResponse::Unit(()))
+    }
+
+    fn create_user(&mut self, r: CreateUser) -> Result<AppResponse> {
+        let u = User::new(
+            UserUid::try_from(EntityUid::from(
+                cedar_policy::EntityUid::from_type_name_and_id(
+                    TYPE_USER.clone(),
+                    EntityId::new(r.id),
+                ),
+            ))
+            .unwrap(),
+            r.joblevel,
+            r.location,
+        );
+        match self.entities.get_user(u.uid()) {
+            Ok(_) => Err(Error::DuplicateEntity(u.uid().clone().into())),
+            Err(_) => {
+                self.entities.insert_user(u);
+                Ok(AppResponse::Unit(()))
+            }
+        }
+    }
+
+    fn get_user(&mut self, r: GetUser) -> Result<AppResponse> {
+        let user_id = UserUid::try_from(EntityUid::from(
+            cedar_policy::EntityUid::from_type_name_and_id(TYPE_USER.clone(), EntityId::new(r.id)),
+        ))
+        .unwrap();
+        self.entities
+            .get_user(&user_id)
+            .map(|v| AppResponse::User(v.clone()))
+    }
+
     fn create_list(&mut self, r: CreateList) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_CREATE_LIST, &*APPLICATION_TINY_TODO)?;
 
@@ -556,6 +943,37 @@ impl AppContext {
         self.is_authorized(&r.uid, &*ACTION_DELETE_LIST, &r.list)?;
         self.entities.delete_entity(&r.list)?;
         Ok(AppResponse::Unit(()))
+    }
+
+    #[tracing::instrument(skip_all)]
+    pub fn is_authorized_with_context(
+        &self,
+        principal: impl AsRef<EntityUid>,
+        action: impl AsRef<EntityUid>,
+        resource: impl AsRef<EntityUid>,
+        context: cedar_policy::Context,
+    ) -> Result<()> {
+        let es = self.entities.as_entities(&self.schema);
+        let q = Request::new(
+            Some(principal.as_ref().clone().into()),
+            Some(action.as_ref().clone().into()),
+            Some(resource.as_ref().clone().into()),
+            context,
+            Some(&self.schema),
+        )
+        .map_err(|e| Error::Request(e.to_string()))?;
+        info!(
+            "is_authorized request: principal: {}, action: {}, resource: {}",
+            principal.as_ref(),
+            action.as_ref(),
+            resource.as_ref()
+        );
+        let response = self.authorizer.is_authorized(&q, &self.policies, &es);
+        info!("Auth response: {:?}", response);
+        match response.decision() {
+            Decision::Allow => Ok(()),
+            Decision::Deny => Err(Error::AuthDenied(response.diagnostics().clone())),
+        }
     }
 
     #[tracing::instrument(skip_all)]

@@ -1,16 +1,12 @@
 // Policy 0: Any User can create a list and see what lists they own
 permit (
     principal,
-    action in [Action::"CreateList", Action::"GetLists"],
+    action in [Action::"CreateList", Action::"GetLists", Action::"CreateTeam"],
     resource == Application::"TinyTodo"
 );
 
 // Policy 1: A User can perform any action on a List they own
-permit (
-  principal,
-  action,
-  resource is List
-)
+permit (principal, action, resource is List)
 when { resource.owner == principal };
 
 // Policy 2: A User can see a List if they are either a reader or editor
@@ -40,7 +36,7 @@ when { principal in resource.editors };
 //    action,
 //    resource in Application::"TinyTodo"
 // );
-// 
+//
 // Policy 5: Interns may not create new task lists
 // forbid (
 //     principal in Team::"interns",
@@ -48,7 +44,7 @@ when { principal in resource.editors };
 //     resource == Application::"TinyTodo"
 // );
 //
-// Policy 6: No access if not high rank and at location DEF, 
+// Policy 6: No access if not high rank and at location DEF,
 // or at resource's owner's location
 // forbid(
 //     principal,
@@ -58,3 +54,39 @@ when { principal in resource.editors };
 //     principal.joblevel > 6 && principal.location like "DEF*" ||
 //     principal.location == resource.owner.location
 // };
+
+// Only team owners can add admins
+permit (
+    principal,
+    action == Action::"AddAdmin",
+    resource
+)
+when { resource.owner == principal };
+
+// Only team owners can remove admins but they can't remove themselves
+permit (
+    principal,
+    action == Action::"RemoveAdmin",
+    resource
+)
+when { resource.owner == principal && context.candidate != principal };
+
+// Only team admins can add members
+permit (
+    principal,
+    action == Action::"AddMember",
+    resource
+)
+when { resource.admins.contains(principal) };
+
+// Only team admins can remove members but they cannot remove other admins
+permit (
+    principal,
+    action == Action::"RemoveMember",
+    resource
+)
+when
+{
+    resource.admins.contains(principal) &&
+    !resource.admins.contains(context.candidate)
+};

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use cedar_policy::{Entity, EvalResult, RestrictedExpression};
 use serde::{Deserialize, Serialize};
@@ -115,14 +115,31 @@ impl UserOrTeam for User {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Team {
     uid: TeamUid,
+    name: Option<String>,
+    owner: UserUid,
+    admins: HashSet<UserUid>,
     parents: HashSet<EntityUid>,
 }
 
 impl Team {
-    pub fn new(euid: TeamUid) -> Team {
+    pub fn new_wo_name(euid: TeamUid, owner: UserUid) -> Team {
         let parent = Application::default().euid().clone();
         Self {
             uid: euid,
+            name: None,
+            owner: owner.clone(),
+            admins: [owner].into_iter().collect(),
+            parents: [parent].into_iter().collect(),
+        }
+    }
+
+    pub fn new_w_name(euid: TeamUid, name: &str, owner: UserUid) -> Team {
+        let parent = Application::default().euid().clone();
+        Self {
+            uid: euid,
+            name: Some(name.to_owned()),
+            owner: owner.clone(),
+            admins: [owner].into_iter().collect(),
             parents: [parent].into_iter().collect(),
         }
     }
@@ -130,15 +147,31 @@ impl Team {
     pub fn uid(&self) -> &TeamUid {
         &self.uid
     }
+
+    pub fn add_admin(&mut self, candidate: UserUid) {
+        self.admins.insert(candidate);
+    }
+
+    pub fn remove_admin(&mut self, candidate: UserUid) {
+        self.admins.remove(&candidate);
+    }
 }
 
 impl From<Team> for Entity {
     fn from(team: Team) -> Entity {
         let euid: EntityUid = team.uid.into();
-        Entity::new_no_attrs(
+        Entity::new(
             euid.into(),
+            HashMap::from_iter([
+                (
+                    "admins".to_owned(),
+                    RestrictedExpression::new_set(team.admins.into_iter().map(|u| u.into())),
+                ),
+                ("owner".to_owned(), team.owner.into()),
+            ]),
             team.parents.into_iter().map(|euid| euid.into()).collect(),
         )
+        .unwrap()
     }
 }
 
@@ -170,9 +203,9 @@ impl List {
         #[cfg(not(feature = "use-templates"))]
         {
             let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-            let readers = Team::new(readers_uid.clone());
+            let readers = Team::new_wo_name(readers_uid.clone(), owner.clone());
             let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-            let writers = Team::new(writers_uid.clone());
+            let writers = Team::new_wo_name(writers_uid.clone(), owner.clone());
             store.insert_team(readers);
             store.insert_team(writers);
             Self {

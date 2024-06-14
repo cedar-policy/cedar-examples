@@ -239,6 +239,67 @@ def get_lists_printer(user):
 
     return inner
 
+@web_req("Create User")
+def create_user(_, name, job_level, location):
+    data = {
+        'id': name,
+        'joblevel': job_level,
+        'location': location,
+    }
+    f = lambda _: 'Created User %s' % User(name)
+    return server.post('/api/user/create', data), f
+
+@web_req("Get User")
+def get_user(_, name):
+    f = lambda u: str(u)
+    return server.get('/api/user/get?id=%s' % name), f
+
+@web_req("Create User")
+def create_team(_, name, owner):
+    data = {
+        'id': name,
+        'owner': owner,
+    }
+    f = lambda _: 'Created Team %s' % Team(name)
+    return server.post('/api/team/create', data), f
+
+@web_req("Get Team")
+def get_team(_, name):
+    f = lambda u: str(u)
+    return server.get('/api/team/get?id=%s' % name), f
+
+@web_req("Add Team Admin")
+def add_admin(_, team, user, admin):
+    data = {
+        'team': team,
+        'user': user,
+        'candidate': admin,
+    }
+    f = lambda _: 'Add admin {0} to team {1}'.format(User(admin), Team(team))
+    return server.post('/api/team/admin/add', data), f
+
+@web_req("Add Team Member")
+def add_member(_, team, user, admin):
+    data = {
+        'team': team,
+        'user': user,
+        'candidate': admin,
+    }
+    f = lambda _: 'Add member {0} to team {1}'.format(User(admin), Team(team))
+    return server.post('/api/team/member/add', data), f
+
+@web_req("Get Admin Teams")
+def get_admin_teams(_, name):
+    user = User(name)
+    req = server.get('/api/team/manage/admin/get?uid=%s' % user.euid())
+    return req, lambda v: str(v)
+
+@web_req("Get Member Teams")
+def get_member_teams(_, name):
+    user = User(name)
+    req = server.get('/api/team/manage/member/get?uid=%s' % user.euid())
+    return req, lambda v: str(v)
+
 @web_req("Create List")
 def create_list(user, name):
     data = {

@@ -22,11 +22,110 @@ use warp::Filter;
 
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
-    objects::{List, TaskState},
-    util::{EntityUid, ListUid, UserOrTeamUid, UserUid},
+    objects::{List, TaskState, Team, User},
+    util::{EntityUid, ListUid, TeamUid, UserOrTeamUid, UserUid},
 };
 
 type AppChannel = mpsc::Sender<AppQuery>;
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreateUser {
+    pub id: String,
+    pub joblevel: i64,
+    pub location: String,
+}
+
+impl From<CreateUser> for AppQueryKind {
+    fn from(v: CreateUser) -> AppQueryKind {
+        AppQueryKind::CreateUser(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct GetUser {
+    pub id: String,
+}
+
+impl From<GetUser> for AppQueryKind {
+    fn from(v: GetUser) -> AppQueryKind {
+        AppQueryKind::GetUser(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct CreateTeam {
+    pub owner: String,
+    pub id: String,
+}
+
+impl From<CreateTeam> for AppQueryKind {
+    fn from(v: CreateTeam) -> AppQueryKind {
+        AppQueryKind::CreateTeam(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct GetTeam {
+    pub uid: TeamUid,
+}
+
+impl From<GetTeam> for AppQueryKind {
+    fn from(v: GetTeam) -> AppQueryKind {
+        AppQueryKind::GetTeam(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AddAdmin {
+    pub team: TeamUid,
+    pub user: String,
+    pub candidate: String,
+}
+
+impl From<AddAdmin> for AppQueryKind {
+    fn from(value: AddAdmin) -> Self {
+        AppQueryKind::AddAdmin(value)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RemoveAdmin {
+    pub team: TeamUid,
+    pub user: String,
+    pub candidate: String,
+}
+
+impl From<RemoveAdmin> for AppQueryKind {
+    fn from(value: RemoveAdmin) -> Self {
+        AppQueryKind::RemoveAdmin(value)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct AddMember {
+    pub team: String,
+    pub user: String,
+    pub candidate: String,
+}
+
+impl From<AddMember> for AppQueryKind {
+    fn from(value: AddMember) -> Self {
+        AppQueryKind::AddMember(value)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct RemoveMember {
+    pub team: String,
+    pub user: String,
+    pub candidate: String,
+}
+
+impl From<RemoveMember> for AppQueryKind {
+    fn from(value: RemoveMember) -> Self {
+        AppQueryKind::RemoveMember(value)
+    }
+}
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetList {
@@ -123,6 +222,28 @@ impl From<GetLists> for AppQueryKind {
 }
 
 #[derive(Debug, Clone, Deserialize)]
+pub struct GetMemberTeams {
+    pub uid: UserUid,
+}
+
+impl From<GetMemberTeams> for AppQueryKind {
+    fn from(v: GetMemberTeams) -> AppQueryKind {
+        AppQueryKind::GetMemberTeams(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct GetAdminTeams {
+    pub uid: UserUid,
+}
+
+impl From<GetAdminTeams> for AppQueryKind {
+    fn from(v: GetAdminTeams) -> AppQueryKind {
+        AppQueryKind::GetAdminTeams(v)
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
 pub struct UpdateTask {
     pub uid: UserUid,
     pub list: ListUid,
@@ -178,26 +299,26 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
     let filter = warp::path("api").and(
         // List CRUD
         (warp::path("list").and(
-            (warp::path("get")
+            warp::path("get")
                 .and(warp::get())
                 .and(with_app(chan.clone()))
                 .and(warp::query::query::<GetList>())
-                .and_then(simple_query::<GetList, List>))
-            .or(warp::path("create")
-                .and(warp::post())
-                .and(with_app(chan.clone()))
-                .and(warp::body::json())
-                .and_then(simple_query::<CreateList, EntityUid>))
-            .or(warp::path("update")
-                .and(warp::post())
-                .and(with_app(chan.clone()))
-                .and(warp::body::json())
-                .and_then(simple_query::<UpdateList, Empty>))
-            .or(warp::path("delete")
-                .and(warp::delete())
-                .and(with_app(chan.clone()))
-                .and(warp::body::json())
-                .and_then(simple_query::<DeleteList, Empty>)),
+                .and_then(simple_query::<GetList, List>)
+                .or(warp::path("create")
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<CreateList, EntityUid>))
+                .or(warp::path("update")
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<UpdateList, Empty>))
+                .or(warp::path("delete")
+                    .and(warp::delete())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<DeleteList, Empty>)),
         ))
         .or(
             // Task CRUD
@@ -233,6 +354,64 @@ pub async fn serve_api(chan: AppChannel, port: u16) {
                 .and(with_app(chan.clone()))
                 .and(warp::body::json())
                 .and_then(simple_query::<DeleteShare, Empty>)),
+        ))
+        .or(warp::path("user").and(
+            warp::path("create")
+                .and(warp::post())
+                .and(with_app(chan.clone()))
+                .and(warp::body::json())
+                .and_then(simple_query::<CreateUser, Empty>)
+                .or(warp::path("get")
+                    .and(warp::get())
+                    .and(with_app(chan.clone()))
+                    .and(warp::query::query::<GetUser>())
+                    .and_then(simple_query::<GetUser, User>)),
+        ))
+        .or(warp::path("team").and(
+            (warp::path("create")
+                .and(warp::post())
+                .and(with_app(chan.clone()))
+                .and(warp::body::json())
+                .and_then(simple_query::<CreateTeam, Empty>))
+            .or(warp::path("get")
+                .and(warp::get())
+                .and(with_app(chan.clone()))
+                .and(warp::query::query::<GetTeam>())
+                .and_then(simple_query::<GetTeam, Team>))
+            .or(warp::path("admin").and(
+                (warp::path("add")
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<AddAdmin, Empty>))
+                .or(warp::path("remove")
+                    .and(warp::delete())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<RemoveAdmin, Empty>)),
+            ))
+            .or(warp::path("member").and(
+                (warp::path("add")
+                    .and(warp::post())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<AddMember, Empty>))
+                .or(warp::path("remove")
+                    .and(warp::delete())
+                    .and(with_app(chan.clone()))
+                    .and(warp::body::json())
+                    .and_then(simple_query::<RemoveMember, Empty>)),
+            ))
+            .or(warp::path("manage").and(
+                warp::path("member")
+                    .and(with_app(chan.clone()))
+                    .and(warp::query::query::<GetMemberTeams>())
+                    .and_then(simple_query::<GetMemberTeams, Vec<Team>>)
+                    .or(warp::path("admin")
+                        .and(with_app(chan.clone()))
+                        .and(warp::query::query::<GetAdminTeams>())
+                        .and_then(simple_query::<GetAdminTeams, Vec<Team>>)),
+            )),
         )),
     );
 
@@ -292,7 +471,7 @@ where
     let kind = q.into();
     let q = AppQuery::new(kind, send);
     app.send(q).await?;
-    let resp = recv.await??;
+    let resp: AppResponse = recv.await??;
     let resp = resp.try_into()?;
     Ok(resp)
 }

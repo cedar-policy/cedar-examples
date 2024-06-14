@@ -41,6 +41,10 @@ impl EntityStore {
         self.lists.values()
     }
 
+    pub fn get_teams(&self) -> impl Iterator<Item = &Team> {
+        self.teams.values()
+    }
+
     pub fn euids(&self) -> impl Iterator<Item = &EntityUid> {
         self.users
             .keys()
@@ -86,6 +90,26 @@ impl EntityStore {
 
     pub fn insert_list(&mut self, e: List) {
         self.lists.insert(e.uid().clone().into(), e);
+    }
+
+    pub fn add_admin(&mut self, e: TeamUid, c: UserUid) -> Result<(), Error> {
+        match self.teams.get_mut(&e.clone().into()) {
+            Some(t) => {
+                t.add_admin(c);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(e)),
+        }
+    }
+
+    pub fn remove_admin(&mut self, e: TeamUid, c: UserUid) -> Result<(), Error> {
+        match self.teams.get_mut(&e.clone().into()) {
+            Some(t) => {
+                t.remove_admin(c);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(e)),
+        }
     }
 
     pub fn delete_entity(&mut self, e: impl AsRef<EntityUid>) -> Result<(), Error> {
@@ -154,6 +178,36 @@ impl EntityStore {
         self.lists
             .get_mut(euid.as_ref())
             .ok_or_else(|| Error::no_such_entity(euid.clone()))
+    }
+
+    pub fn add_user_to_team(&mut self, candidate: UserUid, team: TeamUid) -> Result<(), Error> {
+        // TODO: `get_team` and `get_mut` should trivially succeed after
+        // successful authorization
+        let _ = self.get_team(&team)?;
+        match self.users.get_mut(&candidate.clone().into()) {
+            Some(user) => {
+                user.insert_parent(team);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(candidate)),
+        }
+    }
+
+    pub fn remove_user_from_team(
+        &mut self,
+        candidate: UserUid,
+        team: TeamUid,
+    ) -> Result<(), Error> {
+        // TODO: `get_team` and `get_mut` should trivially succeed after
+        // successful authorization
+        let _ = self.get_team(&team)?;
+        match self.users.get_mut(&candidate.clone().into()) {
+            Some(user) => {
+                user.delete_parent(&team);
+                Ok(())
+            }
+            None => Err(Error::no_such_entity(candidate)),
+        }
     }
 }
 
