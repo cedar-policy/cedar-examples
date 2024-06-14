@@ -1,0 +1,154 @@
+[
+    {
+        "uid": {
+            "type": "User",
+            "id": "Alice"
+        },
+        "attrs": {
+            "viewPermissions": {
+                "hotelReservations": [
+                    {"type": "Hotel", "id": "G" }
+                ],
+                "propertyReservations": []
+            },
+            "memberPermissions": {
+                "hotelReservations": [],
+                "propertyReservations": [
+                    {"type": "Property", "id": "Green" }
+                ]
+            },
+            "hotelAdminPermissions": [],
+            "propertyAdminPermissions": []
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "Bob"
+        },
+        "attrs": {
+            "viewPermissions": {
+                "hotelReservations": [],
+                "propertyReservations": []
+            },
+            "memberPermissions": {
+                "hotelReservations": [],
+                "propertyReservations": []
+            },
+            "hotelAdminPermissions": [
+                {"type": "Hotel", "id": "R" }
+            ],
+            "propertyAdminPermissions": [
+                {"type": "Property", "id": "Green" }
+            ]
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Hotel",
+            "id": "R"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Hotel",
+            "id": "G"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Property",
+            "id": "Red"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Hotel",
+                "id": "R"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Property",
+            "id": "Green"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Property",
+            "id": "Gray"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Reservation",
+            "id": "Green-Res1"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Property",
+                "id": "Green"
+            },
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Reservation",
+            "id": "Gray-Res1"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Property",
+                "id": "Gray"
+            },
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Reservation",
+            "id": "Red-Res1"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Property",
+                "id": "Red"
+            },
+            {
+                "type": "Hotel",
+                "id": "R"
+            }
+        ]
+    }
+]

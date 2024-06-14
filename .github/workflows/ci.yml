@@ -57,7 +57,7 @@ jobs:
     uses: ./.github/workflows/run_example_use_cases_reusable.yml
     with:
       cedar_policy_ref: "refs/heads/main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
+      cedar_examples_ref: "${{ github.href }}" # use the current PR's commit
 
   build_rust_hello_world:
     name: rust_hello_world
@@ -65,7 +65,7 @@ jobs:
     uses: ./.github/workflows/build_rust_hello_world_reusable.yml
     with:
       cedar_policy_ref: "refs/heads/main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
+      cedar_examples_ref: "${{ github.href }}" # use the current PR's commit
 
   build_tiny_todo:
     name: tinytodo
@@ -73,7 +73,7 @@ jobs:
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
     with:
       cedar_policy_ref: "refs/heads/main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.head_ref }}" # use the current PR's commit
+      cedar_examples_ref: "${{ github.href }}" # use the current PR's commit
 
   build_and_run_oopsla_benchmarks:
     name: OOPSLA2024 benchmarks

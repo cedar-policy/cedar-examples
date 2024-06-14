@@ -14,9 +14,11 @@ You need Python3 and Rust. Rust can be installed via [rustup](https://rustup.rs)
 
 This example expects that the [`cedar`](https://github.com/cedar-policy/cedar) repository is cloned into the toplevel (`../cedar-examples`) directory. You can instruct Cargo to use your local version of `cedar-policy` by adding `path = "../cedar/cedar-policy"` to Cargo.toml.
 
-Install the needed python packages, and build the server as follows.
+Install the needed python packages in a virtual environment, and build the server as follows.
 
 ```shell
+python3 -m venv ./venv
+source ./venv/bin/activate
 pip3 install -r requirements.txt
 cargo build --release
 ```
