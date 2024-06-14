@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"Alice\"",
+    "action": "Action::\"viewReservation\"",
+    "resource": "Reservation::\"Gray-Res1\"",
+    "context": {}
+}

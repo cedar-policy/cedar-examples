@@ -1,0 +1,10 @@
+[
+    {
+        "template_id": "adhoc-access",
+        "link_id": "AliceView",
+        "args": {
+            "?principal": "Taxpreparer::Professional::\"Alice\"",
+            "?resource": "Taxpreparer::Document::\"DEF\""
+        }
+    }
+]

@@ -1,0 +1,42 @@
+[
+    {
+        "uid": { "type": "User", "id": "Alice"},
+        "attrs": {
+            "job": { "type": "Job", "id": "internal" },
+            "customerId": "1AYZ"
+        },
+        "parents": [{"type": "Market", "id": "YoungAdult"}]
+    },
+    {
+        "uid": { "type": "Market", "id": "YoungAdult" },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": { "type": "User", "id": "Bob"} ,
+        "attrs": {
+            "job": { "type": "Job", "id": "customer" },
+            "customerId": "1AYZ"
+        },
+        "parents": [{"type": "Market", "id": "YoungAdult"}]
+    },
+    {
+        "uid": { "type": "User", "id": "Charlie"} ,
+        "attrs": {
+            "job": { "type": "Job", "id": "distributor" },
+            "customerId": "1AYZ"
+        },
+        "parents": []
+    },
+    {
+        "uid": { "type": "Presentation", "id": "proposal"},
+        "attrs": {
+            "owner": { "type": "User", "id": "Alice" },
+            "viewers": [ 
+                { "type": "User", "id": "Bob" }
+            ],
+            "editors": []
+        },
+        "parents": []
+    }
+]

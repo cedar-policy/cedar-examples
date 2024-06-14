@@ -1,0 +1,18 @@
+[
+    {
+        "template_id": "external-prez-view",
+        "link_id": "BobView",
+        "args": {
+            "?principal": "User::\"Bob\"",
+            "?resource": "Presentation::\"proposal\""
+        }
+    },
+    {
+        "template_id": "internal-prez-view",
+        "link_id": "BobViewInternal",
+        "args": {
+            "?principal": "User::\"Bob\"",
+            "?resource": "Presentation::\"proposal\""
+        }
+    }
+]

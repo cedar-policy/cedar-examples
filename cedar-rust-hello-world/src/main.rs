@@ -357,7 +357,7 @@ fn print_response(ans: Response) {
 /// This uses the waterford API to call the authorization engine.
 fn execute_query(request: &Request, policies: &PolicySet, entities: Entities) -> Response {
     let authorizer = Authorizer::new();
-    authorizer.is_authorized(request, &policies, &entities)
+    authorizer.is_authorized(request, policies, &entities)
 }
 
 fn validate() {
@@ -374,52 +374,22 @@ fn validate() {
 
     };
 "#;
-    let sc = r#"
-    {
-        "": {
-            "entityTypes": {
-                "User": {
-                    "shape": {
-                        "type": "Record",
-                        "attributes": {
-                            "age": {
-                                "type": "Long"
-                            }
-                        }
-                    },
-                    "memberOfTypes": [
-                        "UserGroup"
-                    ]
-                },
-
-                "UserGroup": {
-                    "memberOfTypes": []
-                },
-
-                "Album": {
-                    "memberOfTypes": [
-                        "Album"
-                    ]
-                }
-            },
-            "actions": {
-                "view": {
-                    "appliesTo": {
-                        "resourceTypes": [
-                            "Album"
-                        ],
-                        "principalTypes": [
-                            "User"
-                        ]
-                    }
-                }
-            }
-        }
-    }
-        "#;
-
     let p = PolicySet::from_str(src).unwrap();
-    let schema = Schema::from_str(sc).unwrap();
+
+    let schema_text = r#"
+entity UserGroup;
+entity User in [UserGroup] = {
+  "age": Long
+};
+entity Album;
+action view appliesTo {
+  principal: [User],
+  resource: [Album]
+};
+    "#;
+    // the schema can be parsed in rust:
+    let (schema, warnings) = Schema::from_str_natural(schema_text).unwrap();
+    assert_eq!(warnings.count(), 0);
     let validator = Validator::new(schema);
 
     let result = Validator::validate(&validator, &p, ValidationMode::default());
@@ -453,7 +423,7 @@ fn annotate() {
     let ans = execute_query(&request, &policies, Entities::empty());
     for reason in ans.diagnostics().reason() {
         //print all the annotations
-        for (key, value) in policies.policy(&reason).unwrap().annotations() {
+        for (key, value) in policies.policy(reason).unwrap().annotations() {
             println!("PolicyID: {}\tKey:{} \tValue:{}", reason, key, value);
         }
     }

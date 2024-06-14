@@ -1,0 +1,124 @@
+[
+    {
+        "uid": {
+            "type": "User",
+            "id": "Alice"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "Bob"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Hotel",
+            "id": "R"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Hotel",
+            "id": "G"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Property",
+            "id": "Red"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Hotel",
+                "id": "R"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Property",
+            "id": "Green"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Property",
+            "id": "Gray"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Reservation",
+            "id": "Green-Res1"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Property",
+                "id": "Green"
+            },
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Reservation",
+            "id": "Gray-Res1"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Property",
+                "id": "Gray"
+            },
+            {
+                "type": "Hotel",
+                "id": "G"
+            }
+        ]
+    },
+    {
+        "uid": {
+            "type": "Reservation",
+            "id": "Red-Res1"
+        },
+        "attrs": {},
+        "parents": [
+            {
+                "type": "Property",
+                "id": "Red"
+            },
+            {
+                "type": "Hotel",
+                "id": "R"
+            }
+        ]
+    }
+]

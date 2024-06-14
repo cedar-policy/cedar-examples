@@ -1,0 +1,16 @@
+{
+    "principal": "Taxpreparer::Professional::\"Alice\"",
+    "action": "Taxpreparer::Action::\"viewDocument\"",
+    "resource": "Taxpreparer::Document::\"ABC\"",
+    "context": {
+        "consent": {
+            "client": { 
+                "__entity": {
+                    "type": "Taxpreparer::Client",
+                    "id": "Ramon"
+                }
+            },
+            "team_region_list": [ "IAD", "JFK" ]
+        }
+    }
+}

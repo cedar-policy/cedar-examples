@@ -1,0 +1,76 @@
+[
+    {
+        "uid": {
+            "type": "Taxpreparer::Professional",
+            "id": "Alice"
+        },
+        "attrs": {
+            "location": "IAD",
+            "assigned_orgs": [
+                {
+                    "organization": "org-1",
+                    "serviceline": "corporate",
+                    "location": "IAD"
+                }
+            ]
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Taxpreparer::Professional",
+            "id": "Bob"
+        },
+        "attrs": {
+            "location": "JFK",
+            "assigned_orgs": [
+                {
+                    "organization": "org-1",
+                    "serviceline": "corporate",
+                    "location": "JFK"
+                }
+            ]
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Taxpreparer::Client",
+            "id": "Ramon"
+        },
+        "attrs": {
+            "organization": "org-1"
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Taxpreparer::Document",
+            "id": "ABC"
+        },
+        "attrs": {
+            "serviceline": "corporate",
+            "location": "IAD",
+            "owner": {
+                "type": "Taxpreparer::Client",
+                "id": "Ramon"
+            }
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Taxpreparer::Document",
+            "id": "DEF"
+        },
+        "attrs": {
+            "serviceline": "corporate",
+            "location": "JFK",
+            "owner": {
+                "type": "Taxpreparer::Client",
+                "id": "Ramon"
+            }
+        },
+        "parents": []
+    }
+]

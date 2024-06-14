@@ -1,0 +1,6 @@
+{
+    "principal":"User::\"Charlie\"",
+    "action":"Action::\"viewPresentation\"",
+    "resource":"Presentation::\"proposal\"",
+    "context":{ }
+}

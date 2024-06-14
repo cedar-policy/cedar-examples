@@ -20,9 +20,9 @@ use std::{collections::HashMap, path::PathBuf, str::FromStr};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    schema_error::SchemaError, Authorizer, Context, Decision, Diagnostics, Entities, EntityId,
-    HumanSchemaError, ParseErrors, PartialResponse, PolicySet, PolicySetError, Request,
-    RequestBuilder, RestrictedExpression, Schema, ValidationMode, Validator,
+    Authorizer, Context, Decision, Diagnostics, Entities, EntityId, HumanSchemaError, ParseErrors,
+    PartialResponse, PolicySet, PolicySetError, Request, RequestBuilder, RestrictedExpression,
+    Schema, SchemaError, ValidationMode, Validator,
 };
 
 use thiserror::Error;
@@ -589,10 +589,6 @@ impl AppContext {
         ))
     }
 
-    fn make_dummy_request(&self) -> Request {
-        Request::new(None, None, None, Context::empty(), None).expect("should be a valid request")
-    }
-
     fn reauthorize_with_concrete_resource(
         &self,
         partial_response: &PartialResponse,
@@ -607,7 +603,6 @@ impl AppContext {
                     )
                 ),
                 &self.authorizer,
-                self.make_dummy_request(),
                 &entities),
             Ok(r) if !matches!(r.decision(), Some(Decision::Deny)))
     }
