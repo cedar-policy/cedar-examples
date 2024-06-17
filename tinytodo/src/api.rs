@@ -23,15 +23,15 @@ use warp::Filter;
 use crate::{
     context::{AppQuery, AppQueryKind, AppResponse, Error},
     objects::{List, TaskState},
-    util::{EntityUid, ListUid, UserOrTeamUid, UserUid},
+    util::{EntityUid, UserOrTeamUid},
 };
 
 type AppChannel = mpsc::Sender<AppQuery>;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetList {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
 }
 
 impl From<GetList> for AppQueryKind {
@@ -42,7 +42,7 @@ impl From<GetList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateList {
-    pub uid: UserUid,
+    pub uid: String,
     pub name: String,
 }
 
@@ -54,8 +54,8 @@ impl From<CreateList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateList {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
     pub name: String,
 }
 
@@ -67,8 +67,8 @@ impl From<UpdateList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AddShare {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
     pub share_with: UserOrTeamUid,
     pub role: ShareRole,
 }
@@ -87,8 +87,8 @@ pub enum ShareRole {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeleteShare {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
     pub unshare_with: UserOrTeamUid,
     pub role: ShareRole,
 }
@@ -101,8 +101,8 @@ impl From<DeleteShare> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeleteList {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
 }
 
 impl From<DeleteList> for AppQueryKind {
@@ -113,7 +113,7 @@ impl From<DeleteList> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct GetLists {
-    pub uid: UserUid,
+    pub uid: String,
 }
 
 impl From<GetLists> for AppQueryKind {
@@ -124,8 +124,8 @@ impl From<GetLists> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct UpdateTask {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
     pub task: i64,
     pub name: Option<String>,
     pub state: Option<TaskState>,
@@ -139,8 +139,8 @@ impl From<UpdateTask> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CreateTask {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
     pub name: String,
 }
 
@@ -152,8 +152,8 @@ impl From<CreateTask> for AppQueryKind {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeleteTask {
-    pub uid: UserUid,
-    pub list: ListUid,
+    pub uid: String,
+    pub list: String,
     pub task: i64,
 }
 

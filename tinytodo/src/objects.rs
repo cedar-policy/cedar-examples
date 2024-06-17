@@ -22,11 +22,11 @@ use serde::{Deserialize, Serialize};
 use crate::{
     context::APPLICATION_TINY_TODO,
     entitystore::{EntityDecodeError, EntityStore},
-    util::{EntityUid, ListUid, TeamUid, UserUid},
+    util::{make_list_euid, make_team_euid, make_user_euid, EntityUid, UserOrTeamUid},
 };
 
 #[cfg(not(feature = "use-templates"))]
-use crate::{api::ShareRole, util::TYPE_TEAM};
+use crate::api::ShareRole;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Application {
@@ -54,27 +54,27 @@ impl From<Application> for Entity {
 }
 
 pub trait UserOrTeam {
-    fn insert_parent(&mut self, parent: TeamUid);
-    fn delete_parent(&mut self, parent: &TeamUid);
+    fn insert_parent(&mut self, parent: &UserOrTeamUid);
+    fn delete_parent(&mut self, parent: &UserOrTeamUid);
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
-    euid: UserUid,
+    eid: String,
     joblevel: i64,
     location: String,
     parents: HashSet<EntityUid>,
 }
 
 impl User {
-    pub fn uid(&self) -> &UserUid {
-        &self.euid
+    pub fn eid(&self) -> String {
+        self.eid.to_owned()
     }
 
-    pub fn new(euid: UserUid, joblevel: i64, location: String) -> Self {
+    pub fn new(eid: &str, joblevel: i64, location: String) -> Self {
         let parent = Application::default().euid().clone();
         Self {
-            euid,
+            eid: eid.to_owned(),
             joblevel,
             location,
             parents: [parent].into_iter().collect(),
@@ -92,7 +92,7 @@ impl From<User> for Entity {
         .map(|(x, v)| (x.into(), v))
         .collect();
 
-        let euid: EntityUid = value.euid.into();
+        let euid: EntityUid = make_user_euid(&value.eid);
         Entity::new(
             euid.into(),
             attrs,
@@ -103,38 +103,38 @@ impl From<User> for Entity {
 }
 
 impl UserOrTeam for User {
-    fn insert_parent(&mut self, parent: TeamUid) {
-        self.parents.insert(parent.into());
+    fn insert_parent(&mut self, parent: &UserOrTeamUid) {
+        self.parents.insert(parent.as_ref().clone());
     }
 
-    fn delete_parent(&mut self, parent: &TeamUid) {
+    fn delete_parent(&mut self, parent: &UserOrTeamUid) {
         self.parents.remove(parent.as_ref());
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Team {
-    uid: TeamUid,
+    eid: String,
     parents: HashSet<EntityUid>,
 }
 
 impl Team {
-    pub fn new(euid: TeamUid) -> Team {
+    pub fn new(eid: &str) -> Team {
         let parent = Application::default().euid().clone();
         Self {
-            uid: euid,
+            eid: eid.to_owned(),
             parents: [parent].into_iter().collect(),
         }
     }
 
-    pub fn uid(&self) -> &TeamUid {
-        &self.uid
+    pub fn eid(&self) -> String {
+        self.eid.to_owned()
     }
 }
 
 impl From<Team> for Entity {
     fn from(team: Team) -> Entity {
-        let euid: EntityUid = team.uid.into();
+        let euid: EntityUid = make_team_euid(&team.eid);
         Entity::new_no_attrs(
             euid.into(),
             team.parents.into_iter().map(|euid| euid.into()).collect(),
@@ -143,45 +143,45 @@ impl From<Team> for Entity {
 }
 
 impl UserOrTeam for Team {
-    fn insert_parent(&mut self, parent: TeamUid) {
-        self.parents.insert(parent.into());
+    fn insert_parent(&mut self, parent: &UserOrTeamUid) {
+        self.parents.insert(parent.as_ref().clone());
     }
 
-    fn delete_parent(&mut self, parent: &TeamUid) {
+    fn delete_parent(&mut self, parent: &UserOrTeamUid) {
         self.parents.remove(parent.as_ref());
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct List {
-    uid: ListUid,
-    owner: UserUid,
+    eid: String,
+    owner: String,
     name: String,
     tasks: Vec<Task>, // Invariant, `tasks` must be sorted
     #[cfg(not(feature = "use-templates"))]
-    readers: TeamUid,
+    readers: String,
     #[cfg(not(feature = "use-templates"))]
-    editors: TeamUid,
+    editors: String,
 }
 
 impl List {
     #![allow(unused_variables)]
-    pub fn new(store: &mut EntityStore, uid: ListUid, owner: UserUid, name: String) -> Self {
+    pub fn new(store: &mut EntityStore, eid: &str, owner: &str, name: String) -> Self {
         #[cfg(not(feature = "use-templates"))]
         {
-            let readers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-            let readers = Team::new(readers_uid.clone());
-            let writers_uid = store.fresh_euid::<TeamUid>(TYPE_TEAM.clone()).unwrap();
-            let writers = Team::new(writers_uid.clone());
+            let readers_eid = store.fresh_eid();
+            let readers = Team::new(&readers_eid);
+            let writers_eid = store.fresh_eid();
+            let writers = Team::new(&writers_eid);
             store.insert_team(readers);
             store.insert_team(writers);
             Self {
-                uid,
-                owner,
+                eid: eid.to_owned(),
+                owner: owner.to_owned(),
                 name,
                 tasks: vec![],
-                readers: readers_uid,
-                editors: writers_uid,
+                readers: readers_eid,
+                editors: writers_eid,
             }
         }
         #[cfg(feature = "use-templates")]
@@ -193,8 +193,8 @@ impl List {
         }
     }
 
-    pub fn uid(&self) -> &ListUid {
-        &self.uid
+    pub fn eid(&self) -> String {
+        self.eid.clone()
     }
 
     pub fn create_task(&mut self, description: String) -> i64 {
@@ -223,10 +223,10 @@ impl List {
     }
 
     #[cfg(not(feature = "use-templates"))]
-    pub fn get_team(&self, role: ShareRole) -> &TeamUid {
+    pub fn get_team(&self, role: ShareRole) -> String {
         match role {
-            ShareRole::Reader => &self.readers,
-            ShareRole::Editor => &self.editors,
+            ShareRole::Reader => self.readers.to_owned(),
+            ShareRole::Editor => self.editors.to_owned(),
         }
     }
 }
@@ -236,7 +236,7 @@ impl From<List> for Entity {
         let attrs = [
             (
                 "owner",
-                format!("{}", value.owner.as_ref()).parse().unwrap(),
+                format!("{}", make_user_euid(&value.owner)).parse().unwrap(),
             ),
             ("name", RestrictedExpression::new_string(value.name)),
             (
@@ -246,12 +246,16 @@ impl From<List> for Entity {
             #[cfg(not(feature = "use-templates"))]
             (
                 "readers",
-                format!("{}", value.readers.as_ref()).parse().unwrap(),
+                format!("{}", make_team_euid(&value.readers))
+                    .parse()
+                    .unwrap(),
             ),
             #[cfg(not(feature = "use-templates"))]
             (
                 "editors",
-                format!("{}", value.editors.as_ref()).parse().unwrap(),
+                format!("{}", make_team_euid(&value.editors))
+                    .parse()
+                    .unwrap(),
             ),
         ]
         .into_iter()
@@ -263,7 +267,7 @@ impl From<List> for Entity {
             .into_iter()
             .collect::<HashSet<_>>();
 
-        let euid: EntityUid = value.uid.into();
+        let euid: EntityUid = make_list_euid(&value.eid);
         Entity::new(euid.into(), attrs, parents).unwrap()
     }
 }

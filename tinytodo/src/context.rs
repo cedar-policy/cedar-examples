@@ -39,7 +39,7 @@ use crate::{
     entitystore::{EntityDecodeError, EntityStore},
     objects::List,
     policy_store,
-    util::{EntityUid, ListUid, TYPE_LIST},
+    util::{make_list_euid, make_team_euid, make_user_euid, EntityUid},
 };
 
 #[cfg(feature = "use-templates")]
@@ -422,7 +422,11 @@ impl AppContext {
     }
 
     fn add_share(&mut self, r: AddShare) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_EDIT_SHARE,
+            &make_list_euid(&r.list),
+        )?;
         #[cfg(feature = "use-templates")]
         {
             // Confirm that the identified list and sharer are known
@@ -450,15 +454,19 @@ impl AppContext {
         #[cfg(not(feature = "use-templates"))]
         {
             let list = self.entities.get_list(&r.list)?;
-            let team_uid = list.get_team(r.role).clone();
+            let team_uid = make_team_euid(&list.get_team(r.role));
             let target_entity = self.entities.get_user_or_team_mut(&r.share_with)?;
-            target_entity.insert_parent(team_uid);
+            target_entity.insert_parent(&team_uid.try_into().unwrap());
         }
         Ok(AppResponse::Unit(()))
     }
 
     fn delete_share(&mut self, r: DeleteShare) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_EDIT_SHARE, &r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_EDIT_SHARE,
+            &make_list_euid(&r.list),
+        )?;
         #[cfg(feature = "use-templates")]
         {
             // Confirm that the identified list and un-sharer are known
@@ -472,19 +480,23 @@ impl AppContext {
         #[cfg(not(feature = "use-templates"))]
         {
             let list = self.entities.get_list(&r.list)?;
-            let team_uid = list.get_team(r.role).clone();
+            let team_uid = make_team_euid(&list.get_team(r.role));
             let target_entity = self.entities.get_user_or_team_mut(&r.unshare_with)?;
-            target_entity.delete_parent(&team_uid);
+            target_entity.delete_parent(&team_uid.try_into().unwrap());
         }
         Ok(AppResponse::Unit(()))
     }
 
     fn update_task(&mut self, r: UpdateTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_UPDATE_TASK, &r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_UPDATE_TASK,
+            &make_list_euid(&r.list),
+        )?;
         let list = self.entities.get_list_mut(&r.list)?;
         let task = list
             .get_task_mut(r.task)
-            .ok_or_else(|| Error::InvalidTaskId(r.list.into(), r.task))?;
+            .ok_or_else(|| Error::InvalidTaskId(make_list_euid(&r.list), r.task))?;
         if let Some(state) = r.state {
             task.set_state(state);
         }
@@ -495,28 +507,38 @@ impl AppContext {
     }
 
     fn create_task(&mut self, r: CreateTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_CREATE_TASK, &r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_CREATE_TASK,
+            &make_list_euid(&r.list),
+        )?;
         let list = self.entities.get_list_mut(&r.list)?;
         let task_id = list.create_task(r.name);
         Ok(AppResponse::TaskId(task_id))
     }
 
     fn delete_task(&mut self, r: DeleteTask) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_DELETE_TASK, &r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_DELETE_TASK,
+            &make_list_euid(&r.list),
+        )?;
         let list = self.entities.get_list_mut(&r.list)?;
         list.delete_task(r.task)
-            .ok_or_else(|| Error::InvalidTaskId(r.list.into(), r.task))?;
+            .ok_or_else(|| Error::InvalidTaskId(make_list_euid(&r.list), r.task))?;
         Ok(AppResponse::Unit(()))
     }
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_GET_LISTS, &*APPLICATION_TINY_TODO)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_GET_LISTS,
+            &*APPLICATION_TINY_TODO,
+        )?;
         let entities: Entities = self.entities.as_entities(&self.schema);
         let partial_request = RequestBuilder::default()
             .action(Some(ACTION_GET_LIST.as_ref().clone().into()))
-            .principal(Some(cedar_policy::EntityUid::from(EntityUid::from(
-                r.uid.clone(),
-            ))))
+            .principal(Some(cedar_policy::EntityUid::from(make_user_euid(&r.uid))))
             .build();
         let partial_response =
             self.authorizer
@@ -530,7 +552,7 @@ impl AppContext {
                     partial_response.reauthorize(
                         HashMap::from_iter(
                             std::iter::once(
-                                ("resource".into(), RestrictedExpression::new_entity_uid(EntityUid::from(t.uid().clone()).into()))
+                                ("resource".into(), RestrictedExpression::new_entity_uid(EntityUid::from(make_list_euid(&t.eid())).into()))
                             )
                         ),
                         &self.authorizer,
@@ -542,34 +564,47 @@ impl AppContext {
     }
 
     fn create_list(&mut self, r: CreateList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_CREATE_LIST, &*APPLICATION_TINY_TODO)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_CREATE_LIST,
+            &*APPLICATION_TINY_TODO,
+        )?;
 
-        let euid = self
-            .entities
-            .fresh_euid::<ListUid>(TYPE_LIST.clone())
-            .unwrap();
-        let l = List::new(&mut self.entities, euid.clone(), r.uid, r.name);
+        let euid = self.entities.fresh_eid();
+        let l = List::new(&mut self.entities, &euid, &r.uid, r.name);
         self.entities.insert_list(l);
 
-        Ok(AppResponse::euid(euid))
+        Ok(AppResponse::euid(make_list_euid(&euid)))
     }
 
     fn get_list(&self, r: GetList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_GET_LIST, &r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_GET_LIST,
+            &make_list_euid(&r.list),
+        )?;
         let list = self.entities.get_list(&r.list)?.clone();
         Ok(AppResponse::GetList(Box::new(list)))
     }
 
     fn update_list(&mut self, r: UpdateList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_UPDATE_LIST, &r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_UPDATE_LIST,
+            &make_list_euid(&r.list),
+        )?;
         let list = self.entities.get_list_mut(&r.list)?;
         list.update_name(r.name);
         Ok(AppResponse::Unit(()))
     }
 
     fn delete_list(&mut self, r: DeleteList) -> Result<AppResponse> {
-        self.is_authorized(&r.uid, &*ACTION_DELETE_LIST, &r.list)?;
-        self.entities.delete_entity(&r.list)?;
+        self.is_authorized(
+            &make_user_euid(&r.uid),
+            &*ACTION_DELETE_LIST,
+            &make_list_euid(&r.list),
+        )?;
+        self.entities.delete_list(&r.list)?;
         Ok(AppResponse::Unit(()))
     }
 

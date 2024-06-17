@@ -16,7 +16,7 @@
 
 use std::{ops::Deref, str::FromStr};
 
-use cedar_policy::{EntityTypeName, ParseErrors, RestrictedExpression};
+use cedar_policy::{EntityId, EntityTypeName, ParseErrors, RestrictedExpression};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -105,6 +105,18 @@ lazy_static! {
     pub static ref TYPE_TEAM: EntityTypeName = "Team".parse().unwrap();
 }
 
+pub(crate) fn make_user_euid(eid: &str) -> EntityUid {
+    cedar_policy::EntityUid::from_type_name_and_id(TYPE_USER.clone(), EntityId::new(eid)).into()
+}
+
+pub(crate) fn make_list_euid(eid: &str) -> EntityUid {
+    cedar_policy::EntityUid::from_type_name_and_id(TYPE_LIST.clone(), EntityId::new(eid)).into()
+}
+
+pub(crate) fn make_team_euid(eid: &str) -> EntityUid {
+    cedar_policy::EntityUid::from_type_name_and_id(TYPE_TEAM.clone(), EntityId::new(eid)).into()
+}
+
 // Here we defined a bunch of typed wrappers around `EntityUid`.
 // This lets us ensure that if we have a value of type `ListUid`,
 // we know we have `EntityUid` with type `List`.
@@ -187,65 +199,38 @@ impl AsRef<EntityUid> for UserUid {
 #[serde(try_from = "EntityUid")]
 #[serde(into = "EntityUid")]
 #[repr(transparent)]
-pub struct ListUid(EntityUid);
-
-impl TryFrom<EntityUid> for ListUid {
-    type Error = EntityTypeError;
-    fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
-        entity_type_check(&TYPE_LIST, got, Self)
-    }
-}
-
-impl From<ListUid> for EntityUid {
-    fn from(l: ListUid) -> Self {
-        l.0
-    }
-}
-
-impl AsRef<EntityUid> for ListUid {
-    fn as_ref(&self) -> &EntityUid {
-        &self.0
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-#[serde(try_from = "EntityUid")]
-#[serde(into = "EntityUid")]
-#[repr(transparent)]
 pub struct UserOrTeamUid(EntityUid);
 
 impl TryFrom<EntityUid> for UserOrTeamUid {
     type Error = EntityTypeError;
     fn try_from(got: EntityUid) -> Result<Self, Self::Error> {
-        let r: Result<UserUid, Self::Error> = got.clone().try_into();
-        if let Ok(user) = r {
-            Ok(user.into())
+        if let Ok(u) = entity_type_check(&TYPE_USER, got.clone(), Self) {
+            Ok(u)
+        } else if let Ok(t) = entity_type_check(&TYPE_TEAM, got.clone(), Self) {
+            Ok(t)
         } else {
-            let r: Result<TeamUid, Self::Error> = got.clone().try_into();
-            if let Ok(team) = r {
-                Ok(team.into())
-            } else {
-                Err(EntityTypeError::multiple(&TYPE_USER, vec![&TYPE_TEAM], got))
-            }
+            Err(EntityTypeError::multiple(&TYPE_USER, vec![&TYPE_TEAM], got))
         }
+    }
+}
+
+impl TryFrom<UserOrTeamUid> for UserUid {
+    type Error = EntityTypeError;
+    fn try_from(value: UserOrTeamUid) -> Result<Self, Self::Error> {
+        entity_type_check(&TYPE_USER, value.0, Self)
+    }
+}
+
+impl TryFrom<UserOrTeamUid> for TeamUid {
+    type Error = EntityTypeError;
+    fn try_from(value: UserOrTeamUid) -> Result<Self, Self::Error> {
+        entity_type_check(&TYPE_TEAM, value.0, Self)
     }
 }
 
 impl AsRef<EntityUid> for UserOrTeamUid {
     fn as_ref(&self) -> &EntityUid {
         &self.0
-    }
-}
-
-impl From<UserUid> for UserOrTeamUid {
-    fn from(value: UserUid) -> Self {
-        Self(value.0)
-    }
-}
-
-impl From<TeamUid> for UserOrTeamUid {
-    fn from(value: TeamUid) -> Self {
-        Self(value.0)
     }
 }
 

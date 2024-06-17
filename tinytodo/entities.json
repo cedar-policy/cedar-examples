@@ -1,7 +1,7 @@
 {
   "users": {
-    "User::\"kesha\"": {
-      "euid": "User::\"kesha\"",
+    "kesha": {
+      "eid": "kesha",
       "location": "ABC17",
       "joblevel": 5,
       "parents": [
@@ -9,8 +9,8 @@
         "Team::\"temp\""
       ]
     },
-    "User::\"aaron\"": {
-      "euid": "User::\"aaron\"",
+    "aaron": {
+      "eid": "aaron",
       "location": "ABC17",
       "joblevel": 5,
       "parents": [
@@ -18,8 +18,8 @@
         "Application::\"TinyTodo\""
       ]
     },
-    "User::\"emina\"": {
-      "euid": "User::\"emina\"",
+    "emina": {
+      "eid": "emina",
       "location": "DEF33",
       "joblevel": 8,
       "parents": [
@@ -27,8 +27,8 @@
         "Team::\"admin\""
       ]
     },
-    "User::\"andrew\"": {
-      "euid": "User::\"andrew\"",
+    "andrew": {
+      "eid": "andrew",
       "location": "XYZ77",
       "joblevel": 5,
       "parents": [
@@ -39,20 +39,20 @@
     }
   },
   "teams": {
-    "Team::\"temp\"": {
-      "uid": "Team::\"temp\"",
+    "temp": {
+      "eid": "temp",
       "parents": [
         "Application::\"TinyTodo\""
       ]
     },
-    "Team::\"admin\"": {
-      "uid": "Team::\"admin\"",
+    "admin": {
+      "eid": "admin",
       "parents": [
         "Application::\"TinyTodo\""
       ]
     },
-    "Team::\"interns\"": {
-      "uid": "Team::\"interns\"",
+    "interns": {
+      "eid": "interns",
       "parents": [
         "Application::\"TinyTodo\"",
         "Team::\"temp\""
