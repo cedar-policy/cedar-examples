@@ -16,12 +16,13 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, HumanSchemaError, ParseErrors, PolicySet,
-    PolicySetError, Request, Schema, SchemaError, ValidationMode, Validator,
+    Authorizer, Context, Decision, Diagnostics, Entities, HumanSchemaError, ParseErrors, PolicySet,
+    PolicySetError, Request, RequestBuilder, RestrictedExpression, Schema, SchemaError,
+    ValidationMode, Validator,
 };
 
 use thiserror::Error;
@@ -45,8 +46,6 @@ use crate::{
 use crate::{api::ShareRole, util::UserOrTeamUid};
 #[cfg(feature = "use-templates")]
 use cedar_policy::{PolicyId, SlotId};
-#[cfg(feature = "use-templates")]
-use std::collections::HashMap;
 
 // There's almost certainly a nicer way to do this than having separate `sender` fields
 
@@ -512,17 +511,33 @@ impl AppContext {
 
     fn get_lists(&self, r: GetLists) -> Result<AppResponse> {
         self.is_authorized(&r.uid, &*ACTION_GET_LISTS, &*APPLICATION_TINY_TODO)?;
+        let entities: Entities = self.entities.as_entities(&self.schema);
+        let partial_request = RequestBuilder::default()
+            .action(Some(ACTION_GET_LIST.as_ref().clone().into()))
+            .principal(Some(cedar_policy::EntityUid::from(EntityUid::from(
+                r.uid.clone(),
+            ))))
+            .build();
+        let partial_response =
+            self.authorizer
+                .is_authorized_partial(&partial_request, &self.policies, &entities);
+
+        let slice = self.entities.get_lists();
 
         Ok(AppResponse::Lists(
-            self.entities
-                .get_lists()
-                .filter(|t| {
-                    self.is_authorized(&r.uid, &*ACTION_GET_LIST, t.uid())
-                        .is_ok()
-                })
+                slice
+                .filter(|t| matches!(
+                    partial_response.reauthorize(
+                        HashMap::from_iter(
+                            std::iter::once(
+                                ("resource".into(), RestrictedExpression::new_entity_uid(EntityUid::from(t.uid().clone()).into()))
+                            )
+                        ),
+                        &self.authorizer,
+                        &entities),
+                    Ok(r) if matches!(r.decision(), Some(Decision::Allow))))
                 .cloned()
-                .collect::<Vec<List>>()
-                .into(),
+                .collect::<Vec<List>>(),
         ))
     }
 
