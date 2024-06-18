@@ -31,6 +31,9 @@ class Entity:
 
     def euid(self):
         return '%s::"%s"' % (self.type, self.name)
+    
+    def eid(self):
+        return self.name
 
 class User(Entity):
 
@@ -227,7 +230,7 @@ def is_authz_denied(body):
 
 @web_req("Get Lists")
 def get_lists(user):
-    req = server.get('/api/lists/get?uid=%s' % user.euid())
+    req = server.get('/api/lists/get?uid=%s' % user.eid())
     return req, get_lists_printer(user)
 
 def get_lists_printer(user):
@@ -242,7 +245,7 @@ def get_lists_printer(user):
 @web_req("Create List")
 def create_list(user, name):
     data = {
-            'uid' : user.euid(),
+            'uid' : user.eid(),
             'name' : name
             }
     f = lambda x: 'Created list ID %s' % List(x)
@@ -254,7 +257,7 @@ def get_list(user, list_id):
     return get_list_inner(user, l), display_list(l)
 
 def get_list_inner(user, lst):
-    return server.get('/api/list/get?uid=%s&list=%s' % (user.euid(), lst.euid()))
+    return server.get('/api/list/get?uid=%s&list=%s' % (user.eid(), lst.eid()))
 
 def get_list_data(user, lst):
     resp = get_list_inner(user, lst)
@@ -288,8 +291,8 @@ def display_task(index, task):
 def create_task(user, list_id, name):
     url = '/api/task/create'
     data = { 
-            'uid' : user.euid(),
-            'list' : List(list_id).euid(),
+            'uid' : user.eid(),
+            'list' : List(list_id).eid(),
             'name' : name
             }
     return server.post(url, data), lambda _ : 'Created task on list ID %d' % list_id
@@ -302,8 +305,8 @@ def toggle_task(user, list_id, task_id):
     task = find_task(user, lst, task_id)
     url = '/api/task/update'
     data = {
-            'uid' : user.euid(), 
-            'list' : lst.euid(), 
+            'uid' : user.eid(), 
+            'list' : lst.eid(), 
             'task' : task['id'],
             'state' : toggle_state(task['state'])
             }
@@ -325,8 +328,8 @@ def change_task_description(user, list_id, task_id, desc):
     task = find_task(user, lst, task_id)
     url = '/api/task/update'
     data = { 
-            'uid' : user.euid(), 
-            'list' : lst.euid(),
+            'uid' : user.eid(), 
+            'list' : lst.eid(),
             'task' : task['id'], 
             'name' : desc
             }
@@ -338,8 +341,8 @@ def delete_task(user, lst_id, task_id):
     task = find_task(user, lst, task_id)
     url = '/api/task/delete'
     data = {
-            'uid' : user.euid(),
-            'list' : lst.euid(), 
+            'uid' : user.eid(),
+            'list' : lst.eid(), 
             'task' : task['id'],
             }
     return server.delete(url, data), lambda _: 'Task Deleted'
@@ -348,8 +351,8 @@ def delete_task(user, lst_id, task_id):
 def delete_list(user, list_id):
     url = '/api/list/delete'
     data = {
-            'uid' : user.euid(),
-            'list' : List(list_id).euid(),
+            'uid' : user.eid(),
+            'list' : List(list_id).eid(),
             }
     return server.delete(url, data), lambda _: 'List Deleted'
 
@@ -359,8 +362,8 @@ def share_list(user, list_id, share_with, read_only = True):
     l = List(list_id)
     url = '/api/share'
     data = {
-            'uid' : user.euid(), 
-            'list' : l.euid(), 
+            'uid' : user.eid(), 
+            'list' : l.eid(), 
             'role' : 'Reader' if read_only else 'Editor',
             'share_with' : share_with.euid(),
             }
@@ -371,8 +374,8 @@ def unshare_list(user, list_id, unshare_with, read_only = True):
     l = List(list_id)
     url = '/api/share'
     data = {
-            'uid' : user.euid(), 
-            'list' : l.euid(), 
+            'uid' : user.eid(), 
+            'list' : l.eid(), 
             'role' : 'Reader' if read_only else 'Editor',
             'unshare_with' : unshare_with.euid(),
             }
