@@ -537,8 +537,8 @@ impl AppContext {
         )?;
         let entities: Entities = self.entities.as_entities(&self.schema);
         let partial_request = RequestBuilder::default()
-            .action(Some(ACTION_GET_LIST.as_ref().clone().into()))
-            .principal(Some(cedar_policy::EntityUid::from(make_user_euid(&r.uid))))
+            .action(ACTION_GET_LIST.as_ref().clone().into())
+            .principal(cedar_policy::EntityUid::from(make_user_euid(&r.uid)))
             .build();
         let partial_response =
             self.authorizer
@@ -617,9 +617,9 @@ impl AppContext {
     ) -> Result<()> {
         let es = self.entities.as_entities(&self.schema);
         let q = Request::new(
-            Some(principal.as_ref().clone().into()),
-            Some(action.as_ref().clone().into()),
-            Some(resource.as_ref().clone().into()),
+            principal.as_ref().clone().into(),
+            action.as_ref().clone().into(),
+            resource.as_ref().clone().into(),
             Context::empty(),
             Some(&self.schema),
         )
