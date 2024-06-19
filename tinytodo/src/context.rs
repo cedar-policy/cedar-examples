@@ -566,9 +566,9 @@ impl AppContext {
     ) -> Result<()> {
         let es = self.entities.as_entities(&self.schema);
         let q = Request::new(
-            Some(principal.as_ref().clone().into()),
-            Some(action.as_ref().clone().into()),
-            Some(resource.as_ref().clone().into()),
+            principal.as_ref().clone().into(),
+            action.as_ref().clone().into(),
+            resource.as_ref().clone().into(),
             Context::empty(),
             Some(&self.schema),
         )
