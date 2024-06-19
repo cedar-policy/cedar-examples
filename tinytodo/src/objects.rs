@@ -186,8 +186,8 @@ impl List {
         }
         #[cfg(feature = "use-templates")]
         Self {
-            uid,
-            owner,
+            eid: eid.to_owned(),
+            owner: owner.to_owned(),
             name,
             tasks: vec![],
         }
