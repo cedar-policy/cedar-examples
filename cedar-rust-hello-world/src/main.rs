@@ -101,7 +101,7 @@ fn json_context() {
 
     let (p, a, r) = create_p_a_r();
     // create a request
-    let request: Request = Request::new(Some(p), Some(a), Some(r), c, None).unwrap();
+    let request: Request = Request::new(p, a, r, c, None).unwrap();
 
     // create a policy
     let s = r#"permit(
@@ -145,7 +145,7 @@ fn entity_json() {
     );
     let c = Context::from_pairs(context2).expect("no duplicate keys!");
 
-    let request: Request = Request::new(Some(p), Some(a), Some(r), c, None).unwrap();
+    let request: Request = Request::new(p, a, r, c, None).unwrap();
 
     // create a policy
     let s = "
@@ -189,7 +189,7 @@ fn entity_objects() {
     );
 
     let c = Context::empty();
-    let request: Request = Request::new(Some(p), Some(a), Some(r), c, None).unwrap();
+    let request: Request = Request::new(p, a, r, c, None).unwrap();
 
     // create a policy
     let c1 = "permit(
@@ -419,7 +419,7 @@ fn annotate() {
 
     let policies = PolicySet::from_str(src).unwrap();
     let (p, a, r) = create_p_a_r();
-    let request: Request = Request::new(Some(p), Some(a), Some(r), Context::empty(), None).unwrap();
+    let request: Request = Request::new(p, a, r, Context::empty(), None).unwrap();
     let ans = execute_query(&request, &policies, Entities::empty());
     for reason in ans.diagnostics().reason() {
         //print all the annotations
