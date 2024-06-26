@@ -518,7 +518,7 @@ impl AppContext {
                 r.uid.clone(),
             )))
             .build();
-        let partial_response =
+        let mut partial_response =
             self.authorizer
                 .is_authorized_partial(&partial_request, &self.policies, &entities);
 
