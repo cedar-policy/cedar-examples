@@ -547,16 +547,19 @@ impl AppContext {
 
         Ok(AppResponse::Lists(
                 slice
-                .filter(|t| matches!(
-                    partial_response.reauthorize(
-                        HashMap::from_iter(
-                            std::iter::once(
-                                ("resource".into(), RestrictedExpression::new_entity_uid(EntityUid::from(make_list_euid(&t.eid())).into()))
-                            )
-                        ),
-                        &self.authorizer,
-                        &entities),
-                    Ok(r) if matches!(r.decision(), Some(Decision::Allow))))
+                .filter(|t| {
+                    let mut pr = partial_response.clone();
+                    matches!(
+                        pr.reauthorize(
+                            HashMap::from_iter(
+                                std::iter::once(
+                                    ("resource".into(), RestrictedExpression::new_entity_uid(EntityUid::from(t.uid().clone()).into()))
+                                )
+                            ),
+                            &self.authorizer,
+                            &entities),
+                        Ok(r) if matches!(r.decision(), Some(Decision::Allow)))}
+                )
                 .cloned()
                 .collect::<Vec<List>>(),
         ))

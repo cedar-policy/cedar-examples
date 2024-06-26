@@ -24,3 +24,6 @@ cedar-rust-hello-world/target/*
 tinytodo/Cargo.lock
 tinytodo/target/*
 tinytodo/venv
+
+# Don't commit node_modules in wasm example
+cedar-wasm-example/node_modules
