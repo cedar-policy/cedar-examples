@@ -235,7 +235,7 @@ def get_lists_printer(user):
         if len(list_of_lists) == 0:
             return 'No lists for %s' % user
         else:
-            return 'Lists: %s' % ','.join([lst['name'] for lst in sorted(list_of_lists, key=lambda l: int(parse_euid(l['uid'], 'List')))])
+            return 'Lists: %s' % ','.join([lst['name'] for lst in list_of_lists])
 
     return inner
 
