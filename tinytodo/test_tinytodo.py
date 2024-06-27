@@ -70,7 +70,7 @@ class TinyTodoTest(unittest.TestCase):
         self.assert_in_stdout("Created task", lambda : create_task(0, "bar"))
         self.assert_in_stdout("1: [ ] bar", lambda : get_list(0))
 
-def test_get_lists(self):
+    def test_get_lists(self):
         self.assert_in_stdout("Created list ID 0", lambda : create_list("foo"))
         self.assert_in_stdout("Created list ID", lambda : create_list("bar"))
         self.assert_in_stdout('Lists: foo,bar', lambda: get_lists())
