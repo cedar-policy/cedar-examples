@@ -38,7 +38,8 @@ jobs:
         run: ./build-wasm.sh
       - name: Replace npm version with Github version
         working-directory: ./cedar-wasm-example
-        run: sed -i "s/\"@cedar-policy\/cedar-wasm\": .*/\"@cedar-policy\/cedar-wasm\": \"file:..\/cedar\/cedar-wasm\/pkg\"/" package.json
+        run: |
+          sed -i "s/\"@cedar-policy\/cedar-wasm\": .*/\"@cedar-policy\/cedar-wasm\": \"file:..\/cedar\/cedar-wasm\/pkg\"/" package.json
       - name: npm i
         working-directory: ./cedar-wasm-example
         run: npm i
