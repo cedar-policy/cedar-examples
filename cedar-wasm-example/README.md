@@ -6,7 +6,7 @@ This repo runs tests against wasm code and exemplifies how to use many of the fe
 
 Simply install the packages with `npm i` and then run the tests with `npm t`:
 
-```bash
+```shell
 cd cedar-wasm-example
 npm i
 npm t

@@ -1,4 +1,4 @@
-name: Build and Test TinyTodo
+name: Build and test TinyTodo
 on:
     workflow_call:
       inputs:
@@ -11,14 +11,14 @@ on:
 
 jobs:
   build_and_test_tiny_todo:
-    name: Build and Test TinyTodo
+    name: Build and test TinyTodo
     runs-on: ubuntu-latest
     strategy:
       matrix:
         toolchain:
           - stable
     steps:
-      - name: Checkout Cedar Examples
+      - name: Checkout cedar-examples
         uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-examples

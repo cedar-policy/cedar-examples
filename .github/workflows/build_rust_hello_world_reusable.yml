@@ -1,4 +1,4 @@
-name: Build and Test RustHelloWorld
+name: Build and test Rust example
 on:
     workflow_call:
       inputs:
@@ -11,14 +11,14 @@ on:
 
 jobs:
   build_and_test_rust_hello_world:
-    name: rust-hello-world
+    name: Build and test Rust example
     runs-on: ubuntu-latest
     strategy:
       matrix:
         toolchain:
           - stable
     steps:
-      - name: Checkout Cedar Examples
+      - name: Checkout cedar-examples
         uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-examples
