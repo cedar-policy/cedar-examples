@@ -3,11 +3,10 @@ on:
     workflow_call:
       inputs:
         cedar_policy_ref:
-          required: false
+          required: true
           type: string
         cedar_examples_ref:
-          required: false
-          default: "main"
+          required: true
           type: string
 
 jobs:
@@ -20,7 +19,7 @@ jobs:
           - stable
     steps:
       - name: Checkout Cedar Examples
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}

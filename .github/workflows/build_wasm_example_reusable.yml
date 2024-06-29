@@ -1,0 +1,47 @@
+name: Build and Test Wasm Example
+on:
+    workflow_call:
+      inputs:
+        cedar_policy_ref:
+          required: true
+          type: string
+        cedar_examples_ref:
+          required: true
+          type: string
+
+jobs:
+  build_and_test_wasm_example:
+    name: wasm-example
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    steps:
+      - name: Checkout cedar-examples
+        uses: actions/checkout@v4
+        with:
+          repository: cedar-policy/cedar-examples
+          ref: ${{ inputs.cedar_examples_ref }}
+      - name: Checkout cedar
+        uses: actions/checkout@v4
+        with:
+          repository: cedar-policy/cedar
+          ref: ${{ inputs.cedar_policy_ref }}
+          path: ./cedar
+      - name: rustup
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
+      - name: Build Cedar Wasm
+        working-directory: ./cedar/cedar-wasm
+        run: ./build-wasm.sh
+      - name: Replace npm version with Github version
+        working-directory: ./cedar-wasm-example
+        run: sed -i "s/\"@cedar-policy\/cedar-wasm\": .*/\"@cedar-policy\/cedar-wasm\": \"file:..\/cedar\/cedar-wasm\/pkg\"/" package.json
+      - name: npm i
+        working-directory: ./cedar-wasm-example
+        run: npm i
+      - name: npm t
+        working-directory: ./cedar-wasm-example
+        run: npm t

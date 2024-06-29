@@ -20,12 +20,12 @@ jobs:
           - stable
     steps:
       - name: Checkout Cedar Examples
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
       - name: Checkout cedar-policy
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar
           ref: ${{ inputs.cedar_policy_ref }}

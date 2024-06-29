@@ -32,9 +32,9 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
       - name: Checkout cedar-examples
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout cedar-java
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-java
           ref: release/2.3.x # Java example currently only builds for 2.3.3
@@ -56,31 +56,39 @@ jobs:
     needs: get-branch-name
     uses: ./.github/workflows/run_example_use_cases_reusable.yml
     with:
-      cedar_policy_ref: "refs/heads/main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.href }}" # use the current PR's commit
+      cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
+      cedar_examples_ref: ${{ github.href }}
 
   build_rust_hello_world:
     name: rust_hello_world
     needs: get-branch-name
     uses: ./.github/workflows/build_rust_hello_world_reusable.yml
     with:
-      cedar_policy_ref: "refs/heads/main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.href }}" # use the current PR's commit
+      cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
+      cedar_examples_ref: ${{ github.href }}
+
+  build_wasm_example:
+    name: wasm_example
+    needs: get-branch-name
+    uses: ./.github/workflows/build_wasm_example_reusable.yml
+    with:
+      cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
+      cedar_examples_ref: ${{ github.href }}
 
   build_tiny_todo:
     name: tinytodo
     needs: get-branch-name
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
     with:
-      cedar_policy_ref: "refs/heads/main" # use the latest commit on main
-      cedar_examples_ref: "${{ github.href }}" # use the current PR's commit
+      cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
+      cedar_examples_ref: ${{ github.href }}
 
   build_and_run_oopsla_benchmarks:
     name: OOPSLA2024 benchmarks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout cedar-examples
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build Docker image
