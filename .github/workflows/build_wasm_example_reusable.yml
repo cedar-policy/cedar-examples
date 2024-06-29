@@ -31,8 +31,8 @@ jobs:
           path: ./cedar
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - name: Setup upterm session
-        uses: lhotari/action-upterm@v1
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
       - name: Build Cedar Wasm
         working-directory: ./cedar/cedar-wasm
         run: ./build-wasm.sh
