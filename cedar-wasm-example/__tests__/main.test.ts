@@ -17,7 +17,7 @@ describe('Authorizer tests', () => {
         if (authResult.type !== 'success') {
             throw new Error(`Expected success in evaluation, got ${JSON.stringify(authResult, null, 4)}`);
         }
-        expect(authResult.response.decision).toBe('deny');
+        expect(authResult.response.decision).toBe('Deny');
     });
     
     test('isAuthorized test without schema, should allow', () => {
@@ -36,7 +36,7 @@ describe('Authorizer tests', () => {
         if (authResult.type !== 'success') {
             throw new Error(`Expected success in evaluation, got ${JSON.stringify(authResult, null, 4)}`);
         }
-        expect(authResult.response.decision).toBe('allow');
+        expect(authResult.response.decision).toBe('Allow');
     });
 
     test('isAuthorized test with schema, should allow', () => {
@@ -94,7 +94,7 @@ describe('Authorizer tests', () => {
         if (authResult.type !== 'success') {
             throw new Error(`Expected success in evaluation, got ${JSON.stringify(authResult, null, 4)}`);
         }
-        expect(authResult.response.decision).toBe('allow');
+        expect(authResult.response.decision).toBe('Allow');
     });
 
     test('isAuthorized test with invalid schema, should error', () => {
@@ -390,11 +390,11 @@ describe('validator tests', () => {
             };
         `;
         const validationResult = cedar.validate({
-            validationSettings: { mode: "strict", enabled: true },
+            validationSettings: { enabled: 'on' },
             schema: {
                 json: SCHEMA,
             },
-            policies: policyText
+            policySet: policyText
         });
         if (validationResult.type !== 'success') {
             throw new Error(`Expected success in validation, got ${JSON.stringify(validationResult, null, 4)}`);
@@ -414,11 +414,11 @@ describe('validator tests', () => {
             };
         `;
         const validationResult = cedar.validate({
-            validationSettings: { mode: "strict", enabled: true },
+            validationSettings: { enabled: 'on' },
             schema: {
                 json: SCHEMA,
             },
-            policies: policyText
+            policySet: policyText
         });
         if (validationResult.type !== 'success') {
             throw new Error(`Expected success in validation, got ${JSON.stringify(validationResult, null, 4)}`);
