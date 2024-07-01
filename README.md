@@ -20,7 +20,7 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 
 This project is licensed under the Apache-2.0 License.
 
-[Cedar Rust APIs]: https://github.com/cedar-policy/cedar/tree/main/cedar-policy
+[Cedar Rust APIs]: https://docs.rs/cedar-policy/latest/cedar_policy
 [Cedar Java APIs]: https://github.com/cedar-policy/cedar-java
 [Cedar Wasm APIs]: https://github.com/cedar-policy/cedar/tree/main/cedar-wasm
 [`cedar-example-use-cases`]: ./cedar-example-use-cases
