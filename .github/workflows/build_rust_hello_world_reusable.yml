@@ -1,32 +1,29 @@
-name: Build and Test RustHelloWorld
+name: Build and test Rust example
 on:
     workflow_call:
       inputs:
         cedar_policy_ref:
-          required: false
+          required: true
           type: string
         cedar_examples_ref:
-          required: false
-          default: "main"
+          required: true
           type: string
 
 jobs:
   build_and_test_rust_hello_world:
-    name: rust-hello-world
+    name: Build and test Rust example
     runs-on: ubuntu-latest
     strategy:
       matrix:
         toolchain:
           - stable
     steps:
-      - name: Checkout Cedar Examples
-        uses: actions/checkout@v3
+      - name: Checkout cedar-examples
+        uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
-# If we passed a branch for cedar-policy, modify Cargo.toml to use that branch
-      - name: Replace Crates dot IO with Github version
-        if: "${{ inputs.cedar_policy_ref != '' }}"
+      - name: Replace crates.io version with Github version
         run: cd cedar-rust-hello-world && printf "\n[patch.crates-io]\ncedar-policy = { git = 'https://github.com/cedar-policy/cedar.git', rev = '${{ inputs.cedar_policy_ref }}'}" >> Cargo.toml
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
