@@ -1,4 +1,4 @@
-name: Cargo Build & Test
+name: Build & Test Examples
 
 on:
   pull_request:
@@ -19,29 +19,29 @@ jobs:
     outputs:
       branch_name: ${{ steps.get_branch_name.outputs.branch_name }}
 
-  build_and_test_java_hello_world:
-    name: java-hello-world
+  java-hello-world:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         toolchain:
           - stable
     steps:
-      - uses: actions/setup-java@v3
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'corretto'
           java-version: '17'
       - name: Checkout cedar-examples
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout cedar-java
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-java
           ref: release/2.3.x # Java example currently only builds for 2.3.3
           path: ./cedar-java-hello-world/cedar-java
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - name: cargo build CedarJavaFFI
+      - name: Build CedarJavaFFI
         working-directory: ./cedar-java-hello-world/cedar-java/CedarJavaFFI
         run: cargo build
       - name: Build cedar-java-hello-world
@@ -51,40 +51,44 @@ jobs:
         working-directory: ./cedar-java-hello-world
         run: ./gradlew test
 
-  run_example_use_cases:
-    name: run_example_use_cases
+  run-example-use-cases:
     needs: get-branch-name
     uses: ./.github/workflows/run_example_use_cases_reusable.yml
     with:
       cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
-      cedar_examples_ref: ${{ github.ref }}
+      cedar_examples_ref: ${{ github.href }}
 
-  build_rust_hello_world:
-    name: rust_hello_world
+  rust-hello-world:
     needs: get-branch-name
     uses: ./.github/workflows/build_rust_hello_world_reusable.yml
     with:
       cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
-      cedar_examples_ref: ${{ github.ref }}
+      cedar_examples_ref: ${{ github.href }}
 
-  build_tiny_todo:
-    name: tinytodo
+  wasm-example:
+    needs: get-branch-name
+    uses: ./.github/workflows/build_wasm_example_reusable.yml
+    with:
+      cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
+      cedar_examples_ref: ${{ github.href }}
+
+  tinytodo:
     needs: get-branch-name
     uses: ./.github/workflows/build_tiny_todo_reusable.yml
     with:
       cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
-      cedar_examples_ref: ${{ github.ref }}
+      cedar_examples_ref: ${{ github.href }}
 
   build_and_run_oopsla_benchmarks:
     name: OOPSLA2024 benchmarks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout cedar-examples
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Build Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           push: false
           context: oopsla2024-benchmarks

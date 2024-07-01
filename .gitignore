@@ -23,3 +23,6 @@ cedar-rust-hello-world/target/*
 # Don't check build files for tinytodo
 tinytodo/Cargo.lock
 tinytodo/target/*
+
+# Don't commit node_modules in wasm example
+cedar-wasm-example/node_modules
