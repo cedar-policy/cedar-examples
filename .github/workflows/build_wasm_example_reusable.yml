@@ -1,4 +1,4 @@
-name: Run example use cases
+name: Build and test Wasm example
 on:
     workflow_call:
       inputs:
@@ -10,8 +10,8 @@ on:
           type: string
 
 jobs:
-  run_example_use_cases:
-    name: Run example use cases
+  build_and_test_wasm_example:
+    name: Build and test Wasm example
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,7 +23,7 @@ jobs:
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
-      - name: Checkout cedar-policy
+      - name: Checkout cedar
         uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar
@@ -31,18 +31,18 @@ jobs:
           path: ./cedar
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - name: Build cli
-        working-directory: ./cedar
-        run: cargo build --bin cedar
-      - name: Run validation and authorization
-        working-directory: ./cedar-example-use-cases
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      - name: Build cedar-wasm
+        working-directory: ./cedar/cedar-wasm
+        run: ./build-wasm.sh
+      - name: Replace npm version with Github version
+        working-directory: ./cedar-wasm-example
         run: |
-             export PATH="$PWD/../cedar/target/debug/":$PATH
-             echo $PATH
-             ./run.sh
-      - name: Run validation and authorization for cedar-policy-language-in-action
-        working-directory: ./cedar-policy-language-in-action
-        run: |
-             export PATH="$PWD/../cedar/target/debug/":$PATH
-             echo $PATH
-             ./run.sh
+          sed -i "s/\"@cedar-policy\/cedar-wasm\": .*/\"@cedar-policy\/cedar-wasm\": \"file:..\/cedar\/cedar-wasm\/pkg\"/" package.json
+      - name: npm i
+        working-directory: ./cedar-wasm-example
+        run: npm i
+      - name: npm t
+        working-directory: ./cedar-wasm-example
+        run: npm t
