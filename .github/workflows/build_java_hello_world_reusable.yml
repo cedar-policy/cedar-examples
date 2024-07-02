@@ -2,7 +2,7 @@ name: Build and test Java example
 on:
   workflow_call:
     inputs:
-      cedar_policy_ref:
+      cedar_java_ref:
         required: true
         type: string
       cedar_examples_ref:
@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: cedar-policy/cedar-java
-          ref: ${{ inputs.cedar_policy_ref }}
+          ref: ${{ inputs.cedar_java_ref }}
           path: ./cedar-java-hello-world/cedar-java
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
