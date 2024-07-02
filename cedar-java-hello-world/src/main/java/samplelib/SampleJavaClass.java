@@ -25,7 +25,8 @@ import com.cedarpolicy.model.slice.BasicSlice;
 import com.cedarpolicy.model.slice.Policy;
 import com.cedarpolicy.model.slice.Entity;
 import com.cedarpolicy.model.exception.AuthException;
-import com.cedarpolicy.serializer.JsonEUID;
+import com.cedarpolicy.value.EntityTypeName;
+import com.cedarpolicy.value.EntityUID;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,14 +36,25 @@ import java.util.Set;
  */
 public class SampleJavaClass {
 
+    final EntityTypeName principalType, actionType, albumResourceType, photoResourceType;
+
+    public SampleJavaClass() {
+        principalType = EntityTypeName.parse("User").get();
+        actionType = EntityTypeName.parse("Action").get();
+        albumResourceType = EntityTypeName.parse("Album").get();
+        photoResourceType = EntityTypeName.parse("Photo").get();
+    }
+
     /**
      * Execute the query "Can principal Alice perform the action View_Photo on resource Pic01".
      */
     public boolean sampleMethod() throws AuthException {
+        Entity principal = new Entity(principalType.of("Alice"), new HashMap<>(), new HashSet<>());
+        Entity action = new Entity(actionType.of("View_Photo"), new HashMap<>(), new HashSet<>());
+        Entity resource = new Entity(photoResourceType.of("pic01"), new HashMap<>(), new HashSet<>());
+
         AuthorizationEngine ae = new BasicAuthorizationEngine();
-        AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
-            "Action::\"View_Photo\"",
-        "Photo::\"pic01\"", new HashMap<>());
+        AuthorizationRequest r = new AuthorizationRequest(principal.getEUID(), action.getEUID(), resource.getEUID(), new HashMap<>());
         return ae.isAuthorized(r, buildSlice()).isAllowed();
     }
 
@@ -76,13 +88,13 @@ public class SampleJavaClass {
      */
     private Set<Entity> buildEntitySlice() {
         Set<Entity> e = new HashSet<>();
-        Entity album = new Entity(new JsonEUID("Album", "Vacation"), new HashMap<>(), new HashSet<>());
+        Entity album = new Entity(albumResourceType.of("Vacation"), new HashMap<>(), new HashSet<>());
         e.add(album);
-        e.add(new Entity(new JsonEUID("User", "Alice"), new HashMap<>(), new HashSet<>()));
-        e.add(new Entity(new JsonEUID("Action", "View_Photo"), new HashMap<>(), new HashSet<>()));
-        Set<JsonEUID> parents = new HashSet<>();
+        e.add(new Entity(principalType.of("Alice"), new HashMap<>(), new HashSet<>()));
+        e.add(new Entity(actionType.of("View_Photo"), new HashMap<>(), new HashSet<>()));
+        Set<EntityUID> parents = new HashSet<>();
         parents.add(album.getEUID());
-        Entity photo = new Entity(new JsonEUID("Photo","pic01"), new HashMap<>(), parents);
+        Entity photo = new Entity(photoResourceType.of("pic01"), new HashMap<>(), parents);
         e.add(photo);
         return e;
     }
@@ -91,10 +103,12 @@ public class SampleJavaClass {
      * Execute a query with an invalid policy to show errors.
      */
     public AuthorizationResponse shouldFail() throws AuthException {
+        Entity principal = new Entity(principalType.of("Alice"), new HashMap<>(), new HashSet<>());
+        Entity action = new Entity(actionType.of("View_Photo"), new HashMap<>(), new HashSet<>());
+        Entity resource = new Entity(photoResourceType.of("pic01"), new HashMap<>(), new HashSet<>());
+
         AuthorizationEngine ae = new BasicAuthorizationEngine();
-        AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
-            "Action::\"View_Photo\"",
-        "Photo::\"pic01\"", new HashMap<>());
+        AuthorizationRequest r = new AuthorizationRequest(principal.getEUID(), action.getEUID(), resource.getEUID(), new HashMap<>());
         AuthorizationResponse resp = ae.isAuthorized(r, buildFailingSlice());
         return resp;
     }

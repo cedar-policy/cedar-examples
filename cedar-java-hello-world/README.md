@@ -5,7 +5,7 @@ It shows how to use of the Cedar Java API to evaluate a simple policy. You can l
 
 ## Usage
 
-The Java example works with the version of Cedar available on Maven, which (at the time of writing) is v2.3.3.
+The Java example works with the version of Cedar available on Maven, which (at the time of writing) is v3.1.2.
 
 To build, you'll need CedarJava and CedarJavaFFI. You will need to ensure that CedarJava is able to find the dynamic library of Cedar. To do that, you need to ensure the environment variable `CEDAR_JAVA_FFI_LIB` gives the location of your `cedar_java_ffi` shared library. Typically this can be done by running:
 
@@ -16,7 +16,7 @@ bash config.sh
 ### Build
 
 ```shell
-git clone -b release/2.3.x https://github.com/cedar-policy/cedar-java.git
+git clone -b release/3.2.x https://github.com/cedar-policy/cedar-java.git
 cd cedar-java/CedarJavaFFI && cargo build
 cd ../.. && bash config.sh && ./gradlew build
 ```
