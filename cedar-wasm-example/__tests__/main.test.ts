@@ -7,11 +7,12 @@ describe('Authorizer tests', () => {
             action: { type: 'Action', id: 'pwn' },
             resource: { type: 'Code', id: 'this' },
             context: {},
-            slice: {
-                policies: {},
-                entities: [],
-                templateInstantiations: [],
+            policies: {
+                staticPolicies: {},
+                templates: {},
+                templateLinks: [],
             },
+            entities: [],
         };
         const authResult = cedar.isAuthorized(call);
         if (authResult.type !== 'success') {
@@ -19,18 +20,19 @@ describe('Authorizer tests', () => {
         }
         expect(authResult.response.decision).toBe('deny');
     });
-    
+
     test('isAuthorized test without schema, should allow', () => {
         const call: cedar.AuthorizationCall = {
             principal: { type: 'User', id: 'Victor' },
             action: { type: 'Action', id: 'pwn' },
             resource: { type: 'Code', id: 'this' },
             context: {},
-            slice: {
-                policies: 'permit(principal, action, resource);',
-                entities: [],
-                templateInstantiations: [],
+            policies: {
+                staticPolicies: 'permit(principal, action, resource);',
+                templates: {},
+                templateLinks: [],
             },
+            entities: [],
         };
         const authResult = cedar.isAuthorized(call);
         if (authResult.type !== 'success') {
@@ -46,49 +48,48 @@ describe('Authorizer tests', () => {
             resource: { type: 'App::Code', id: 'this' },
             context: {},
             schema: {
-                json: {
-                    App: {
-                        commonTypes: {
-                            ActionContext: {
-                                type: 'Record',
-                                attributes: {
-                                    pwnLevel: { type: 'Long', required: false }
-                                }
+                App: {
+                    commonTypes: {
+                        ActionContext: {
+                            type: 'Record',
+                            attributes: {
+                                pwnLevel: { type: 'Long', required: false }
                             }
+                        }
+                    },
+                    entityTypes: {
+                        User: {
+                            shape: { type: 'Record', attributes: {} },
+                            memberOfTypes: [],
                         },
-                        entityTypes: {
-                            User: {
-                                shape: {type: 'Record', attributes: {}},
-                                memberOfTypes: [],
-                            },
-                            Code: {
-                                shape: {type: 'Record', attributes: {}},
-                                memberOfTypes: [],
-                            },
+                        Code: {
+                            shape: { type: 'Record', attributes: {} },
+                            memberOfTypes: [],
                         },
-                        actions: {
-                            pwn: {
-                                appliesTo: {
-                                    context: {
-                                        type: 'ActionContext',
-                                    },
-                                    resourceTypes: [
-                                        'Code'
-                                    ],
-                                    principalTypes: [
-                                        'User'
-                                    ]
-                                } 
+                    },
+                    actions: {
+                        pwn: {
+                            appliesTo: {
+                                context: {
+                                    type: 'ActionContext',
+                                },
+                                resourceTypes: [
+                                    'Code'
+                                ],
+                                principalTypes: [
+                                    'User'
+                                ]
                             }
                         }
                     }
                 }
             },
-            slice: {
-                policies: 'permit(principal, action, resource);',
-                entities: [],
-                templateInstantiations: [],
+            policies: {
+                staticPolicies: 'permit(principal, action, resource);',
+                templates: {},
+                templateLinks: [],
             },
+            entities: [],
         };
         const authResult = cedar.isAuthorized(call);
         if (authResult.type !== 'success') {
@@ -108,11 +109,11 @@ describe('Authorizer tests', () => {
                     App: {
                         entityTypes: {
                             User: {
-                                shape: {type: 'Record', attributes: {}},
+                                shape: { type: 'Record', attributes: {} },
                                 memberOfTypes: [],
                             },
                             Code: {
-                                shape: {type: 'Record', attributes: {}},
+                                shape: { type: 'Record', attributes: {} },
                                 memberOfTypes: [],
                             },
                         },
@@ -120,15 +121,92 @@ describe('Authorizer tests', () => {
                     }
                 }
             },
-            slice: {
-                policies: 'permit(principal, action, resource);',
-                entities: [],
-                templateInstantiations: [],
+            policies: {
+                staticPolicies: 'permit(principal, action, resource);',
+                templates: {},
+                templateLinks: [],
             },
+            entities: [],
         };
         const authResult = cedar.isAuthorized(call);
         expect(authResult.type).toBe('failure');
         expect('errors' in authResult && authResult.errors.length).toBeGreaterThan(0);
+    });
+
+    test('isAuthorized test with template, should deny', () => {
+        const call: cedar.AuthorizationCall = {
+            principal: { type: 'User', id: 'Victor' },
+            action: { type: 'Action', id: 'pwn' },
+            resource: { type: 'Code', id: 'this' },
+            context: {},
+            policies: {
+                staticPolicies: {},
+                templates: {
+                    "template0": "permit(principal == ?principal, action, resource == Code::\"this\");"
+                },
+                templateLinks: [],
+            },
+            entities: [],
+        };
+        const authResult = cedar.isAuthorized(call);
+        if (authResult.type !== 'success') {
+            throw new Error(`Expected success in evaluation, got ${JSON.stringify(authResult, null, 4)}`);
+        }
+        expect(authResult.response.decision).toBe('deny');
+    });
+
+    test('isAuthorized test with template, should allow', () => {
+        const call: cedar.AuthorizationCall = {
+            principal: { type: 'User', id: 'Victor' },
+            action: { type: 'Action', id: 'pwn' },
+            resource: { type: 'Code', id: 'this' },
+            context: {},
+            policies: {
+                staticPolicies: {},
+                templates: {
+                    "template0": "permit(principal == ?principal, action, resource == Code::\"this\");"
+                },
+                templateLinks: [{
+                    templateId: "template0",
+                    newId: "policy0",
+                    values: { "?principal": { type: 'User', id: 'Victor' } }
+                }],
+            },
+            entities: [],
+        };
+        const authResult = cedar.isAuthorized(call);
+        if (authResult.type !== 'success') {
+            throw new Error(`Expected success in evaluation, got ${JSON.stringify(authResult, null, 4)}`);
+        }
+        expect(authResult.response.decision).toBe('allow');
+    });
+
+    test('isAuthorized test with entities, should allow', () => {
+        const call: cedar.AuthorizationCall = {
+            principal: { type: 'User', id: 'Victor' },
+            action: { type: 'Action', id: 'pwn' },
+            resource: { type: 'Code', id: 'this' },
+            context: {},
+            policies: {
+                staticPolicies: {
+                    "policy0": "permit(principal, action, resource) when { principal.isAdmin };"
+                },
+                templates: {},
+                templateLinks: [],
+            },
+            entities: [{
+                uid: { type: 'User', id: 'Victor' },
+                attrs: {
+                    "isAdmin": true,
+                },
+                parents: [],
+            }],
+        };
+        const authResult = cedar.isAuthorized(call);
+        if (authResult.type !== 'success') {
+            throw new Error(`Expected success in evaluation, got ${JSON.stringify(authResult, null, 4)}`);
+        }
+        expect(authResult.response.decision).toBe('allow');
     });
 });
 
@@ -283,7 +361,7 @@ describe('policy and template parsing', () => {
         const parsePolicySetResult = cedar.checkParsePolicySet('permit(principal, action, resource);');
         if (parsePolicySetResult.type !== 'success') {
             throw new Error(`Expected success in parsing, got ${JSON.stringify(parsePolicySetResult, null, 4)}`);
-        }   
+        }
         expect(parsePolicySetResult.policies).toBe(1);
         expect(parsePolicySetResult.templates).toBe(0);
     });
@@ -292,7 +370,7 @@ describe('policy and template parsing', () => {
         const parsePolicySetResult = cedar.checkParsePolicySet('permit(principal, action, asdfadsf);');
         if (parsePolicySetResult.type !== 'error') {
             throw new Error(`Expected error in parsing, got ${JSON.stringify(parsePolicySetResult, null, 4)}`);
-        }   
+        }
         expect(Array.isArray(parsePolicySetResult.errors)).toBe(true);
         expect(parsePolicySetResult.errors.length).toBeGreaterThan(0);
     });
@@ -301,7 +379,7 @@ describe('policy and template parsing', () => {
         const parseTemplateResult = cedar.checkParseTemplate('permit(principal == ?principal, action, resource);');
         if (parseTemplateResult.type !== 'success') {
             throw new Error(`Expected success in parsing, got ${JSON.stringify(parseTemplateResult, null, 4)}`);
-        }   
+        }
         expect(Array.isArray(parseTemplateResult.slots)).toBe(true);
         expect(parseTemplateResult.slots[0]).toBe('?principal');
     });
@@ -310,7 +388,7 @@ describe('policy and template parsing', () => {
         const parseTemplateResult = cedar.checkParseTemplate('permit(principal, action, resource);');
         if (parseTemplateResult.type !== 'error') {
             throw new Error(`Expected error in parsing due to no slots, got ${JSON.stringify(parseTemplateResult, null, 4)}`);
-        }   
+        }
         expect(Array.isArray(parseTemplateResult.errors)).toBe(true);
         expect(parseTemplateResult.errors.length).toBeGreaterThan(0);
     });
@@ -323,8 +401,8 @@ const SCHEMA = {
                 type: 'Record',
                 attributes: {
                     pwnLevel: { type: 'Long', required: false },
-                    pwnee: { type: 'Entity' , name: 'User', required: false },
-                    favoriteProjects: { type: 'Set', element: { type: 'Entity', name: 'Code'}}
+                    pwnee: { type: 'Entity', name: 'User', required: false },
+                    favoriteProjects: { type: 'Set', element: { type: 'Entity', name: 'Code' } }
                 }
             },
             DemographicInfo: {
@@ -348,7 +426,7 @@ const SCHEMA = {
                 memberOfTypes: [],
             },
             Code: {
-                shape: {type: 'Record', attributes: {}},
+                shape: { type: 'Record', attributes: {} },
                 memberOfTypes: [],
             },
         },
@@ -364,7 +442,7 @@ const SCHEMA = {
                     principalTypes: [
                         'User'
                     ]
-                } 
+                }
             }
         }
     }
@@ -391,10 +469,12 @@ describe('validator tests', () => {
         `;
         const validationResult = cedar.validate({
             validationSettings: { mode: "strict", enabled: true },
-            schema: {
-                json: SCHEMA,
-            },
-            policies: policyText
+            schema: SCHEMA,
+            policies: {
+                staticPolicies: policyText,
+                templates: {},
+                templateLinks: [],
+            }
         });
         if (validationResult.type !== 'success') {
             throw new Error(`Expected success in validation, got ${JSON.stringify(validationResult, null, 4)}`);
@@ -415,10 +495,12 @@ describe('validator tests', () => {
         `;
         const validationResult = cedar.validate({
             validationSettings: { mode: "strict", enabled: true },
-            schema: {
-                json: SCHEMA,
-            },
-            policies: policyText
+            schema: SCHEMA,
+            policies: {
+                staticPolicies: policyText,
+                templates: {},
+                templateLinks: [],
+            }
         });
         if (validationResult.type !== 'success') {
             throw new Error(`Expected success in validation, got ${JSON.stringify(validationResult, null, 4)}`);
