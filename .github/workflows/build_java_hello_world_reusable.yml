@@ -26,7 +26,9 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
       - name: Setup Zig
-        run: wget https://ziglang.org/download/0.11.0/zig-linux-x86_64-0.11.0.tar.xz -O - | tar xJ && echo "$(pwd)/zig-linux-x86_64-0.11.0" >> $GITHUB_PATH
+        uses: goto-bus-stop/setup-zig@v2.2.0
+        with:
+          version: 0.11.0
       - name: Checkout cedar-examples
         uses: actions/checkout@v4
         with:
