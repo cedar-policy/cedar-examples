@@ -39,6 +39,13 @@ jobs:
       - name: Build CedarJavaFFI
         working-directory: ./cedar-java-hello-world/cedar-java/CedarJavaFFI
         run: cargo build
+      - name: Build CedarJava
+        working-directory: ./cedar-java-hello-world/cedar-java/CedarJava
+        run: ./gradlew build
+      - name: Replace Maven version with Github version
+        working-directory: ./cedar-java-hello-world
+        run: |
+          sed -i "s/'com.cedarpolicy:cedar-java:.*/files('cedar-java\/CedarJava\/build\/libs\/CedarJava.jar')/" build.gradle
       - name: Build cedar-java-hello-world
         working-directory: ./cedar-java-hello-world
         run: bash config.sh && ./gradlew build
