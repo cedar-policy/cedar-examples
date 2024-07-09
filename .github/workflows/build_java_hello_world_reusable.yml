@@ -54,7 +54,7 @@ jobs:
           sed -i "s/'com.cedarpolicy:cedar-java:.*/files('cedar-java\/CedarJava\/build\/libs\/CedarJava.jar')/" build.gradle
       - name: Build cedar-java-hello-world
         working-directory: ./cedar-java-hello-world
-        run: bash config.sh && ./gradlew build
+        run: bash config.sh && ./gradlew build --info
       - name: Run cedar-java-hello-world
         working-directory: ./cedar-java-hello-world
         run: ./gradlew test
