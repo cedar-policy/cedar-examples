@@ -17,6 +17,8 @@ jobs:
       matrix:
         toolchain:
           - stable
+    env:
+      RUST_BACKTRACE: full
     steps:
       - name: Setup Java
         uses: actions/setup-java@v4
