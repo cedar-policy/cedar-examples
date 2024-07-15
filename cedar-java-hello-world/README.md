@@ -3,24 +3,17 @@
 This repository contains a simple hello world program written in Java, using Cedar.
 It shows how to use the Cedar Java API to evaluate a simple policy. You can look at the gradle files to see how to build CedarJava in your own Java applications.
 
-## Usage
+## Build
 
-The Java example works with the version of Cedar available on Maven, which (at the time of writing) is v3.1.2.
-
-### Build
-
-#### Building with the Maven release
-
-You can switch to the cedar-java uber jar in `build.gradle` so that the example runs using both the CedarJava and
-CedarJavaFFI libraries from the Maven release of cedar-java:3.1.2.
+### Building with the Maven release
+The Java example works with the version of Cedar available on Maven, which (at the time of writing) is v3.1.2. We specify the
+uber jar in build.gradle so that both the CedarJava and CedarJavaFFI libraries are included.
 
 ```shell
-# Change the build.gradle to use the uber jar
-sed -i '' "s/'com.cedarpolicy:cedar-java:3.1.2'/'com.cedarpolicy:cedar-java:3.1.2:uber'/" build.gradle
 ./gradlew build
 ```
 
-#### Building locally
+### Building locally
 
 To build locally, pull the corresponding 3.2.x release of cedar-java and build both CedarJavaFFI and CedarJava in your workspace.
 You will need to ensure that CedarJava is able to find the dynamic library of Cedar. To do that, you need to ensure the
