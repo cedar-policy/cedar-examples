@@ -19,37 +19,13 @@ jobs:
     outputs:
       branch_name: ${{ steps.get_branch_name.outputs.branch_name }}
 
-  build_and_test_java_hello_world:
-    name: java-hello-world
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        toolchain:
-          - stable
-    steps:
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'corretto'
-          java-version: '17'
-      - name: Checkout cedar-examples
-        uses: actions/checkout@v3
-      - name: Checkout cedar-java
-        uses: actions/checkout@v3
-        with:
-          repository: cedar-policy/cedar-java
-          ref: release/2.3.x # Java example currently only builds for 2.3.3
-          path: ./cedar-java-hello-world/cedar-java
-      - name: rustup
-        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
-      - name: cargo build CedarJavaFFI
-        working-directory: ./cedar-java-hello-world/cedar-java/CedarJavaFFI
-        run: cargo build
-      - name: Build cedar-java-hello-world
-        working-directory: ./cedar-java-hello-world
-        run: bash config.sh && ./gradlew build
-      - name: Run cedar-java-hello-world
-        working-directory: ./cedar-java-hello-world
-        run: ./gradlew test
+  build_java_hello_world:
+    name: java_hello_world
+    needs: get-branch-name
+    uses: ./.github/workflows/build_java_hello_world_reusable.yml
+    with:
+      cedar_java_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
+      cedar_examples_ref: ${{ github.ref }}
 
   run_example_use_cases:
     name: run_example_use_cases
