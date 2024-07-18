@@ -20,12 +20,13 @@ import com.cedarpolicy.BasicAuthorizationEngine;
 import com.cedarpolicy.AuthorizationEngine;
 import com.cedarpolicy.model.AuthorizationRequest;
 import com.cedarpolicy.model.AuthorizationResponse;
-import com.cedarpolicy.model.slice.Slice;
-import com.cedarpolicy.model.slice.BasicSlice;
-import com.cedarpolicy.model.slice.Policy;
-import com.cedarpolicy.model.slice.Entity;
+import com.cedarpolicy.model.AuthorizationResponse.SuccessOrFailure;
+import com.cedarpolicy.model.policy.Policy;
+import com.cedarpolicy.model.policy.PolicySet;
+import com.cedarpolicy.model.entity.Entity;
 import com.cedarpolicy.model.exception.AuthException;
-import com.cedarpolicy.serializer.JsonEUID;
+import com.cedarpolicy.value.EntityTypeName;
+import com.cedarpolicy.value.EntityUID;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,24 +36,28 @@ import java.util.Set;
  */
 public class SampleJavaClass {
 
+    final EntityTypeName principalType, actionType, albumResourceType, photoResourceType;
+
+    public SampleJavaClass() {
+        principalType = EntityTypeName.parse("User").get();
+        actionType = EntityTypeName.parse("Action").get();
+        albumResourceType = EntityTypeName.parse("Album").get();
+        photoResourceType = EntityTypeName.parse("Photo").get();
+    }
+
     /**
      * Execute the query "Can principal Alice perform the action View_Photo on resource Pic01".
      */
     public boolean sampleMethod() throws AuthException {
-        AuthorizationEngine ae = new BasicAuthorizationEngine();
-        AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
-            "Action::\"View_Photo\"",
-        "Photo::\"pic01\"", new HashMap<>());
-        return ae.isAuthorized(r, buildSlice()).isAllowed();
-    }
+        Entity principal = new Entity(principalType.of("Alice"), new HashMap<>(), new HashSet<>());
+        Entity action = new Entity(actionType.of("View_Photo"), new HashMap<>(), new HashSet<>());
+        Entity resource = new Entity(photoResourceType.of("pic01"), new HashMap<>(), new HashSet<>());
 
-    /**
-     * Build the slice of the store the cedar evaluator will see.
-     */
-    private Slice buildSlice() {
-        Set<Policy> p = buildPolicySlice();
-        Set<Entity> e = buildEntitySlice();
-        return new BasicSlice(p, e);
+        AuthorizationEngine ae = new BasicAuthorizationEngine();
+        AuthorizationRequest r = new AuthorizationRequest(principal.getEUID(), action.getEUID(), resource.getEUID(), new HashMap<>());
+        PolicySet policySet = buildPolicySet();
+        Set<Entity> entities = buildEntities();
+        return ae.isAuthorized(r, policySet, entities).type == SuccessOrFailure.Success;
     }
 
     /**
@@ -60,12 +65,12 @@ public class SampleJavaClass {
      * In this case, we have one policy, that says:
      * the principal Alice, can perform the action View_Photo, on any resource that's a child of resource Vacation
      */
-    private Set<Policy> buildPolicySlice() {
+    private PolicySet buildPolicySet() {
         Set<Policy> ps = new HashSet<>();
         String fullPolicy =
-            "permit(principal == User::\"Alice\", action == Action::\"View_Photo\", resource in Album::\"Vacation\");";
+                "permit(principal == User::\"Alice\", action == Action::\"View_Photo\", resource in Album::\"Vacation\");";
         ps.add(new Policy(fullPolicy, "p1"));
-        return ps;
+        return new PolicySet(ps);
     }
 
     /**
@@ -74,15 +79,15 @@ public class SampleJavaClass {
      * One action View_Photo
      * A resource Vacation that has two children, pic01 and pic02
      */
-    private Set<Entity> buildEntitySlice() {
+    private Set<Entity> buildEntities() {
         Set<Entity> e = new HashSet<>();
-        Entity album = new Entity(new JsonEUID("Album", "Vacation"), new HashMap<>(), new HashSet<>());
+        Entity album = new Entity(albumResourceType.of("Vacation"), new HashMap<>(), new HashSet<>());
         e.add(album);
-        e.add(new Entity(new JsonEUID("User", "Alice"), new HashMap<>(), new HashSet<>()));
-        e.add(new Entity(new JsonEUID("Action", "View_Photo"), new HashMap<>(), new HashSet<>()));
-        Set<JsonEUID> parents = new HashSet<>();
+        e.add(new Entity(principalType.of("Alice"), new HashMap<>(), new HashSet<>()));
+        e.add(new Entity(actionType.of("View_Photo"), new HashMap<>(), new HashSet<>()));
+        Set<EntityUID> parents = new HashSet<>();
         parents.add(album.getEUID());
-        Entity photo = new Entity(new JsonEUID("Photo","pic01"), new HashMap<>(), parents);
+        Entity photo = new Entity(photoResourceType.of("pic01"), new HashMap<>(), parents);
         e.add(photo);
         return e;
     }
@@ -91,31 +96,25 @@ public class SampleJavaClass {
      * Execute a query with an invalid policy to show errors.
      */
     public AuthorizationResponse shouldFail() throws AuthException {
+        Entity principal = new Entity(principalType.of("Alice"), new HashMap<>(), new HashSet<>());
+        Entity action = new Entity(actionType.of("View_Photo"), new HashMap<>(), new HashSet<>());
+        Entity resource = new Entity(photoResourceType.of("pic01"), new HashMap<>(), new HashSet<>());
+
         AuthorizationEngine ae = new BasicAuthorizationEngine();
-        AuthorizationRequest r = new AuthorizationRequest("User::\"Alice\"",
-            "Action::\"View_Photo\"",
-        "Photo::\"pic01\"", new HashMap<>());
-        AuthorizationResponse resp = ae.isAuthorized(r, buildFailingSlice());
+        AuthorizationRequest r = new AuthorizationRequest(principal.getEUID(), action.getEUID(), resource.getEUID(), new HashMap<>());
+        PolicySet policySet = buildUnparseablePolicySet();
+        Set<Entity> entities = buildEntities();
+        AuthorizationResponse resp = ae.isAuthorized(r, policySet, entities);
         return resp;
     }
 
     /**
-     * Build a slice that contains an invalid policy
+     * Returns a policy set containing a gramatically incorrect policy
      */
-    private Slice buildFailingSlice() {
-        Set<Policy> p = buildUnparseable();
-        Set<Entity> e = buildEntitySlice();
-        return new BasicSlice(p, e);
-    }
-
-
-    /**
-     * Returns a set containing a non-gramatically correct policy
-     */
-    private Set<Policy> buildUnparseable() {
+    private PolicySet buildUnparseablePolicySet() {
         Set<Policy> ps = new HashSet<>();
         ps.add(new Policy("not a policy", "p2"));
-        return ps;
+        return new PolicySet(ps);
     }
 
 }

@@ -105,20 +105,18 @@ describe('authorizer tests', () => {
             resource: { type: 'App::Code', id: 'this' },
             context: {},
             schema: {
-                json: {
-                    App: {
-                        entityTypes: {
-                            User: {
-                                shape: { type: 'Record', attributes: {} },
-                                memberOfTypes: [],
-                            },
-                            Code: {
-                                shape: { type: 'Record', attributes: {} },
-                                memberOfTypes: [],
-                            },
+                App: {
+                    entityTypes: {
+                        User: {
+                            shape: { type: 'Record', attributes: {} },
+                            memberOfTypes: [],
                         },
-                        actions: {}
-                    }
+                        Code: {
+                            shape: { type: 'Record', attributes: {} },
+                            memberOfTypes: [],
+                        },
+                    },
+                    actions: {}
                 }
             },
             policies: {
