@@ -528,12 +528,39 @@ describe('get valid request envs', () => {
               "id": "E1,E2 a,a2 R2"
             }
           };
-        const schemaJson: cedar.Schema = {"NS":{"entityTypes":{"R1":{"memberOfTypes":["R"],"shape":{"type":"Record","attributes":{"p1":{"type":"String"}}}},"E":{},"R2":{"memberOfTypes":["R"],"shape":{"type":"Record","attributes":{"p1":{"type":"Long"}}}},"E1":{"memberOfTypes":["E"],"shape":{"type":"Record","attributes":{"p1":{"type":"String"}}}},"E2":{"memberOfTypes":["E"],"shape":{"type":"Record","attributes":{"p1":{"type":"Long"}}}},"R":{}},"actions":{"as":{"appliesTo":{"resourceTypes":[],"principalTypes":[]}},"a":{"appliesTo":{"resourceTypes":["R1","R2"],"principalTypes":["E1","E2"],"context":{"type":"Record","attributes":{"c1":{"type":"Long"}}}},"memberOf":[{"id":"as","type":"Action"}]},"a1":{"appliesTo":{"resourceTypes":["R1"],"principalTypes":["E1"],"context":{"type":"Record","attributes":{"c1":{"type":"Long"}}}},"memberOf":[{"id":"as","type":"Action"}]},"a2":{"appliesTo":{"resourceTypes":["R2"],"principalTypes":["E2"],"context":{"type":"Record","attributes":{"c1":{"type":"Long"}}}},"memberOf":[{"id":"as","type":"Action"}]}}}};
+        const schemaJson: cedar.Schema = `
+        namespace NS {
+            entity E;
+            entity R1 in [R] = {"p1": String};
+            entity R;
+            entity R2 in [R] = {"p1": Long};
+            entity E1 in [E] = {"p1": String};
+            entity E2 in [E] = {"p1": Long};
+            action "as";
+            action "a" in [Action::"as"] appliesTo {
+              principal: [E1, E2],
+              resource: [R1, R2],
+              context: {"c1": Long}
+            };
+            action "a1" in [Action::"as"] appliesTo {
+              principal: [E1],
+              resource: [R1],
+              context: {"c1": Long}
+            };
+            action "a2" in [Action::"as"] appliesTo {
+              principal: [E2],
+              resource: [R2],
+              context: {"c1": Long}
+            };
+          }
+        `;
 
         let requestEnvs = cedar.getValidRequestEnvs(policyJson, schemaJson);
         if (requestEnvs.type !== 'success') {
             throw new Error(`Expected success in get valid request envs, got ${JSON.stringify(requestEnvs, null, 4)}`);
         }
-        expect(requestEnvs[0]).toBe(['NS::E1', 'NS::E2']);
+        expect(requestEnvs.principals).toStrictEqual(['NS::E1', 'NS::E2']);
+        expect(requestEnvs.actions).toStrictEqual(['NS::Action::"a"', 'NS::Action::"a2"']);
+        expect(requestEnvs.resources).toStrictEqual(['NS::R2']);
     });
 });
