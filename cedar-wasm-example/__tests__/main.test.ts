@@ -210,24 +210,18 @@ describe('authorizer tests', () => {
 
 describe('formatter tests', () => {
     test('can format a valid policy', () => {
-        const call: cedar.FormattingCall = {
-            lineWidth: 100,
-            indentWidth: 2,
-            policyText: `
+        const policyText = `
             permit(principal,        action, 
                 
                   resource);
-        `};
-        const formattingResult = cedar.formatPolicies(call);
+        `;
+        const formattingResult = cedar.formatPolicies(policyText, 100, 2);
         expect(formattingResult.type).toBe('success');
         expect('formatted_policy' in formattingResult && formattingResult.formatted_policy).toBe('permit (principal, action, resource);');
     });
 
     test('executes successfully but returns failure when passed an invalid policy', () => {
-        const call: cedar.FormattingCall = {
-            lineWidth: 100,
-            indentWidth: 2,
-            policyText: `
+        const policyText = `
         -''--.
         _'>   '\.-'<
      _.'     _     '._
@@ -236,9 +230,9 @@ describe('formatter tests', () => {
      / (  \o/\\o/  ) \
      >._\ .-,_)-. /_.<
  jgs     /__/ \__\ 
-           '---'`};
-        const formattingResult = cedar.formatPolicies(call);
-        expect(formattingResult.type).toBe('failure');
+           '---'`;
+        const formattingResult = cedar.formatPolicies(policyText, 100, 2);
+        expect(formattingResult.type).toBe('error');
     });
 });
 
