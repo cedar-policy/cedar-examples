@@ -1,6 +1,6 @@
 import * as cedar from '@cedar-policy/cedar-wasm/nodejs';
 
-describe('Authorizer tests', () => {
+describe('authorizer tests', () => {
     test('isAuthorized test without schema, should deny', () => {
         const call: cedar.AuthorizationCall = {
             principal: { type: 'User', id: 'Victor' },
@@ -356,39 +356,55 @@ describe('json policy functionality', () => {
 
 describe('policy and template parsing', () => {
     test('checkParsePolicySet can parse a single policy', () => {
-        const parsePolicySetResult = cedar.checkParsePolicySet('permit(principal, action, resource);');
+        const call: cedar.PolicySet = {
+            staticPolicies: 'permit(principal, action, resource);',
+            templates: {},
+            templateLinks: [],
+        };
+        const parsePolicySetResult = cedar.checkParsePolicySet(call);
         if (parsePolicySetResult.type !== 'success') {
             throw new Error(`Expected success in parsing, got ${JSON.stringify(parsePolicySetResult, null, 4)}`);
         }
-        expect(parsePolicySetResult.policies).toBe(1);
-        expect(parsePolicySetResult.templates).toBe(0);
     });
 
     test('checkParsePolicySet fails when parsing a bad policy', () => {
-        const parsePolicySetResult = cedar.checkParsePolicySet('permit(principal, action, asdfadsf);');
-        if (parsePolicySetResult.type !== 'error') {
+        const call: cedar.PolicySet = {
+            staticPolicies: 'permit(principal, action, asdfadsf);',
+            templates: {},
+            templateLinks: [],
+        };
+        const parsePolicySetResult = cedar.checkParsePolicySet(call);
+        if (parsePolicySetResult.type !== 'failure') {
             throw new Error(`Expected error in parsing, got ${JSON.stringify(parsePolicySetResult, null, 4)}`);
         }
         expect(Array.isArray(parsePolicySetResult.errors)).toBe(true);
-        expect(parsePolicySetResult.errors.length).toBeGreaterThan(0);
+        expect(parsePolicySetResult.errors.length).toBe(1);
     });
 
-    test('checkParseTemplate can parse a single template', () => {
-        const parseTemplateResult = cedar.checkParseTemplate('permit(principal == ?principal, action, resource);');
-        if (parseTemplateResult.type !== 'success') {
-            throw new Error(`Expected success in parsing, got ${JSON.stringify(parseTemplateResult, null, 4)}`);
+    test('checkParsePolicySet can parse a single template', () => {
+        const call: cedar.PolicySet = {
+            staticPolicies: {},
+            templates: { 'id0': 'permit(principal == ?principal, action, resource);' },
+            templateLinks: [],
+        };
+        const parsePolicySetResult = cedar.checkParsePolicySet(call);
+        if (parsePolicySetResult.type !== 'success') {
+            throw new Error(`Expected success in parsing, got ${JSON.stringify(parsePolicySetResult, null, 4)}`);
         }
-        expect(Array.isArray(parseTemplateResult.slots)).toBe(true);
-        expect(parseTemplateResult.slots[0]).toBe('?principal');
     });
 
-    test('checkParseTemplate fails when parsing a bad template', () => {
-        const parseTemplateResult = cedar.checkParseTemplate('permit(principal, action, resource);');
-        if (parseTemplateResult.type !== 'error') {
-            throw new Error(`Expected error in parsing due to no slots, got ${JSON.stringify(parseTemplateResult, null, 4)}`);
+    test('checkParsePolicySet fails when parsing a bad template', () => {
+        const call: cedar.PolicySet = {
+            staticPolicies: {},
+            templates: { 'id0': 'permit(principal, action, resource == ?principal);' },
+            templateLinks: [],
+        };
+        const parsePolicySetResult = cedar.checkParsePolicySet(call);
+        if (parsePolicySetResult.type !== 'failure') {
+            throw new Error(`Expected error in parsing due to no slots, got ${JSON.stringify(parsePolicySetResult, null, 4)}`);
         }
-        expect(Array.isArray(parseTemplateResult.errors)).toBe(true);
-        expect(parseTemplateResult.errors.length).toBeGreaterThan(0);
+        expect(Array.isArray(parsePolicySetResult.errors)).toBe(true);
+        expect(parsePolicySetResult.errors.length).toBe(1);
     });
 });
 
@@ -446,11 +462,48 @@ const SCHEMA = {
     }
 };
 
-describe('schema related parsing', () => {
+describe('other parsing tests', () => {
     test('can parse a valid schema', () => {
-        const parseSchemaResult = cedar.checkParseSchema(JSON.stringify(SCHEMA));
+        const parseSchemaResult = cedar.checkParseSchema(SCHEMA);
         if (parseSchemaResult.type !== 'success') {
             throw new Error(`Expected success in parsing schema, got ${JSON.stringify(parseSchemaResult, null, 4)}`);
+        }
+    });
+
+    test('can parse a valid context', () => {
+        const call: cedar.ContextParsingCall = {
+            schema: SCHEMA,
+            action: { "type": "App::Action", "id": "pwn" },
+            context: {
+                pwnLevel: 10,
+                favoriteProjects: [{ type: 'App::Code', id: 'this' }]
+            },
+        };
+        const parseContextResult = cedar.checkParseContext(call);
+        if (parseContextResult.type !== 'success') {
+            throw new Error(`Expected success in parsing context, got ${JSON.stringify(parseContextResult, null, 4)}`);
+        }
+    });
+
+    test('can parse valid entities', () => {
+        const call: cedar.EntitiesParsingCall = {
+            schema: SCHEMA,
+            entities: [{
+                uid: { type: 'App::User', id: 'Victor' },
+                attrs: {
+                    "userId": "123456",
+                    "demographicInfo": {
+                        isCool: true,
+                        favoriteColors: ["black", "yellow"],
+                        name: "Victor",
+                    },
+                },
+                parents: [],
+            }]
+        };
+        const parseEntitiesResult = cedar.checkParseEntities(call);
+        if (parseEntitiesResult.type !== 'success') {
+            throw new Error(`Expected success in parsing entities, got ${JSON.stringify(parseEntitiesResult, null, 4)}`);
         }
     });
 });
@@ -466,7 +519,7 @@ describe('validator tests', () => {
             };
         `;
         const validationResult = cedar.validate({
-            validationSettings: { mode: "strict", enabled: true },
+            validationSettings: { mode: "strict" },
             schema: SCHEMA,
             policies: {
                 staticPolicies: policyText,
@@ -492,7 +545,7 @@ describe('validator tests', () => {
             };
         `;
         const validationResult = cedar.validate({
-            validationSettings: { mode: "strict", enabled: true },
+            validationSettings: { mode: "strict" },
             schema: SCHEMA,
             policies: {
                 staticPolicies: policyText,
