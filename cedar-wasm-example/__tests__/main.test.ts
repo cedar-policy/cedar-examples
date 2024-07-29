@@ -210,18 +210,24 @@ describe('authorizer tests', () => {
 
 describe('formatter tests', () => {
     test('can format a valid policy', () => {
-        const policyText = `
+        const call: cedar.FormattingCall = {
+            lineWidth: 100,
+            indentWidth: 2,
+            policyText: `
             permit(principal,        action, 
                 
                   resource);
-        `;
-        const formattingResult = cedar.formatPolicies(policyText, 100, 2);
+        `};
+        const formattingResult = cedar.formatPolicies(call);
         expect(formattingResult.type).toBe('success');
         expect('formatted_policy' in formattingResult && formattingResult.formatted_policy).toBe('permit (principal, action, resource);');
     });
 
     test('executes successfully but returns failure when passed an invalid policy', () => {
-        const policyText = `
+        const call: cedar.FormattingCall = {
+            lineWidth: 100,
+            indentWidth: 2,
+            policyText: `
         -''--.
         _'>   '\.-'<
      _.'     _     '._
@@ -230,15 +236,15 @@ describe('formatter tests', () => {
      / (  \o/\\o/  ) \
      >._\ .-,_)-. /_.<
  jgs     /__/ \__\ 
-           '---'`;
-        const formattingResult = cedar.formatPolicies(policyText, 100, 2);
-        expect(formattingResult.type).toBe('error');
+           '---'`};
+        const formattingResult = cedar.formatPolicies(call);
+        expect(formattingResult.type).toBe('failure');
     });
 });
 
 describe('json policy functionality', () => {
     test('can convert policy to json', () => {
-        const policyToJsonResult = cedar.policyTextToJson(
+        const policyToJsonResult = cedar.policyToJson(
             `permit(
                 principal== User::"123",
                 action in [Action::"pwn", Action::"code"],
@@ -251,11 +257,11 @@ describe('json policy functionality', () => {
         if (policyToJsonResult.type !== 'success') {
             throw new Error(`Expected success in conversion, got ${JSON.stringify(policyToJsonResult, null, 4)}`);
         }
-        console.log('@@@@@', JSON.stringify(policyToJsonResult.policy, null, 4));
+        console.log('@@@@@ Result of policy to JSON conversion @@@@\n', JSON.stringify(policyToJsonResult.json, null, 4));
     });
 
     test('can convert json to policy', () => {
-        const jsonPolicy = {
+        const jsonPolicy: cedar.Policy = {
             effect: 'permit',
             principal: {
                 op: '==',
@@ -341,16 +347,61 @@ describe('json policy functionality', () => {
             ]
         };
 
-        const jsonToPolicyResult = cedar.policyTextFromJson(JSON.stringify(jsonPolicy));
+        const jsonToPolicyResult = cedar.policyToText(jsonPolicy);
         if (jsonToPolicyResult.type !== 'success') {
             throw new Error(`Expected success in conversion, got ${JSON.stringify(jsonToPolicyResult, null, 4)}`);
         }
-        expect(jsonToPolicyResult.policyText.includes(`User::\"123\"`)).toBe(true);
-        expect(jsonToPolicyResult.policyText.includes(`action in [Action::\"pwn\", Action::\"code\"]`)).toBe(true);
-        expect(jsonToPolicyResult.policyText.includes(`resource in Code::\"wasm\"`)).toBe(true);
-        expect(jsonToPolicyResult.policyText.includes(`\"AVP\"`)).toBe(true);
-        expect(jsonToPolicyResult.policyText.includes(`isReadonly`)).toBe(true);
-        expect(jsonToPolicyResult.policyText.includes(`benchpress`)).toBe(true);
+        expect(jsonToPolicyResult.text.includes(`User::\"123\"`)).toBe(true);
+        expect(jsonToPolicyResult.text.includes(`action in [Action::\"pwn\", Action::\"code\"]`)).toBe(true);
+        expect(jsonToPolicyResult.text.includes(`resource in Code::\"wasm\"`)).toBe(true);
+        expect(jsonToPolicyResult.text.includes(`\"AVP\"`)).toBe(true);
+        expect(jsonToPolicyResult.text.includes(`isReadonly`)).toBe(true);
+        expect(jsonToPolicyResult.text.includes(`benchpress`)).toBe(true);
+    });
+});
+
+describe('json schema functionality', () => {
+    test('can convert schema to json', () => {
+        const schemaToJsonResult = cedar.schemaToJson(
+            `entity User = { "name": String };
+             action sendMessage appliesTo {principal: User, resource: User};
+            `
+        );
+        if (schemaToJsonResult.type !== 'success') {
+            throw new Error(`Expected success in conversion, got ${JSON.stringify(schemaToJsonResult, null, 4)}`);
+        }
+        console.log('@@@@@ Result of schema to JSON conversion @@@@\n', JSON.stringify(schemaToJsonResult.json, null, 4));
+    });
+
+    test('can convert json to schema', () => {
+        const jsonSchema: cedar.Schema = {
+            "App": {
+                "entityTypes": {
+                    "User": {
+                        "shape": {
+                            "type": "Record",
+                            "attributes": {
+                                "name": {"type": "String"}
+                            }
+                        }
+                    }
+                },
+                "actions": {
+                    "sendMessage": {
+                        "appliesTo": {
+                            "resourceTypes": ["User"],
+                            "principalTypes": ["User"]
+                        }
+                    }}
+                }
+            };
+
+        const jsonToSchemaResult = cedar.schemaToText(jsonSchema);
+        if (jsonToSchemaResult.type !== 'success') {
+            throw new Error(`Expected success in conversion, got ${JSON.stringify(jsonToSchemaResult, null, 4)}`);
+        }
+        expect(jsonToSchemaResult.text.includes(`entity User = {\"name\": __cedar::String};`)).toBe(true);
+        expect(jsonToSchemaResult.text.includes(`action \"sendMessage\" appliesTo {\n  principal: [User],\n  resource: [User],\n  context: {}\n};`)).toBe(true);
     });
 });
 
