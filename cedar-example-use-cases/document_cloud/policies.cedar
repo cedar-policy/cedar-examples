@@ -70,16 +70,12 @@ permit (
 )
 when { principal in resource.manageACL };
 
-/// Blocked users cannot perform these actions
+/// Blocked users cannot perform any operations to the document
 @id("blocked-users")
 forbid (
     principal,
-    action in
-        [Action::"viewDocument",
-         Action::"modifyDocument",
-         Action::"addToShareACL",
-         Action::"deleteDocument"],
-    resource
+    action,
+    resource is Document
 )
 when
 { resource.owner has blocked && resource.owner.blocked.contains(principal) };

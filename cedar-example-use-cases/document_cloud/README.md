@@ -16,9 +16,9 @@ For convenience, `User`s can be organized into `Group`s. Documents can be shared
 ### `Document`
 
 `Document`s are the core resource of the system. Every document has an owner, which is the `User` who created it. `Document` uses access control lists (ACLs) to manage permissions for action types such as view, edit, and manage.
-An ACL is modeled as a `Group`.
+An ACL is modeled as a set of `Group`s. We recommend that you create a "personal" `Group` for each `User`, such that adding a `User` to an ACL amounts to adding the personal `Group` to the set of `Group`s modeling the ACL.
 
-It is always enforced that only the owner can delete or edit the sharing state of a document
+It is always enforced that only the owner can delete or edit the sharing state of a document.
 
 Next we define the actions that principals can perform.
 
@@ -192,52 +192,15 @@ when { resource has owner && principal == resource.owner };
 
 ### Blocking
 
-If you’ve blocked someone, they can’t see any of your documents and you can’t see any of theirs. Note that we need a constraint `principal has blocked` for this policy to pass validation because `Action::"ViewDocument"` applies to either `User` or `Public` whereas the blocked list only contains `User`s. This constraint rules out the scenario where `principal` is a `Public`.
+If you’ve blocked someone, they can’t do anything to your documents.
 
 ```
+@id("blocked-users")
 forbid (
-  principal,
-  action in
-    [Action::"ViewDocument",
-     Action::"ModifyDocument",
-     Action::"EditIsPrivate",
-     Action::"AddToShareACL",
-     Action::"EditPublicAccess",
-     Action::"DeleteDocument"],
-  resource
+    principal,
+    action,
+    resource is Document
 )
 when
-{
-  principal has blocked &&
-  (resource.owner.blocked.contains(principal) ||
-   principal.blocked.contains(resource.owner))
-};
-```
-
-### Guard Rails
-
-This forbid policy is a guard-rail. We could enforce it at runtime, or prove that the other policies implement it:
-
-```
-forbid (principal, action, resource)
-when
-{
-  resource has owner &&
-  principal != resource.owner &&
-  resource has isPrivate &&
-  resource.isPrivate
-};
-```
-
-### Authentication Context
-
-This forbid policy requires that requests contain a valid authentication context:
-
-```
-forbid (
-  principal,
-  action,
-  resource
-)
-when { !context.is_authenticated };
+{ resource.owner has blocked && resource.owner.blocked.contains(principal) };
 ```

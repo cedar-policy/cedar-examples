@@ -2,15 +2,15 @@ entity Drive {
   owner: User,
 };
 entity Document  = {
-  "manageACL": Set<Group>,
-  "modifyACL": Set<Group>,
-  "owner": User,
-  "publicAccess": String,
-  "viewACL": Set<Group>,
+  manageACL: Set<Group>,
+  modifyACL: Set<Group>,
+  owner: User,
+  publicAccess: String,
+  viewACL: Set<Group>,
 };
 entity Group = {
-  // Absence of the `owner` attribut indicates that it's a personal group.
-  "owner"?: User,
+  // Absence of the `owner` attribute indicates that it's a personal group.
+  owner?: User,
 };
 entity User in Group = {
   blocked?: Set<User>,
