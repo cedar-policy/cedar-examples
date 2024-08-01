@@ -34,7 +34,7 @@ permit (
 )
 when { principal in resource.viewACL };
 
-/// Any user can view a document when it's publicly accessable and not private
+/// Any user can view a document when it's publicly accessible and not private
 @id("public-view")
 permit (
     principal,
