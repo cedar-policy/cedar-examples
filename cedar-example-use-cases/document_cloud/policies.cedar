@@ -70,7 +70,7 @@ permit (
 )
 when { principal in resource.manageACL };
 
-/// Blacklisted users cannot perform these actions
+/// Blocked users cannot perform these actions
 @id("blocked-users")
 forbid (
     principal,
