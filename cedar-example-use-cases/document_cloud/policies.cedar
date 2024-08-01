@@ -25,38 +25,38 @@ permit (
 )
 when { principal == resource.owner };
 
-/// Users in the viewACL group can view the document unless it's private
+/// Users in the viewACL group can view the document
 @id("viewACL")
 permit (
     principal,
-    action == Action::"ViewDocument",
+    action == Action::"viewDocument",
     resource
 )
 when { principal in resource.viewACL };
 
-/// Any user can view a document when it's publicly accessible and not private
+/// Any user can view a document when it's publicly accessible
 @id("public-view")
 permit (
     principal,
-    action == Action::"ViewDocument",
+    action == Action::"viewDocument",
     resource
 )
 when { resource.publicAccess == "view" || resource.publicAccess == "edit" };
 
-/// Users in the modifyACL group can modify the document unless it's private
+/// Users in the modifyACL group can modify the document
 @id("modifyACL")
 permit (
     principal,
-    action == Action::"ModifyDocument",
+    action == Action::"modifyDocument",
     resource
 )
 when { principal in resource.modifyACL };
 
-/// Any user can modify a document when it's publicly editable and not private
+/// Any user can modify a document when it's publicly editable
 @id("public-edit")
 permit (
     principal,
-    action == Action::"ModifyDocument",
+    action == Action::"modifyDocument",
     resource
 )
 when { resource.publicAccess == "edit" };
@@ -65,7 +65,7 @@ when { resource.publicAccess == "edit" };
 @id("manageACL")
 permit (
     principal,
-    action in [Action::"AddToShareACL", Action::"EditPublicAccess"],
+    action in [Action::"addToShareACL", Action::"editPublicAccess"],
     resource
 )
 when { principal in resource.manageACL };
@@ -75,11 +75,11 @@ when { principal in resource.manageACL };
 forbid (
     principal,
     action in
-        [Action::"ViewDocument",
-         Action::"ModifyDocument",
-         Action::"AddToShareACL",
-         Action::"EditPublicAccess",
-         Action::"DeleteDocument"],
+        [Action::"viewDocument",
+         Action::"modifyDocument",
+         Action::"addToShareACL",
+         Action::"editPublicAccess",
+         Action::"deleteDocument"],
     resource
 )
 when

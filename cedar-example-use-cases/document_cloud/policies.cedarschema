@@ -16,27 +16,27 @@ entity User in Group = {
   "personalGroup": Group,
 };
 
-action DeleteGroup, ModifyGroup appliesTo {
+action deleteGroup, modifyGroup appliesTo {
   principal: [User],
   resource: [Group],
 };
-action CreateGroup appliesTo {
+action createGroup appliesTo {
   principal: [User],
   resource: [Drive],
 };
-action ViewDocument appliesTo {
+action viewDocument appliesTo {
   principal: [User],
   resource: [Document],
 };
-action AddToShareACL, DeleteDocument, EditPublicAccess appliesTo {
+action addToShareACL, deleteDocument, editPublicAccess appliesTo {
   principal: [User],
   resource: [Document],
 };
-action ModifyDocument appliesTo {
+action modifyDocument appliesTo {
   principal: [User],
   resource: [Document],
 };
-action CreateDocument appliesTo {
+action createDocument appliesTo {
   principal: [User],
   resource: [Drive],
 };
