@@ -2,41 +2,29 @@ entity Drive {
   owner: User,
 };
 entity Document  = {
-  "manageACL": Group,
-  "modifyACL": Group,
+  "manageACL": Set<Group>,
+  "modifyACL": Set<Group>,
   "owner": User,
   "publicAccess": String,
-  "viewACL": Group,
+  "viewACL": Set<Group>,
 };
 entity Group = {
-  "owner": User,
+  // Absence of the `owner` attribut indicates that it's a personal group.
+  "owner"?: User,
 };
 entity User in Group = {
   blocked?: Set<User>,
-  "personalGroup": Group,
 };
 
 action deleteGroup, modifyGroup appliesTo {
   principal: [User],
   resource: [Group],
 };
-action createGroup appliesTo {
+action createGroup, createDocument appliesTo {
   principal: [User],
   resource: [Drive],
 };
-action viewDocument appliesTo {
+action viewDocument, deleteDocument, modifyDocument, addToShareACL appliesTo {
   principal: [User],
   resource: [Document],
-};
-action addToShareACL, deleteDocument, editPublicAccess appliesTo {
-  principal: [User],
-  resource: [Document],
-};
-action modifyDocument appliesTo {
-  principal: [User],
-  resource: [Document],
-};
-action createDocument appliesTo {
-  principal: [User],
-  resource: [Drive],
 };

@@ -23,7 +23,7 @@ permit (
     action,
     resource is Group
 )
-when { principal == resource.owner };
+when { resource has owner && principal == resource.owner };
 
 /// Users in the viewACL group can view the document
 @id("viewACL")
@@ -65,7 +65,7 @@ when { resource.publicAccess == "edit" };
 @id("manageACL")
 permit (
     principal,
-    action in [Action::"addToShareACL", Action::"editPublicAccess"],
+    action in Action::"addToShareACL",
     resource
 )
 when { principal in resource.manageACL };
@@ -78,7 +78,6 @@ forbid (
         [Action::"viewDocument",
          Action::"modifyDocument",
          Action::"addToShareACL",
-         Action::"editPublicAccess",
          Action::"deleteDocument"],
     resource
 )
