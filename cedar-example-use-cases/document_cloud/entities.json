@@ -5,12 +5,6 @@
             "id": "alice"
         },
         "attrs": {
-            "personalGroup": {
-                "__entity": {
-                    "type": "Group",
-                    "id": "alice_personal"
-                }
-            },
             "blocked": [
                 {
                     "__entity": {
@@ -33,12 +27,6 @@
             "id": "bob"
         },
         "attrs": {
-            "personalGroup": {
-                "__entity": {
-                    "type": "Group",
-                    "id": "bob_personal"
-                }
-            },
             "blocked": []
         },
         "parents": [
@@ -54,12 +42,6 @@
             "id": "charlie"
         },
         "attrs": {
-            "personalGroup": {
-                "__entity": {
-                    "type": "Group",
-                    "id": "charlie_personal"
-                }
-            },
             "blocked": []
         },
         "parents": [
@@ -75,12 +57,6 @@
             "id": "alice_personal"
         },
         "attrs": {
-            "owner": {
-                "__entity": {
-                    "type": "User",
-                    "id": "alice"
-                }
-            }
         },
         "parents": []
     },
@@ -90,19 +66,8 @@
             "id": "bob_personal"
         },
         "attrs": {
-            "owner": {
-                "__entity": {
-                    "type": "User",
-                    "id": "bob"
-                }
-            }
         },
-        "parents": [
-            {
-                "type": "DocumentShare",
-                "id": "alice_public_view"
-            }
-        ]
+        "parents": []
     },
     {
         "uid": {
@@ -110,19 +75,8 @@
             "id": "charlie_personal"
         },
         "attrs": {
-            "owner": {
-                "__entity": {
-                    "type": "User",
-                    "id": "charlie"
-                }
-            }
         },
-        "parents": [
-            {
-                "type": "DocumentShare",
-                "id": "alice_public_view"
-            }
-        ]
+        "parents": []
     },
     {
         "uid": {
@@ -136,59 +90,20 @@
                     "id": "alice"
                 }
             },
-            "isPrivate": false,
             "publicAccess": "view",
-            "viewACL": {
-                "__entity": {
-                    "type": "DocumentShare",
-                    "id": "alice_public_view"
-                }
-            },
-            "modifyACL": {
-                "__entity": {
-                    "type": "Document",
-                    "id": "alice_public_modify"
-                }
-            },
-            "manageACL": {
-                "__entity": {
-                    "type": "Document",
-                    "id": "alice_public_manage"
-                }
-            }
+            "viewACL": [
+                {"__entity": {
+                    "type": "Group",
+                    "id": "bob_personal"
+                }},
+                {"__entity": {
+                    "type": "Group",
+                    "id": "charlie_personal"
+                }}
+            ],
+            "modifyACL": [],
+            "manageACL": []
         },
-        "parents": []
-    },
-    {
-        "uid": {
-            "type": "DocumentShare",
-            "id": "alice_public_view"
-        },
-        "attrs": {},
-        "parents": []
-    },
-    {
-        "uid": {
-            "type": "DocumentShare",
-            "id": "alice_public_modify"
-        },
-        "attrs": {},
-        "parents": []
-    },
-    {
-        "uid": {
-            "type": "DocumentShare",
-            "id": "alice_public_manage"
-        },
-        "attrs": {},
-        "parents": []
-    },
-    {
-        "uid": {
-            "type": "Public",
-            "id": "unauthenticated"
-        },
-        "attrs": {},
         "parents": []
     },
     {
@@ -196,7 +111,14 @@
             "type": "Drive",
             "id": "drive"
         },
-        "attrs": {},
+        "attrs": {
+            "owner": {
+                "__entity": {
+                    "type":"User",
+                    "id":"alice"
+                }
+            }
+        },
         "parents": []
     }
 ]

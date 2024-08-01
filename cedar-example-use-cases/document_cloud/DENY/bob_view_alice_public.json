@@ -1,6 +1,6 @@
 {
     "principal": "User::\"bob\"",
-    "action": "Action::\"ViewDocument\"",
+    "action": "Action::\"viewDocument\"",
     "resource": "Document::\"alice_public\"",
-    "context": {"is_authenticated": true}
+    "context": {}
 }
