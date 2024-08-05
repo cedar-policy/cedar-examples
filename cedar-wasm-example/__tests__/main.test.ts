@@ -612,3 +612,59 @@ describe('validator tests', () => {
         expect(validationResult.otherWarnings.length).toBe(0);
     });
 });
+
+describe('get valid request envs', () => {
+    test('issue example', () => {
+        const policyJson: cedar.Policy = {
+            "effect": "permit",
+            "principal": {
+              "op": "All"
+            },
+            "action": {
+              "op": "All"
+            },
+            "resource": {
+              "op": "is",
+              "entity_type": "NS::R2"
+            },
+            "conditions": [],
+            "annotations": {
+              "id": "E1,E2 a,a2 R2"
+            }
+          };
+        const schemaJson: cedar.Schema = `
+        namespace NS {
+            entity E;
+            entity R1 in [R] = {"p1": String};
+            entity R;
+            entity R2 in [R] = {"p1": Long};
+            entity E1 in [E] = {"p1": String};
+            entity E2 in [E] = {"p1": Long};
+            action "as";
+            action "a" in [Action::"as"] appliesTo {
+              principal: [E1, E2],
+              resource: [R1, R2],
+              context: {"c1": Long}
+            };
+            action "a1" in [Action::"as"] appliesTo {
+              principal: [E1],
+              resource: [R1],
+              context: {"c1": Long}
+            };
+            action "a2" in [Action::"as"] appliesTo {
+              principal: [E2],
+              resource: [R2],
+              context: {"c1": Long}
+            };
+          }
+        `;
+
+        let requestEnvs = cedar.getValidRequestEnvsPolicy(policyJson, schemaJson);
+        if (requestEnvs.type !== 'success') {
+            throw new Error(`Expected success in get valid request envs, got ${JSON.stringify(requestEnvs, null, 4)}`);
+        }
+        expect(requestEnvs.principals).toStrictEqual(['NS::E1', 'NS::E2']);
+        expect(requestEnvs.actions).toStrictEqual(['NS::Action::"a"', 'NS::Action::"a2"']);
+        expect(requestEnvs.resources).toStrictEqual(['NS::R2']);
+    });
+});
