@@ -511,7 +511,7 @@ describe('validator tests', () => {
 
 describe('get valid request envs', () => {
     test('issue example', () => {
-        const policyJson: cedar.Template = {
+        const policyJson: cedar.Policy = {
             "effect": "permit",
             "principal": {
               "op": "All"
@@ -555,7 +555,7 @@ describe('get valid request envs', () => {
           }
         `;
 
-        let requestEnvs = cedar.getValidRequestEnvs(policyJson, schemaJson);
+        let requestEnvs = cedar.getValidRequestEnvsPolicy(policyJson, schemaJson);
         if (requestEnvs.type !== 'success') {
             throw new Error(`Expected success in get valid request envs, got ${JSON.stringify(requestEnvs, null, 4)}`);
         }
