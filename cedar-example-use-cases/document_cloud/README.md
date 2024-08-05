@@ -15,7 +15,7 @@ For convenience, `User`s can be organized into `Group`s. Documents can be shared
 
 ### `Document`
 
-`Document`s are the core resource of the system. Every document has an owner, which is the `User` who created it. `Document` uses access control lists (ACLs) to manage permissions for action types such as view, edit, and manage.
+`Document`s are the core resource of the system. Every document has an owner, which is the `User` who created it. `Document`s use access control lists (ACLs) to manage permissions for action types such as view, edit, and manage.
 An ACL is modeled as a set of `Group`s. We recommend that you create a "personal" `Group` for each `User`, such that adding a `User` to an ACL amounts to adding the personal `Group` to the set of `Group`s modeling the ACL.
 
 It is always enforced that only the owner can delete or edit the sharing state of a document.
@@ -99,7 +99,7 @@ permit (
 when { resource.owner == principal };
 ```
 
-Any `User` should be able to perform any action on a `Drive`, including `createDocument`.
+Any `User` should be able to perform any action on a `Drive` they own, including `createDocument`.
 
 ### Viewing Documents
 
@@ -126,7 +126,7 @@ permit (
 when { principal in resource.viewACL };
 ```
 
-Any `User` can view a `Document` when it's publicly readable and editable.
+Any `User` can view a `Document` when it's publicly readable or editable.
 
 ```
 @id("public-view")
