@@ -20,7 +20,7 @@ use std::{collections::HashMap, path::PathBuf};
 use tracing::{error, info, trace};
 
 use cedar_policy::{
-    Authorizer, Context, Decision, Diagnostics, Entities, HumanSchemaError, ParseErrors, PolicySet,
+    Authorizer, CedarSchemaError, Context, Decision, Diagnostics, Entities, ParseErrors, PolicySet,
     PolicySetError, Request, RequestBuilder, RestrictedExpression, Schema, SchemaError,
     ValidationMode, Validator,
 };
@@ -162,7 +162,7 @@ pub enum ContextError {
     #[error("Error Parsing Json Schema: {0}")]
     JsonSchema(#[from] SchemaError),
     #[error("Error Parsing Human-readable Schema: {0}")]
-    CedarSchema(#[from] HumanSchemaError),
+    CedarSchema(#[from] CedarSchemaError),
     #[error("Error Parsing PolicySet: {0}")]
     Policy(#[from] ParseErrors),
     #[error("Error Processing PolicySet: {0}")]
@@ -300,7 +300,7 @@ impl AppContext {
         let schema_path = schema_path.into();
         let policies_path = policies_path.into();
         let schema_file = std::fs::File::open(&schema_path)?;
-        let (schema, _) = Schema::from_file_natural(schema_file)?;
+        let (schema, _) = Schema::from_cedarschema_file(schema_file)?;
 
         let entities_file = std::fs::File::open(entities_path.into())?;
         let entities = serde_json::from_reader(entities_file)?;
