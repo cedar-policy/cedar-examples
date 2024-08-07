@@ -388,7 +388,7 @@ action view appliesTo {
 };
     "#;
     // the schema can be parsed in rust:
-    let (schema, warnings) = Schema::from_str_natural(schema_text).unwrap();
+    let (schema, warnings) = Schema::from_cedarschema_str(schema_text).unwrap();
     assert_eq!(warnings.count(), 0);
     let validator = Validator::new(schema);
 

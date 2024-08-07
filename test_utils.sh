@@ -30,9 +30,9 @@ validate() {
     echo " Running validation on ${policies}"
     if [ -z "$links" ]
     then
-        res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human)"
+        res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format cedar)"
     else
-       res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human -k "$folder/$links" )"
+       res="$(cedar validate --policies "$folder/$policies" --schema "$folder/$schema" --schema-format cedar -k "$folder/$links" )"
     fi
     if [[ $? == 0 ]]
     then
@@ -61,9 +61,9 @@ authorize() {
                 IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies"  --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
             elif [ -z "$links" ]
             then
-                IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies" --schema "$folder/$schema" --schema-format human --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
+                IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies" --schema "$folder/$schema" --schema-format cedar --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
             else
-                IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies" -k "$folder/$links" --schema "$folder/$schema" --schema-format human --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
+                IFS=$'\n' read -r -d '' -a tmp_array < <(cedar authorize --policies "$folder/$policies" -k "$folder/$links" --schema "$folder/$schema" --schema-format cedar --entities "$folder/$entities" --request-json "$file" -v && printf '\0')
             fi
             res="${tmp_array[0]}"
             unset tmp_array[0]
