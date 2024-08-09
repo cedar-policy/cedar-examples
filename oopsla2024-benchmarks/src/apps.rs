@@ -231,7 +231,7 @@ impl ExampleApp {
 
     /// Create a `GeneratorSchema` from the given filepath
     pub fn load_schema(path: impl AsRef<Path>, u: &mut Unstructured<'_>) -> GeneratorSchema {
-        let schema = SchemaFragment::from_json_file(File::open(path.as_ref()).unwrap_or_else(|e| {
+        let schema = SchemaFragment::from_file(File::open(path.as_ref()).unwrap_or_else(|e| {
             panic!(
                 "failed to open schema file {}: {e}",
                 path.as_ref().display()

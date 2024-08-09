@@ -15,12 +15,12 @@ uber jar in build.gradle so that both the CedarJava and CedarJavaFFI libraries a
 
 ### Building locally
 
-To build locally, pull the corresponding 3.2.x release of cedar-java and build both CedarJavaFFI and CedarJava in your workspace.
+To build locally, pull the corresponding 3.3.x release of cedar-java and build both CedarJavaFFI and CedarJava in your workspace.
 You will need to ensure that CedarJava is able to find the dynamic library of Cedar. To do that, you need to ensure the
 environment variable `CEDAR_JAVA_FFI_LIB` gives the location of your `cedar_java_ffi` shared library. Typically this can be done by running `config.sh`:
 
 ```shell
-git clone -b release/3.2.x https://github.com/cedar-policy/cedar-java.git
+git clone -b release/3.3.x https://github.com/cedar-policy/cedar-java.git
 cd cedar-java/CedarJavaFFI && cargo build
 cd ../CedarJava && ./gradlew build
 # Change the build.gradle to reference the jar built locally in the step above
