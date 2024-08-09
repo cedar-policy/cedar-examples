@@ -301,7 +301,7 @@ impl AppContext {
         let schema_path = schema_path.into();
         let policies_path = policies_path.into();
         let schema_file = std::fs::File::open(&schema_path)?;
-        let (schema, _) = Schema::from_cedarschema_str(schema_file)?;
+        let (schema, _) = Schema::from_cedarschema_file(schema_file)?;
 
         let entities_file = std::fs::File::open(entities_path.into())?;
         let entities = serde_json::from_reader(entities_file)?;
