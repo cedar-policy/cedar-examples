@@ -488,7 +488,7 @@ pub fn spawn(
 ) -> std::result::Result<Sender<AppQuery>, ContextError> {
     ...
     let schema_file = std::fs::File::open(&schema_path)?;
-    let schema = Schema::from_file(schema_file)?;
+    let schema = Schema::from_json_file(schema_file)?;
     ...
     let policy_src = std::fs::read_to_string(&policies_path)?;
     let policies0 = policy_src.parse()?;
