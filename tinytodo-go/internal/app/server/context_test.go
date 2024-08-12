@@ -1,21 +1,22 @@
 package server
 
 import (
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore"
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/action"
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"encoding/json"
-	"github.com/cedar-policy/cedar-go"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"path"
 	"testing"
+
+	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore"
+	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/action"
+	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-go"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func readFile(t *testing.T, prefix, filename string) []byte {
+func readFile(t *testing.T, filename string) []byte {
 	t.Helper()
-	res, err := os.ReadFile(path.Join(prefix, filename))
+	res, err := os.ReadFile(filename)
 	require.NoError(t, err)
 	return res
 }
@@ -24,13 +25,13 @@ func TestServer_isAuthorized(t *testing.T) {
 
 	// read policies
 
-	psFile := readFile(t, "../../../", "policies.cedar")
+	psFile := readFile(t, path.Join("../../../", "policies.cedar"))
 	ps, err := cedar.NewPolicySet("policies.cedar", psFile)
 	require.NoError(t, err)
 
 	// read entities (will be modified later)
 
-	esFile := readFile(t, "../../../", "entities.json")
+	esFile := readFile(t, path.Join("../../../", "entities.json"))
 
 	es, err := entitystore.New(esFile)
 	require.NoError(t, json.Unmarshal(esFile, &es))
