@@ -9,7 +9,7 @@ import (
 
 // ListUID is a transparent wrapper around EntityUID, to make it clear that we want a List's EntityUID.
 //
-// Note that we use inheritance instead of alias, because we want to inherit methods. See [blog post].
+// Note that we use composition instead of alias, because we want to inherit methods. See [blog post].
 //
 // [blog post]: https://sentry.io/answers/alias-type-definitions/
 type ListUID struct {
