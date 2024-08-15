@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 	"path"
@@ -70,6 +71,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAndrew.EUID.EntityUID,
 			action.CreateList,
 			ApplicationEntityUID.EUID,
@@ -83,6 +85,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAndrew.EUID.EntityUID,
 			action.GetLists,
 			ApplicationEntityUID.EUID,
@@ -115,6 +118,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		require.Contains(t, s.es.Lists, list0UID)
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAndrew.EUID.EntityUID,
 			action.GetList,
 			list0.UID.EntityUID,
@@ -132,6 +136,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.GetList,
 			list0.UID.EntityUID,
@@ -149,11 +154,12 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.GetList,
 			entitystore.NewEntityUID(entitytype.List, "non-existent"),
 		)
-		require.Error(t, err)
+		require.NoError(t, err)
 		assert.False(t, decision)
 	})
 
@@ -166,6 +172,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAndrew.EUID.EntityUID,
 			action.CreateTask,
 			list0.UID.EntityUID,
@@ -183,6 +190,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.CreateTask,
 			list0.UID.EntityUID,
@@ -200,6 +208,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAndrew.EUID.EntityUID,
 			action.UpdateTask,
 			list0.UID.EntityUID,
@@ -217,6 +226,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAndrew.EUID.EntityUID,
 			action.EditShare,
 			list0.UID.EntityUID,
@@ -239,6 +249,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// User::aaron is a member of Team::interns, which has the parent Team::0 (reader of List::0)
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.GetList,
 			list0.UID.EntityUID,
@@ -257,6 +268,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// User::aaron is a member of Team::interns, which has the parent Team::0 (reader of List::0)
 
 		decision, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.UpdateList,
 			list0.UID.EntityUID,
@@ -273,6 +285,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision
 
 		decisionGet, _, err := s.isAuthorized(
+			context.Background(),
 			userKesha.EUID.EntityUID,
 			action.GetList,
 			list0.UID.EntityUID,
@@ -281,6 +294,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		assert.False(t, decisionGet)
 
 		decisionUpdate, _, err := s.isAuthorized(
+			context.Background(),
 			userKesha.EUID.EntityUID,
 			action.UpdateList,
 			list0.UID.EntityUID,
@@ -303,6 +317,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// User::aaron is a member of Team::interns, which has the parent Team::1 (editor of List::0)
 
 		decision1, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.UpdateList,
 			list0.UID.EntityUID,
@@ -311,6 +326,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		assert.True(t, decision1)
 
 		decision2, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.CreateTask,
 			list0.UID.EntityUID,
@@ -319,6 +335,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		assert.True(t, decision2)
 
 		decision3, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.UpdateTask,
 			list0.UID.EntityUID,
@@ -327,6 +344,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		assert.True(t, decision3)
 
 		decision4, _, err := s.isAuthorized(
+			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.DeleteTask,
 			list0.UID.EntityUID,
@@ -343,6 +361,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		// evaluate decision1
 
 		decision1, _, err := s.isAuthorized(
+			context.Background(),
 			userKesha.EUID.EntityUID,
 			action.UpdateList,
 			list0.UID.EntityUID,
@@ -351,6 +370,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		assert.False(t, decision1)
 
 		decision2, _, err := s.isAuthorized(
+			context.Background(),
 			userKesha.EUID.EntityUID,
 			action.CreateTask,
 			list0.UID.EntityUID,
@@ -359,6 +379,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		assert.False(t, decision2)
 
 		decision3, _, err := s.isAuthorized(
+			context.Background(),
 			userKesha.EUID.EntityUID,
 			action.UpdateTask,
 			list0.UID.EntityUID,
@@ -367,6 +388,7 @@ func TestServer_isAuthorized(t *testing.T) {
 		assert.False(t, decision3)
 
 		decision4, _, err := s.isAuthorized(
+			context.Background(),
 			userKesha.EUID.EntityUID,
 			action.DeleteTask,
 			list0.UID.EntityUID,

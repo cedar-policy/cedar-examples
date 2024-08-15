@@ -54,7 +54,8 @@ func (s *Server) handleGetAPIListsGet(w http.ResponseWriter, r *http.Request) {
 		slog.Any("userUID", userUID),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.GetLists,
 		ApplicationEntityUID.EUID,
@@ -72,14 +73,14 @@ func (s *Server) handleGetAPIListsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.GetLists),
 			slog.Any("resource", ApplicationEntityUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -97,6 +98,7 @@ func (s *Server) handleGetAPIListsGet(w http.ResponseWriter, r *http.Request) {
 
 	for listEUID, list := range s.es.Lists {
 		listAllowed, _, err := s.isAuthorized(
+			r.Context(),
 			userUID.EntityUID,
 			action.GetList,
 			listEUID.EntityUID,
@@ -179,7 +181,8 @@ func (s *Server) handlePostAPIListCreate(w http.ResponseWriter, r *http.Request)
 		slog.Any("userUID", userUID),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.CreateList,
 		ApplicationEntityUID.EUID,
@@ -197,14 +200,14 @@ func (s *Server) handlePostAPIListCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.CreateList),
 			slog.Any("resource", ApplicationEntityUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -299,7 +302,8 @@ func (s *Server) handleGetAPIListGet(w http.ResponseWriter, r *http.Request) {
 		slog.Any("listUID", listUID),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.GetList,
 		listUID.EntityUID,
@@ -317,14 +321,14 @@ func (s *Server) handleGetAPIListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.GetList),
 			slog.Any("resource", listUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -428,7 +432,8 @@ func (s *Server) handlePostAPITaskCreate(w http.ResponseWriter, r *http.Request)
 		slog.Any("listUID", listUID),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.CreateTask,
 		listUID.EntityUID,
@@ -446,14 +451,14 @@ func (s *Server) handlePostAPITaskCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.CreateTask),
 			slog.Any("resource", listUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -596,7 +601,8 @@ func (s *Server) handlePostAPITaskUpdate(w http.ResponseWriter, r *http.Request)
 		slog.Any("taskState", taskState),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.UpdateTask,
 		listUID.EntityUID, // note that we check for permission to list, not task
@@ -614,14 +620,14 @@ func (s *Server) handlePostAPITaskUpdate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.UpdateTask),
 			slog.Any("resource", listUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -772,7 +778,8 @@ func (s *Server) handleDeleteAPITaskDelete(w http.ResponseWriter, r *http.Reques
 		slog.Any("listUID", listUID),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.DeleteTask,
 		listUID.EntityUID,
@@ -790,14 +797,14 @@ func (s *Server) handleDeleteAPITaskDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.DeleteTask),
 			slog.Any("resource", listUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -946,7 +953,8 @@ func (s *Server) handleDeleteAPIListDelete(w http.ResponseWriter, r *http.Reques
 		slog.Any("listUID", listUID),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.DeleteList,
 		listUID.EntityUID,
@@ -964,14 +972,14 @@ func (s *Server) handleDeleteAPIListDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.DeleteList),
 			slog.Any("resource", listUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -1127,7 +1135,8 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 		slog.Any("role", rr),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.EditShare,
 		listUID.EntityUID,
@@ -1145,14 +1154,14 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.EditShare),
 			slog.Any("resource", listUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
@@ -1368,7 +1377,8 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 		slog.Any("role", rr),
 	)
 
-	allowed, reasons, err := s.isAuthorized(
+	decision, diagnostic, err := s.isAuthorized(
+		r.Context(),
 		userUID.EntityUID,
 		action.EditShare,
 		listUID.EntityUID,
@@ -1386,14 +1396,14 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !allowed {
+	if !decision {
 		s.logger.InfoContext(
 			r.Context(),
 			"not allowed",
 			slog.Any("principal", userUID),
 			slog.Any("action", action.EditShare),
 			slog.Any("resource", listUID),
-			slog.Any("reasons", reasons),
+			slog.Any("diagnostic", diagnostic),
 		)
 		s.writeGenericResponse(
 			r.Context(),
