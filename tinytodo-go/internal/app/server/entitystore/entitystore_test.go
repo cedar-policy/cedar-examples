@@ -1,8 +1,8 @@
 package entitystore
 
 import (
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"

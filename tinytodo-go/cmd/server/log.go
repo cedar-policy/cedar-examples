@@ -1,7 +1,7 @@
 package main
 
 import (
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server"
 	"log/slog"
 	"os"
 )

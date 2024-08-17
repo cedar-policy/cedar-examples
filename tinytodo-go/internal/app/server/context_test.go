@@ -7,9 +7,9 @@ import (
 	"path"
 	"testing"
 
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore"
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/action"
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/action"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"github.com/cedar-policy/cedar-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

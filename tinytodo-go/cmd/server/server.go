@@ -1,9 +1,9 @@
 package main
 
 import (
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server"
 	"flag"
 	"fmt"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server"
 )
 
 var (

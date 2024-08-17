@@ -1,7 +1,7 @@
 package entitystore
 
 import (
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/taskstate"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
 	"github.com/cedar-policy/cedar-go"
 )
 

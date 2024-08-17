@@ -1,12 +1,12 @@
 package server
 
 import (
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore"
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/action"
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/role"
-	"code.byted.org/binaryauthorization/tinytodo-go/internal/app/server/entitystore/taskstate"
 	"encoding/json"
 	"fmt"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/action"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/role"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
 	"log/slog"
 	"net/http"
 	"strconv"
