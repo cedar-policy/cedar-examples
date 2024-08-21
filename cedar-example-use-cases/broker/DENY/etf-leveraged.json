@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"Regular Dude\"",
+    "action": "Action::\"TradeETF\"",
+    "resource": "ETF::\"QLD\"",
+    "context": {}
+}

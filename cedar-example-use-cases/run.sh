@@ -50,4 +50,9 @@ validate "hotel_chains/templated" "policies.cedar" "policies.cedarschema" "linke
 authorize "hotel_chains/templated" "policies.cedar" "entities.json" "policies.cedarschema" "linked"
 #format "hotel_chains/static" "policies.cedar"
 
+# Broker 
+echo -e "\nTesting broker..."
+validate "broker" "policies.cedar" "policies.cedarschema" "linked"
+authorize "broker" "policies.cedar" "entities.json" "policies.cedarschema"
+
 exit "$any_failed"

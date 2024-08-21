@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"Senior Trader\"",
+    "action": "Action::\"TradeETF\"",
+    "resource": "ETF::\"SBIT\"",
+    "context": {}
+}

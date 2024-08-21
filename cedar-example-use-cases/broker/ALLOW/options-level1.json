@@ -1,0 +1,8 @@
+{
+    "principal": "User::\"Trader\"",
+    "action": "Action::\"TradeOptions\"",
+    "resource": "Options::\"NDX\"",
+    "context": {
+        "type": "Covered Call"
+    }
+}

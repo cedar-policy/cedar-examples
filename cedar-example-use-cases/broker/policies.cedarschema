@@ -1,0 +1,38 @@
+// Eids are tickers
+entity Stock in Security;
+// Eids are tickers
+entity ETF in Security {
+    leveraged?: Bool,
+    inverse?: Bool,
+    crypto_based?: Bool,
+};
+// Options type is specified in the context
+// Eids are tickers of the underlying asset
+entity Options in Security;
+entity Security;
+entity User {
+    risk_tolerance: String,
+    options_level: Long,
+    location: String,
+};
+
+action "Trade";
+action "TradeStock" in "Trade" appliesTo {
+    principal: User,
+    resource: Stock,
+};
+action "TradeETF" in "Trade" appliesTo {
+    principal: User,
+    resource: ETF,
+};
+action "TradeOptions" in "Trade" appliesTo {
+    principal: User,
+    resource: Options,
+    context: {
+        type: String,
+    },
+};
+action "View" appliesTo {
+    principal: User,
+    resource: Security,
+};

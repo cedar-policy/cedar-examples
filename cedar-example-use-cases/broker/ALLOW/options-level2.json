@@ -1,0 +1,8 @@
+{
+    "principal": "User::\"Senior Trader\"",
+    "action": "Action::\"TradeOptions\"",
+    "resource": "Options::\"NDX\"",
+    "context": {
+        "type": "Long Call"
+    }
+}

@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"Regular Dude\"",
+    "action": "Action::\"TradeStock\"",
+    "resource": "Stock::\"Z\"",
+    "context": {}
+}
