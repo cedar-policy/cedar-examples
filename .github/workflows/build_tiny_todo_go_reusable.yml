@@ -1,0 +1,39 @@
+name: Build and test TinyTodo-Go
+on:
+    workflow_call:
+      inputs:
+        cedar_policy_ref:
+          required: true
+          type: string
+        cedar_examples_ref:
+          required: true
+          type: string
+
+jobs:
+  build_and_test_tiny_todo_go:
+    name: Build and test TinyTodo-Go
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [ '1.22' ]
+    steps:
+      - name: Checkout cedar-examples
+        uses: actions/checkout@v4
+        with:
+          repository: cedar-policy/cedar-examples
+          ref: ${{ inputs.cedar_examples_ref }}
+      - name: Setup Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - name: go vet
+        working-directory: ./tinytodo-go
+        run: go vet ./...
+      - name: go test
+        working-directory: ./tinytodo-go
+        run: go test ./...
+      - name: python test
+        working-directory: ./tinytodo-go
+        run: |
+          go build ./cmd/server
+          python3 -m unittest
