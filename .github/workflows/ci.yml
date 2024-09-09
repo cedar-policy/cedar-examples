@@ -55,7 +55,6 @@ jobs:
       cedar_examples_ref: ${{ github.href }}
 
   tinytodo-go:
-    needs: get-branch-name
     uses: ./.github/workflows/build_tiny_todo_go_reusable.yml
     with:
       cedar_examples_ref: ${{ github.href }}
