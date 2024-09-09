@@ -3,7 +3,7 @@ module github.com/cedar-policy/cedar-examples/tinytodo-go
 go 1.22
 
 require (
-	github.com/cedar-policy/cedar-go v0.0.0-20240715162045-a71e93ee6ae7
+	github.com/cedar-policy/cedar-go v0.0.0-20240715162045-a71e93ee6ae7 // pins the cedar-go commit
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/stretchr/testify v1.9.0
 )
