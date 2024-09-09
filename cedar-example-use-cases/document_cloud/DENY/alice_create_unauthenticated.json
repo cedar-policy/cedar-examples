@@ -1,6 +1,0 @@
-{
-    "principal": "User::\"alice\"",
-    "action": "Action::\"CreateDocument\"",
-    "resource": "Drive::\"drive\"",
-    "context": {"is_authenticated": false}
-}
