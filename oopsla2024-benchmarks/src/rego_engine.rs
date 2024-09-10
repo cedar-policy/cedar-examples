@@ -19,7 +19,7 @@ use log::warn;
 use serde::Deserialize;
 use serde_json::Value;
 
-static GO_BINARY_PATH: &str = "tinytodo/rego/build/bin/tinytodo";
+static GO_BINARY_PATH: &str = "opa-harness/build/bin/main";
 
 pub struct RegoEngine<'a, T>
 where

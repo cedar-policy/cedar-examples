@@ -20,7 +20,7 @@ pub struct Input {
 
 impl Input {
     pub fn new(requests: Vec<Request>) -> Self {
-        let policy = std::fs::read_to_string("openfga-examples/rego/gdrive.rego").unwrap();
+        let policy = std::fs::read_to_string("benches/gdrive/rego/gdrive.rego").unwrap();
         let namespace = "gdrive";
         Self {
             policy,

@@ -33,17 +33,20 @@ RUN cargo install cedar-policy-cli@3.0.1
 WORKDIR /
 COPY Cargo.toml plot.py README.md cedar-benchmarks/
 COPY generators cedar-benchmarks/generators/
-COPY openfga-examples cedar-benchmarks/openfga-examples/
+COPY benches cedar-benchmarks/benches/
 COPY src cedar-benchmarks/src/
-COPY tinytodo cedar-benchmarks/tinytodo/
+COPY opa-harness cedar-benchmarks/opa-harness/
 COPY validate_all_benchmarks.sh cedar-benchmarks
 
+## Check that the Cedar policies validate with the provided schemas
+RUN cedar-benchmarks/validate_all_benchmarks.sh
+
 ## Build Rego version of TinyTodo
-RUN cd cedar-benchmarks/tinytodo/rego && \
-    go mod init TinyTodoRego && \
+RUN cd cedar-benchmarks/opa-harness && \
+    go mod init opa-harness && \
     go get github.com/open-policy-agent/opa/rego && \
     mkdir -p build/bin && \
-    go build -o build/bin/tinytodo cmd/tinytodo/main.go
+    go build -o build/bin/main cmd/harness/main.go
 
 ## Build benchmark harness so it's ready
 WORKDIR /cedar-benchmarks
