@@ -20,8 +20,8 @@ can build Cedar and our benchmarking harness.
 
 * `benches/`: Cedar, OpenFGA, and Rego policies used for benchmarking. See the README in that folder for more details.
 * `generators/`: Python scripts that generate entity data for benchmarking.
-* `opa-harness/`: Go wrapper to run OPA.
-* `src/`: Rust code that performs the benchmarking. `src/main.rs` is what runs when you run `cargo run`.
+* `rego-harness/`: Go wrapper to run Rego.
+* `src/`: Rust code that performs the benchmarking. `src/main.rs` is what runs when you run `cargo run --release`.
 * `Dockerfile`: Builds the test environment (see instructions above).
 * `openfga-timing.patch`: OpenFGA patch to apply to the version used in our experiments.
 * `plot.py`: Python script to plot results.

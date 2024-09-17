@@ -1,7 +1,7 @@
 package main
 
 import (
-	"opa-harness/harness"
+	"rego-harness/harness"
 )
 
 

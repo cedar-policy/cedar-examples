@@ -35,15 +35,15 @@ COPY Cargo.toml plot.py README.md cedar-benchmarks/
 COPY generators cedar-benchmarks/generators/
 COPY benches cedar-benchmarks/benches/
 COPY src cedar-benchmarks/src/
-COPY opa-harness cedar-benchmarks/opa-harness/
+COPY rego-harness cedar-benchmarks/rego-harness/
 COPY validate_all_benchmarks.sh cedar-benchmarks
 
 ## Check that the Cedar policies validate with the provided schemas
-RUN cedar-benchmarks/validate_all_benchmarks.sh
+RUN BENCHES=cedar-benchmarks/benches cedar-benchmarks/validate_all_benchmarks.sh
 
-## Build Rego version of TinyTodo
-RUN cd cedar-benchmarks/opa-harness && \
-    go mod init opa-harness && \
+## Build Rego harness
+RUN cd cedar-benchmarks/rego-harness && \
+    go mod init rego-harness && \
     go get github.com/open-policy-agent/opa/rego && \
     mkdir -p build/bin && \
     go build -o build/bin/main cmd/harness/main.go
