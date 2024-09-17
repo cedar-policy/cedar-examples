@@ -47,15 +47,15 @@ impl ExampleApp {
             name: "github",
             schema: {
                 let schema_path =
-                    Path::new("./openfga-examples/github").join("github.cedarschema.json");
+                    Path::new("./benches/github/cedar").join("github.cedarschema.json");
                 Self::load_schema(schema_path, u)
             },
             static_policies: {
-                let policies_path = Path::new("./openfga-examples/github").join("policies.cedar");
+                let policies_path = Path::new("./benches/github/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
             openfga_authz_model_filename:
-                "./openfga-examples/openfga/github/authorization-model.json",
+                "./benches/github/openfga/authorization-model.json",
             convert_euid: Box::new(convert_github_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/github_entity_generator.py",
@@ -77,17 +77,17 @@ impl ExampleApp {
         Self {
             name: "github-templates",
             schema: {
-                let schema_path = Path::new("./openfga-examples/github-templates")
+                let schema_path = Path::new("./benches/github-templates/cedar")
                     .join("github-templates.cedarschema.json");
                 Self::load_schema(schema_path, u)
             },
             static_policies: {
                 let policies_path =
-                    Path::new("./openfga-examples/github-templates").join("policies.cedar");
+                    Path::new("./benches/github-templates/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
             openfga_authz_model_filename:
-                "./openfga-examples/openfga/github/authorization-model.json",
+                "./benches/github/openfga/authorization-model.json",
             convert_euid: Box::new(convert_github_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/github_templates_entity_generator.py",
@@ -110,15 +110,15 @@ impl ExampleApp {
             name: "gdrive",
             schema: {
                 let schema_path =
-                    Path::new("./openfga-examples/gdrive").join("gdrive.cedarschema.json");
+                    Path::new("./benches/gdrive/cedar").join("gdrive.cedarschema.json");
                 Self::load_schema(schema_path, u)
             },
             static_policies: {
-                let policies_path = Path::new("./openfga-examples/gdrive").join("policies.cedar");
+                let policies_path = Path::new("./benches/gdrive/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
             openfga_authz_model_filename:
-                "./openfga-examples/openfga/gdrive/authorization-model.json",
+                "./benches/gdrive/openfga/authorization-model.json",
             convert_euid: Box::new(convert_gdrive_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/gdrive_entity_generator.py",
@@ -140,17 +140,17 @@ impl ExampleApp {
         Self {
             name: "gdrive-templates",
             schema: {
-                let schema_path = Path::new("./openfga-examples/gdrive-templates")
+                let schema_path = Path::new("./benches/gdrive-templates/cedar")
                     .join("gdrive-templates.cedarschema.json");
                 Self::load_schema(schema_path, u)
             },
             static_policies: {
                 let policies_path =
-                    Path::new("./openfga-examples/gdrive-templates").join("policies.cedar");
+                    Path::new("./benches/gdrive-templates/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
             openfga_authz_model_filename:
-                "./openfga-examples/openfga/gdrive/authorization-model.json",
+                "./benches/gdrive/openfga/authorization-model.json",
             convert_euid: Box::new(convert_gdrive_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/gdrive_templates_entity_generator.py",
@@ -172,18 +172,18 @@ impl ExampleApp {
         Self {
             name: "tinytodo",
             schema: {
-                let schema_path = Path::new("./tinytodo").join("tinytodo.cedarschema.json");
+                let schema_path = Path::new("benches/tinytodo/cedar").join("tinytodo.cedarschema.json");
                 Self::load_schema(schema_path, u)
             },
             static_policies: {
-                let policies_path = Path::new("./tinytodo").join("tinytodo.cedar");
+                let policies_path = Path::new("benches/tinytodo/cedar").join("tinytodo.cedar");
                 parse_policyset(
                     &std::fs::read_to_string(policies_path)
                         .expect("failed to read tinytodo policies file"),
                 )
                 .expect("failed to parse tinytodo policies")
             },
-            openfga_authz_model_filename: "tinytodo/openfga/authorization-model.json",
+            openfga_authz_model_filename: "benches/tinytodo/openfga/authorization-model.json",
             convert_euid: Box::new(convert_tinytodo_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/tinytodo_entity_generator.py",

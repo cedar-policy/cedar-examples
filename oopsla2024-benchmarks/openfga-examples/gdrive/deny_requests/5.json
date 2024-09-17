@@ -1,6 +1,0 @@
-{
-    "principal": "User::\"beth\"",
-    "action": "Action::\"changeOwner\"",
-    "resource": "Document::\"2021-roadmap\"",
-    "context": {}
-}
