@@ -11,7 +11,7 @@
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@cedar-policy/cedar-wasm": "3.2.3"
+    "@cedar-policy/cedar-wasm": "4.0.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
