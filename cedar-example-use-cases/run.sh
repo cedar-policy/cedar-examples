@@ -48,6 +48,6 @@ format "hotel_chains/static" "policies.cedar"
 echo -e "\nTesting Hotels (templated)..."
 validate "hotel_chains/templated" "policies.cedar" "policies.cedarschema" "linked"
 authorize "hotel_chains/templated" "policies.cedar" "entities.json" "policies.cedarschema" "linked"
-format "hotel_chains/static" "policies.cedar"
+format "hotel_chains/templated" "policies.cedar"
 
 exit "$any_failed"
