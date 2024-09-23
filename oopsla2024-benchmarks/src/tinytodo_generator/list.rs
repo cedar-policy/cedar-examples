@@ -94,7 +94,7 @@ impl Task {
             ("name".into(), Value::from(self.name.clone())),
             ("state".into(), Value::from(format!("{:?}", self.state))),
         ];
-        Value::record(attrs.into_iter(), None)
+        Value::record(attrs, None)
     }
 
     pub fn from_cedar_record(rec: &Value) -> Self {

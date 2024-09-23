@@ -99,7 +99,7 @@ pub fn pv_expect_record(v: &PartialValue) -> HashMap<SmolStr, &Value> {
 
 /// Given a `Value` that we expect to be a set,
 /// iterate over the values in the set, panicking if it's not actually a set
-pub fn expect_set<'a>(v: &'a Value) -> impl Iterator<Item = &'a Value> + 'a {
+pub fn expect_set(v: &Value) -> impl Iterator<Item = &Value> {
     match &v.value {
         ValueKind::Set(s) => s.iter(),
         v => panic!("expected a set; got: {v:?}"),
@@ -108,7 +108,7 @@ pub fn expect_set<'a>(v: &'a Value) -> impl Iterator<Item = &'a Value> + 'a {
 
 /// Given an attribute value (`PartialValue`) that we expect to be a set,
 /// iterate over the values in the set, panicking if it's not actually a set (or is unknown)
-pub fn pv_expect_set<'a>(v: &'a PartialValue) -> impl Iterator<Item = &'a Value> + 'a {
+pub fn pv_expect_set(v: &PartialValue) -> impl Iterator<Item = &Value> {
     expect_set(pv_expect_known(v))
 }
 

@@ -120,7 +120,7 @@ impl Resource {
 
 fn build_file_graph(es: impl IntoIterator<Item = Entity>) -> FileGraph {
     es.into_iter()
-        .filter(|e| is_document_or_folder(&&e.uid()))
+        .filter(|e| is_document_or_folder(&e.uid()))
         .map(|e| {
             (
                 e.uid().to_string(),
