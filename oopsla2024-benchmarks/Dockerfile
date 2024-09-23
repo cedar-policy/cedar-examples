@@ -18,8 +18,8 @@ ENV PATH="${PATH}:${HOME}/openfga"
 RUN timeout 0.1 openfga run --playground-enabled=false --log-level=warn || true
 
 ## Clone cedar and cedar-spec
-RUN git clone https://github.com/cedar-policy/cedar-spec -b main
-RUN git clone https://github.com/cedar-policy/cedar cedar-spec/cedar -b main
+RUN git clone https://github.com/cedar-policy/cedar-spec /cedar-spec -b main
+RUN git clone https://github.com/cedar-policy/cedar /cedar-spec/cedar -b main
 
 ## Install Cedar CLI so it is usable from command line
 RUN cargo install cedar-policy-cli@4.0.0 --path cedar-spec/cedar/cedar-policy-cli
@@ -39,6 +39,7 @@ COPY Cargo.toml plot.py README.md cedar-benchmarks/
 COPY generators cedar-benchmarks/generators/
 COPY benches cedar-benchmarks/benches/
 COPY src cedar-benchmarks/src/
+COPY /cedar-spec cedar-benchmarks/cedar-spec/
 COPY rego-harness cedar-benchmarks/rego-harness/
 COPY validate_all_benchmarks.sh cedar-benchmarks
 
