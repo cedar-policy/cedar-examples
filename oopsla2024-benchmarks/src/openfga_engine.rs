@@ -71,16 +71,16 @@ impl<'a> OpenFgaEngine<'a> {
     pub fn execute(&self, request: Request) -> SingleExecutionReport {
         let tuple = OpenFgaTuple {
             user: match request.principal() {
-                EntityUIDEntry::Known(p) => (self.app.convert_euid)(p),
-                EntityUIDEntry::Unknown => panic!("can't handle requests with Unknown"),
+                EntityUIDEntry::Known { euid, .. } => (self.app.convert_euid)(euid),
+                EntityUIDEntry::Unknown { .. } => panic!("can't handle requests with Unknown"),
             },
             relation: match request.action() {
-                EntityUIDEntry::Known(a) => (self.app.convert_euid)(a),
-                EntityUIDEntry::Unknown => panic!("can't handle requests with Unknown"),
+                EntityUIDEntry::Known { euid, .. } => (self.app.convert_euid)(euid),
+                EntityUIDEntry::Unknown { .. } => panic!("can't handle requests with Unknown"),
             },
             object: match request.resource() {
-                EntityUIDEntry::Known(r) => (self.app.convert_euid)(r),
-                EntityUIDEntry::Unknown => panic!("can't handle requests with Unknown"),
+                EntityUIDEntry::Known { euid, .. } => (self.app.convert_euid)(euid),
+                EntityUIDEntry::Unknown { .. } => panic!("can't handle requests with Unknown"),
             },
         };
         let allowed = self.client.check(&tuple);
@@ -103,7 +103,8 @@ impl<'a> OpenFgaEngine<'a> {
             errors: vec![], // all errors in OpenFGA are currently panics
             context_attrs: request
                 .context()
-                .map(|ctx| ctx.iter().map(|it| it.count()).unwrap_or(0))
+                .cloned()
+                .map(|ctx| ctx.into_iter().count())
                 .unwrap_or(0),
         }
     }

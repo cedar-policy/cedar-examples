@@ -123,15 +123,15 @@ impl Entities {
     pub fn from_cedar_entities(
         entities: impl IntoIterator<Item = cedar_policy_core::ast::Entity>,
     ) -> Self {
-        let user_entity_type = cedar_policy_core::ast::EntityType::Specified(
-            cedar_policy_core::ast::Name::parse_unqualified_name("User").unwrap(),
-        );
-        let team_entity_type = cedar_policy_core::ast::EntityType::Specified(
-            cedar_policy_core::ast::Name::parse_unqualified_name("Team").unwrap(),
-        );
-        let list_entity_type = cedar_policy_core::ast::EntityType::Specified(
-            cedar_policy_core::ast::Name::parse_unqualified_name("List").unwrap(),
-        );
+        let user_entity_type = cedar_policy_core::ast::Name::parse_unqualified_name("User")
+            .unwrap()
+            .into();
+        let team_entity_type = cedar_policy_core::ast::Name::parse_unqualified_name("Team")
+            .unwrap()
+            .into();
+        let list_entity_type = cedar_policy_core::ast::Name::parse_unqualified_name("List")
+            .unwrap()
+            .into();
         let mut users = HashMap::new();
         let mut teams = HashMap::new();
         let mut lists = HashMap::new();

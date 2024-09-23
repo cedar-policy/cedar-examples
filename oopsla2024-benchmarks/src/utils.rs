@@ -1,6 +1,8 @@
 #![allow(dead_code)] // this is a utilities file, some utilities are included for completeness even if currently unused
 
-use cedar_policy_core::ast::{EntityType, EntityUID, Literal, Name, PartialValue, Value};
+use cedar_policy_core::ast::{
+    EntityType, EntityUID, Literal, Name, PartialValue, Value, ValueKind,
+};
 use smol_str::SmolStr;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -8,7 +10,7 @@ use std::sync::Arc;
 /// Convert &str to EntityType. Assumes the EntityType is supposed to be
 /// unqualified and the &str doesn't contain namespaces
 pub fn entity_type(s: &str) -> EntityType {
-    EntityType::Specified(Name::parse_unqualified_name(s).unwrap())
+    Name::parse_unqualified_name(s).unwrap().into()
 }
 
 /// Given a `PartialValue` that we expect to contain no unknowns,
@@ -23,8 +25,8 @@ pub fn pv_expect_known(v: &PartialValue) -> &Value {
 /// Given a `Value` that we expect to be a boolean,
 /// get the boolean value, panicking if it's not actually a boolean
 pub fn expect_bool(v: &Value) -> bool {
-    match v {
-        Value::Lit(Literal::Bool(b)) => *b,
+    match &v.value {
+        ValueKind::Lit(Literal::Bool(b)) => *b,
         v => panic!("expected a boolean; got: {v:?}"),
     }
 }
@@ -38,8 +40,8 @@ pub fn pv_expect_bool(v: &PartialValue) -> bool {
 /// Given a `Value` that we expect to be an int,
 /// get the int value, panicking if it's not actually an int
 pub fn expect_int(v: &Value) -> i64 {
-    match v {
-        Value::Lit(Literal::Long(i)) => *i,
+    match &v.value {
+        ValueKind::Lit(Literal::Long(i)) => *i,
         v => panic!("expected an int: got: {v:?}"),
     }
 }
@@ -53,8 +55,8 @@ pub fn pv_expect_int(v: &PartialValue) -> i64 {
 /// Given a `Value` that we expect to be a string,
 /// get the string value, panicking if it's not actually a string
 pub fn expect_string(v: &Value) -> SmolStr {
-    match v {
-        Value::Lit(Literal::String(s)) => s.clone(),
+    match &v.value {
+        ValueKind::Lit(Literal::String(s)) => s.clone(),
         v => panic!("expected a string; got: {v:?}"),
     }
 }
@@ -68,8 +70,8 @@ pub fn pv_expect_string(v: &PartialValue) -> SmolStr {
 /// Given a `Value` that we expect to be an EntityUID,
 /// get the EntityUID value, panicking if it's not actually an EntityUID
 pub fn expect_euid(v: &Value) -> Arc<EntityUID> {
-    match v {
-        Value::Lit(Literal::EntityUID(euid)) => Arc::clone(euid),
+    match &v.value {
+        ValueKind::Lit(Literal::EntityUID(euid)) => Arc::clone(euid),
         v => panic!("expected an euid; got: {v:?}"),
     }
 }
@@ -83,8 +85,8 @@ pub fn pv_expect_euid(v: &PartialValue) -> Arc<EntityUID> {
 /// Given a `Value` that we expect to be a record,
 /// get the map of (key, value) pairs in the record, panicking if it's not actually a record
 pub fn expect_record(v: &Value) -> HashMap<SmolStr, &Value> {
-    match v {
-        Value::Record(record) => record.iter().map(|(k, v)| (k.clone(), v)).collect(),
+    match &v.value {
+        ValueKind::Record(record) => record.iter().map(|(k, v)| (k.clone(), v)).collect(),
         v => panic!("expected a record; got: {v:?}"),
     }
 }
@@ -98,8 +100,8 @@ pub fn pv_expect_record(v: &PartialValue) -> HashMap<SmolStr, &Value> {
 /// Given a `Value` that we expect to be a set,
 /// iterate over the values in the set, panicking if it's not actually a set
 pub fn expect_set<'a>(v: &'a Value) -> impl Iterator<Item = &'a Value> + 'a {
-    match v {
-        Value::Set(s) => s.iter(),
+    match &v.value {
+        ValueKind::Set(s) => s.iter(),
         v => panic!("expected a set; got: {v:?}"),
     }
 }

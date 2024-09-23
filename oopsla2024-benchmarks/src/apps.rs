@@ -1,11 +1,11 @@
 use arbitrary::Unstructured;
 use cedar_policy_core::{
-    ast::{Entity, EntityUID, Id, PolicyID, PolicySet},
-    entities::{EntityUidJson, JsonDeserializationErrorContext},
+    ast::{AnyId, Entity, EntityUID, PolicyID, PolicySet},
+    entities::{json::err::JsonDeserializationErrorContext, EntityUidJson},
     parser::parse_policyset,
 };
 use cedar_policy_generators::{schema::Schema as GeneratorSchema, settings::ABACSettings};
-use cedar_policy_validator::{SchemaFragment, ValidatorSchema};
+use cedar_policy_validator::{json_schema::Fragment, ValidatorSchema};
 use std::{fs::File, path::Path, process::Command};
 
 /// Everything we need for an example application used as a benchmark
@@ -54,8 +54,7 @@ impl ExampleApp {
                 let policies_path = Path::new("./benches/github/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
-            openfga_authz_model_filename:
-                "./benches/github/openfga/authorization-model.json",
+            openfga_authz_model_filename: "./benches/github/openfga/authorization-model.json",
             convert_euid: Box::new(convert_github_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/github_entity_generator.py",
@@ -86,8 +85,7 @@ impl ExampleApp {
                     Path::new("./benches/github-templates/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
-            openfga_authz_model_filename:
-                "./benches/github/openfga/authorization-model.json",
+            openfga_authz_model_filename: "./benches/github/openfga/authorization-model.json",
             convert_euid: Box::new(convert_github_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/github_templates_entity_generator.py",
@@ -117,8 +115,7 @@ impl ExampleApp {
                 let policies_path = Path::new("./benches/gdrive/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
-            openfga_authz_model_filename:
-                "./benches/gdrive/openfga/authorization-model.json",
+            openfga_authz_model_filename: "./benches/gdrive/openfga/authorization-model.json",
             convert_euid: Box::new(convert_gdrive_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/gdrive_entity_generator.py",
@@ -149,8 +146,7 @@ impl ExampleApp {
                     Path::new("./benches/gdrive-templates/cedar").join("policies.cedar");
                 Self::load_policies(policies_path)
             },
-            openfga_authz_model_filename:
-                "./benches/gdrive/openfga/authorization-model.json",
+            openfga_authz_model_filename: "./benches/gdrive/openfga/authorization-model.json",
             convert_euid: Box::new(convert_gdrive_euid),
             bespoke_generator: separate_process_bespoke_generator(
                 "./generators/gdrive_templates_entity_generator.py",
@@ -172,7 +168,8 @@ impl ExampleApp {
         Self {
             name: "tinytodo",
             schema: {
-                let schema_path = Path::new("benches/tinytodo/cedar").join("tinytodo.cedarschema.json");
+                let schema_path =
+                    Path::new("benches/tinytodo/cedar").join("tinytodo.cedarschema.json");
                 Self::load_schema(schema_path, u)
             },
             static_policies: {
@@ -211,17 +208,17 @@ impl ExampleApp {
         // but policies' and templates' ids will be renamed to match
         // their "id" annotation, if present
         let mut new_pset = PolicySet::new();
-        let id_key = Id::from_str("id").unwrap();
+        let id_key = AnyId::from_str("id").unwrap();
         let templates = pset.templates().map(|t| match t.annotation(&id_key) {
             None => t.clone(),
-            Some(anno) => t.new_id(PolicyID::from_smolstr(anno.clone())),
+            Some(anno) => t.new_id(PolicyID::from_smolstr(anno.val.clone())),
         });
         for template in templates {
             new_pset.add_template(template).unwrap();
         }
         let policies = pset.policies().map(|p| match p.annotation(&id_key) {
             None => p.clone(),
-            Some(anno) => p.new_id(PolicyID::from_smolstr(anno.clone())),
+            Some(anno) => p.new_id(PolicyID::from_smolstr(anno.val.clone())),
         });
         for policy in policies {
             new_pset.add(policy).unwrap();
@@ -231,7 +228,7 @@ impl ExampleApp {
 
     /// Create a `GeneratorSchema` from the given filepath
     pub fn load_schema(path: impl AsRef<Path>, u: &mut Unstructured<'_>) -> GeneratorSchema {
-        let schema = SchemaFragment::from_file(File::open(path.as_ref()).unwrap_or_else(|e| {
+        let schema = Fragment::from_json_file(File::open(path.as_ref()).unwrap_or_else(|e| {
             panic!(
                 "failed to open schema file {}: {e}",
                 path.as_ref().display()
@@ -251,7 +248,8 @@ impl ExampleApp {
             enable_unspecified_apply_spec: false,
             enable_action_in_constraints: false,
         };
-        GeneratorSchema::from_schemafrag(schema, settings, u).expect("failed to generate schema")
+        GeneratorSchema::from_raw_schemafrag(schema, settings, u)
+            .expect("failed to generate schema")
     }
 
     /// Get the `ValidatorSchema` for this `ExampleApp`

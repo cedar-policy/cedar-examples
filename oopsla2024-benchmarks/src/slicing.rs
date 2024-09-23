@@ -1,7 +1,7 @@
 //! Policy slicing functionality
 
 use cedar_policy_core::ast::{
-    EntityReference, EntityType, EntityUID, EntityUIDEntry, Policy, PolicySet, PolicySetError,
+    EntityReference, EntityUID, EntityUIDEntry, Policy, PolicySet, PolicySetError,
     PrincipalOrResourceConstraint, Request,
 };
 use cedar_policy_core::entities::{Dereference, Entities};
@@ -102,52 +102,19 @@ impl<'p> Slicer<'p> {
                 })
         };
         match (request.principal(), request.resource()) {
-            (EntityUIDEntry::Known(principal), EntityUIDEntry::Known(resource)) => {
-                match (principal.entity_type(), resource.entity_type()) {
-                    (EntityType::Specified(_), EntityType::Specified(_)) => self
-                        .all_policies_with_keys(
-                            get_all_ancestors(principal)
-                                .cartesian_product(get_all_ancestors(resource))
-                                .map(|(principal, resource)| SliceKey {
-                                    principal,
-                                    resource,
-                                }),
-                        ),
-                    (EntityType::Specified(_), EntityType::Unspecified) => {
-                        // for requests with unspecified resource, the only matching
-                        // policies are the ones that do not constrain `resource`
-                        self.all_policies_with_keys(
-                            get_all_ancestors(principal)
-                                .cartesian_product(std::iter::once(None))
-                                .map(|(principal, resource)| SliceKey {
-                                    principal,
-                                    resource,
-                                }),
-                        )
-                    }
-                    (EntityType::Unspecified, EntityType::Specified(_)) => {
-                        // for requests with unspecified principal, the only matching
-                        // policies are the ones that do not constrain `principal`
-                        self.all_policies_with_keys(
-                            std::iter::once(None)
-                                .cartesian_product(get_all_ancestors(resource))
-                                .map(|(principal, resource)| SliceKey {
-                                    principal,
-                                    resource,
-                                }),
-                        )
-                    }
-                    (EntityType::Unspecified, EntityType::Unspecified) => {
-                        // for requests with unspecified principal _and_ resource, the
-                        // only matching policies are the ones that do not constrain
-                        // `principal` _or_ `resource`
-                        self.all_policies_with_keys([SliceKey {
-                            principal: None,
-                            resource: None,
-                        }])
-                    }
-                }
-            }
+            (
+                EntityUIDEntry::Known {
+                    euid: principal, ..
+                },
+                EntityUIDEntry::Known { euid: resource, .. },
+            ) => self.all_policies_with_keys(
+                get_all_ancestors(principal)
+                    .cartesian_product(get_all_ancestors(resource))
+                    .map(|(principal, resource)| SliceKey {
+                        principal,
+                        resource,
+                    }),
+            ),
             _ => unimplemented!("slicing with partial evaluation"),
         }
     }
