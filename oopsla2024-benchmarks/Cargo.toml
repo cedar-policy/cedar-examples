@@ -7,9 +7,9 @@ publish = false
 [dependencies]
 arbitrary = "1.3"
 average = "0.14"
-cedar-policy-core = { path = "cedar-spec/cedar/cedar-policy-core", version = "4.*" }
-cedar-policy-generators = { path = "cedar-spec/cedar-policy-generators", version = "4.*" }
-cedar-policy-validator = { path = "cedar-spec/cedar/cedar-policy-validator", version = "4.*" }
+cedar-policy-core = { path = "cedar-spec/cedar/cedar-policy-core", version = "*" }
+cedar-policy-generators = { path = "cedar-spec/cedar-policy-generators", version = "*" }
+cedar-policy-validator = { path = "cedar-spec/cedar/cedar-policy-validator", version = "*" }
 clap = { version = "4.3", features = ["derive"] }
 env_logger = "0.11"
 itertools = "0.12"

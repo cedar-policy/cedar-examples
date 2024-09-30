@@ -9,7 +9,7 @@ publish = false
 serde_json = "1.0"
 
 [dependencies.cedar-policy]
-version = "4.*"
+version = "*"
 git = "https://github.com/cedar-policy/cedar"
 branch = "main"
 #Do not add any lines below this. CI relies on the previous line being the second-to-last line in the file
