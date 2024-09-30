@@ -54,6 +54,11 @@ jobs:
       cedar_policy_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
       cedar_examples_ref: ${{ github.href }}
 
+  tinytodo-go:
+    uses: ./.github/workflows/build_tiny_todo_go_reusable.yml
+    with:
+      cedar_examples_ref: ${{ github.href }}
+
   build_and_run_oopsla_benchmarks:
     name: OOPSLA2024 benchmarks
     runs-on: ubuntu-latest

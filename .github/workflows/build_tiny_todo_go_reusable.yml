@@ -2,9 +2,6 @@ name: Build and test TinyTodo-Go
 on:
     workflow_call:
       inputs:
-        cedar_policy_ref:
-          required: true
-          type: string
         cedar_examples_ref:
           required: true
           type: string
