@@ -22,7 +22,7 @@ RUN git clone https://github.com/cedar-policy/cedar-spec cedar-benchmarks/cedar-
 RUN git clone https://github.com/cedar-policy/cedar cedar-benchmarks/cedar-spec/cedar -b main
 
 ## Install Cedar CLI so it is usable from command line
-RUN cargo install cedar-policy-cli@4.0.0 --path cedar-benchmarks/cedar-spec/cedar/cedar-policy-cli
+RUN cargo install cedar-policy-cli --path cedar-benchmarks/cedar-spec/cedar/cedar-policy-cli
 
 ## Get cedar-benchmarks (benchmark harness and example app code)
 # unfortunately, `COPY src cedar-benchmarks/` doesn't do what we want, it copies
