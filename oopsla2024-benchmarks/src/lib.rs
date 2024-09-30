@@ -110,14 +110,18 @@ impl MultiExecutionReport {
 
     /// Add a data point to the report
     pub fn add(&mut self, single_report: SingleExecutionReport) {
-        self.mean_dur_micros
-            .add(f64::try_from(u32::try_from(single_report.dur.as_micros()).unwrap()).unwrap());
-        self.median_dur_micros
-            .add(f64::try_from(u32::try_from(single_report.dur.as_micros()).unwrap()).unwrap());
-        self.p90_dur_micros
-            .add(f64::try_from(u32::try_from(single_report.dur.as_micros()).unwrap()).unwrap());
-        self.p99_dur_micros
-            .add(f64::try_from(u32::try_from(single_report.dur.as_micros()).unwrap()).unwrap());
+        self.mean_dur_micros.add(f64::from(
+            u32::try_from(single_report.dur.as_micros()).unwrap(),
+        ));
+        self.median_dur_micros.add(f64::from(
+            u32::try_from(single_report.dur.as_micros()).unwrap(),
+        ));
+        self.p90_dur_micros.add(f64::from(
+            u32::try_from(single_report.dur.as_micros()).unwrap(),
+        ));
+        self.p99_dur_micros.add(f64::from(
+            u32::try_from(single_report.dur.as_micros()).unwrap(),
+        ));
         match single_report.decision {
             Decision::Allow => {
                 self.allows.add(1.0);
@@ -128,16 +132,18 @@ impl MultiExecutionReport {
                 self.denies.add(1.0);
             }
         }
-        self.mean_num_errors
-            .add(f64::try_from(u32::try_from(single_report.errors.len()).unwrap()).unwrap());
+        self.mean_num_errors.add(f64::from(
+            u32::try_from(single_report.errors.len()).unwrap(),
+        ));
         match &self.err {
             Some(_) => {}
             None => {
-                self.err = single_report.errors.iter().next().cloned();
+                self.err = single_report.errors.first().cloned();
             }
         }
-        self.mean_context_attrs
-            .add(f64::try_from(u32::try_from(single_report.context_attrs).unwrap()).unwrap());
+        self.mean_context_attrs.add(f64::from(
+            u32::try_from(single_report.context_attrs).unwrap(),
+        ));
     }
 
     /// Print the report's contents to the provided stream (e.g. stdout)
@@ -222,11 +228,13 @@ impl HierarchyStats {
         for entity in hierarchy.iter() {
             self.mean_num_parents
                 .entry(entity.uid().entity_type().clone())
-                .or_insert_with(|| Mean::new())
-                .add(f64::try_from(u32::try_from(entity.ancestors().count()).unwrap()).unwrap());
+                .or_default()
+                .add(f64::from(
+                    u32::try_from(entity.ancestors().count()).unwrap(),
+                ));
         }
         self.mean_openfga_tuples
-            .add(f64::try_from(u32::try_from(openfga_tuples).unwrap()).unwrap());
+            .add(f64::from(u32::try_from(openfga_tuples).unwrap()));
     }
 
     /// Print the CSV header row that corresponds to the format in

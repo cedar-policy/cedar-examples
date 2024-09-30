@@ -24,52 +24,52 @@ lazy_static! {
     pub static ref ACTIONS: Vec<cedar_policy_core::ast::Entity> = vec![
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"CreateList""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"GetLists""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"GetList""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"UpdateList""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"DeleteList""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"CreateTask""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"UpdateTask""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"DeleteTask""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"EditShares""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Application::"TinyTodo""#.parse().unwrap(),
-            Default::default(),
+            HashMap::new(),
             Default::default()
         ),
     ];
@@ -123,15 +123,15 @@ impl Entities {
     pub fn from_cedar_entities(
         entities: impl IntoIterator<Item = cedar_policy_core::ast::Entity>,
     ) -> Self {
-        let user_entity_type = cedar_policy_core::ast::EntityType::Specified(
-            cedar_policy_core::ast::Name::parse_unqualified_name("User").unwrap(),
-        );
-        let team_entity_type = cedar_policy_core::ast::EntityType::Specified(
-            cedar_policy_core::ast::Name::parse_unqualified_name("Team").unwrap(),
-        );
-        let list_entity_type = cedar_policy_core::ast::EntityType::Specified(
-            cedar_policy_core::ast::Name::parse_unqualified_name("List").unwrap(),
-        );
+        let user_entity_type = cedar_policy_core::ast::Name::parse_unqualified_name("User")
+            .unwrap()
+            .into();
+        let team_entity_type = cedar_policy_core::ast::Name::parse_unqualified_name("Team")
+            .unwrap()
+            .into();
+        let list_entity_type = cedar_policy_core::ast::Name::parse_unqualified_name("List")
+            .unwrap()
+            .into();
         let mut users = HashMap::new();
         let mut teams = HashMap::new();
         let mut lists = HashMap::new();
