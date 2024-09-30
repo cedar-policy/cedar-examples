@@ -17,7 +17,7 @@ impl Entity {
     pub fn to_cedar_entity(&self) -> cedar_policy_core::ast::Entity {
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             self.euid.to_euid(),
-            HashMap::default(),
+            HashMap::new(),
             self.parents.iter().map(|uid| uid.to_euid()).collect(),
         )
     }
