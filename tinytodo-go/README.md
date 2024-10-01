@@ -24,4 +24,4 @@ See [TinyTodo's README](../tinytodo/README.md) for more information.
 
 ## Comparison with TinyTodo
 
-TinyTodo-Go is constrained by the features of [`cedar-go`](https://github.com/cedar-policy/cedar-go). Refer to [this README](https://github.com/cedar-policy/cedar-go?tab=readme-ov-file#comparison-to-the-rust-implementation) to learn about the missing features.
+TinyTodo-Go is constrained by the features of [`cedar-go`](https://github.com/cedar-policy/cedar-go). Refer to [this README](https://github.com/cedar-policy/cedar-go/tree/v0.3.2?tab=readme-ov-file#comparison-to-the-rust-implementation) to learn about the missing features.
