@@ -1,0 +1,8 @@
+{
+    "principal": "User::\"EU Trader\"",
+    "action": "Action::\"TradeOptions\"",
+    "resource": "Options::\"NDX\"",
+    "context": {
+        "type": "Short Synthetic"
+    }
+}

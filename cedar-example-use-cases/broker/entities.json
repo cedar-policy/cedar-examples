@@ -1,0 +1,139 @@
+[
+    {
+        "uid": {
+            "type": "Stock",
+            "id": "Z"
+        },
+        "attrs": {},
+        "parents": [{
+            "type": "Security",
+            "id": "US"
+        }]
+    },
+    {
+        "uid": {
+            "type": "ETF",
+            "id": "QQQ"
+        },
+        "attrs": {},
+        "parents": [{
+            "type": "Security",
+            "id": "US"
+        }]
+    },
+    {
+        "uid": {
+            "type": "ETF",
+            "id": "QLD"
+        },
+        "attrs": {
+            "leveraged": true
+        },
+        "parents": [{
+            "type": "Security",
+            "id": "US"
+        }]
+    },
+    {
+        "uid": {
+            "type": "ETF",
+            "id": "PSQ"
+        },
+        "attrs": {
+            "inverse": true
+        },
+        "parents": [{
+            "type": "Security",
+            "id": "US"
+        }]
+    },
+    {
+        "uid": {
+            "type": "ETF",
+            "id": "SQQQ"
+        },
+        "attrs": {
+            "inverse": true,
+            "leveraged": true
+        },
+        "parents": [{
+            "type": "Security",
+            "id": "US"
+        }]
+    },
+    {
+        "uid": {
+            "type": "ETF",
+            "id": "SBIT"
+        },
+        "attrs": {
+            "inverse": true,
+            "leveraged": true,
+            "crypto_based": true
+        },
+        "parents": [{
+            "type": "Security",
+            "id": "US"
+        }]
+    },
+    {
+        "uid": {
+            "type": "Options",
+            "id": "NDX"
+        },
+        "attrs": {
+        },
+        "parents": [{
+            "type": "Security",
+            "id": "US"
+        }]
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "Regular Dude"
+        },
+        "attrs": {
+            "risk_tolerance": "Low",
+            "options_level": 0,
+            "location": "US" 
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "Trader"
+        },
+        "attrs": {
+            "risk_tolerance": "High",
+            "options_level": 1,
+            "location": "US" 
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "Senior Trader"
+        },
+        "attrs": {
+            "risk_tolerance": "High",
+            "options_level": 4,
+            "location": "US" 
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "User",
+            "id": "EU Trader"
+        },
+        "attrs": {
+            "risk_tolerance": "High",
+            "options_level": 3,
+            "location": "EU" 
+        },
+        "parents": []
+    }
+]
