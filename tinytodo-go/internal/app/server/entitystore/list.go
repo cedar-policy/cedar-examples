@@ -2,8 +2,9 @@ package entitystore
 
 import (
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-go/types"
 	"strconv"
 )
 
@@ -13,7 +14,7 @@ import (
 //
 // [blog post]: https://sentry.io/answers/alias-type-definitions/
 type ListUID struct {
-	EntityUID
+	entityuid.EntityUID
 }
 
 // List represents the list entity.
@@ -40,26 +41,26 @@ func NewList(uid ListUID, name string, owner UserUID, readers TeamUID, editors T
 	return &List{uid, name, owner, readers, editors, tasks}
 }
 
-// AsCedarEntity converts List into a cedar.Entity, to be passed to the Cedar authorization engine when it evaluates a
+// AsCedarEntity converts List into a types.Entity, to be passed to the Cedar authorization engine when it evaluates a
 // request.
-func (l *List) AsCedarEntity() *cedar.Entity {
+func (l *List) AsCedarEntity() *types.Entity {
 
-	records := make(cedar.Record)
+	records := make(types.Record)
 
-	// be careful - it is easy to get cedar.Value wrong
+	// be careful - it is easy to get types.Value wrong
 
-	records["name"] = cedar.String(l.Name)
+	records["name"] = types.String(l.Name)
 	records["owner"] = l.Owner.EntityUID.EntityUID
 	records["readers"] = l.Readers.EntityUID.EntityUID
 	records["editors"] = l.Editors.EntityUID.EntityUID
 
-	var tasks cedar.Set
+	var tasks types.Set
 	for _, t := range l.Tasks {
 		tasks = append(tasks, t.UID.EntityUID.EntityUID)
 	}
 	records["tasks"] = tasks // we include tasks because this is what the Rust implementation does
 
-	return &cedar.Entity{
+	return &types.Entity{
 		UID: l.UID.EntityUID.EntityUID,
 		//Parents:    nil,
 		Attributes: records,
@@ -74,10 +75,10 @@ func (l *List) InsertTask(name string) int {
 	id := len(l.Tasks) // simply use the current number of tasks (non-negative integer) as the ID for the next task
 	l.Tasks = append(l.Tasks, &Task{
 		UID: TaskUID{
-			EntityUID: EntityUID{
-				EntityUID: cedar.EntityUID{
-					Type: entitytype.Task.String(),
-					ID:   strconv.Itoa(id),
+			EntityUID: entityuid.EntityUID{
+				EntityUID: types.EntityUID{
+					Type: types.EntityType(entitytype.Task.String()),
+					ID:   types.String(strconv.Itoa(id)),
 				},
 			},
 		},

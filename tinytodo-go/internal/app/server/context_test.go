@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"os"
 	"path"
 	"testing"
@@ -27,7 +28,7 @@ func TestServer_isAuthorized(t *testing.T) {
 	// read policies
 
 	psFile := readFile(t, path.Join("../../../", "policies.cedar"))
-	ps, err := cedar.NewPolicySet("policies.cedar", psFile)
+	ps, err := cedar.NewPolicySetFromBytes("policies.cedar", psFile)
 	require.NoError(t, err)
 
 	// read entities (will be modified later)
@@ -45,24 +46,24 @@ func TestServer_isAuthorized(t *testing.T) {
 	// extract users
 
 	userAndrew, ok := es.Users[entitystore.UserUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.User, "andrew"),
+		EntityUID: entityuid.NewEntityUID(entitytype.User, "andrew"),
 	}]
 	require.True(t, ok)
 
 	userAaron, ok := es.Users[entitystore.UserUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.User, "aaron"),
+		EntityUID: entityuid.NewEntityUID(entitytype.User, "aaron"),
 	}]
 	require.True(t, ok)
 
 	userKesha, ok := es.Users[entitystore.UserUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.User, "kesha"),
+		EntityUID: entityuid.NewEntityUID(entitytype.User, "kesha"),
 	}]
 	require.True(t, ok)
 
 	// extract teams
 
 	teamInterns, ok := es.Teams[entitystore.TeamUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.Team, "interns"),
+		EntityUID: entityuid.NewEntityUID(entitytype.Team, "interns"),
 	}]
 	require.True(t, ok)
 
@@ -157,7 +158,7 @@ func TestServer_isAuthorized(t *testing.T) {
 			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.GetList,
-			entitystore.NewEntityUID(entitytype.List, "non-existent"),
+			entityuid.NewEntityUID(entitytype.List, "non-existent"),
 		)
 		require.NoError(t, err)
 		assert.False(t, decision)

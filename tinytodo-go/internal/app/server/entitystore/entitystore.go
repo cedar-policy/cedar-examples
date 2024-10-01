@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"strconv"
 )
 
@@ -31,7 +32,7 @@ func (e *EntityStore) GetNextListUID() ListUID {
 	var id int
 	for {
 		listUID := ListUID{
-			EntityUID: NewEntityUID(entitytype.List, strconv.Itoa(id)),
+			EntityUID: entityuid.NewEntityUID(entitytype.List, strconv.Itoa(id)),
 		}
 		if _, found := e.Lists[listUID]; !found {
 			return listUID
@@ -45,7 +46,7 @@ func (e *EntityStore) InsertNextTeam() TeamUID {
 	var id int
 	for {
 		teamUID := TeamUID{
-			EntityUID: NewEntityUID(entitytype.Team, strconv.Itoa(id)),
+			EntityUID: entityuid.NewEntityUID(entitytype.Team, strconv.Itoa(id)),
 		}
 		if _, found := e.Teams[teamUID]; !found {
 			e.Teams[teamUID] = NewTeam(teamUID, nil)
@@ -71,7 +72,7 @@ func (im *UserUIDToUserMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[UserUID]*User)
 	for k, v := range sk {
-		ki, err := ParseEntityUID(k)
+		ki, err := entityuid.ParseEntityUID(k)
 		if err != nil {
 			return err
 		}
@@ -99,7 +100,7 @@ func (im *TeamUIDToTeamMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[TeamUID]*Team)
 	for k, v := range sk {
-		ki, err := ParseEntityUID(k)
+		ki, err := entityuid.ParseEntityUID(k)
 		if err != nil {
 			return err
 		}
@@ -125,7 +126,7 @@ func (im *ListUIDToListMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[ListUID]*List)
 	for k, v := range sk {
-		ki, err := ParseEntityUID(k)
+		ki, err := entityuid.ParseEntityUID(k)
 		if err != nil {
 			return err
 		}
@@ -151,7 +152,7 @@ func (im *TaskUIDToTaskMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[TaskUID]*Task)
 	for k, v := range sk {
-		ki, err := ParseEntityUID(k)
+		ki, err := entityuid.ParseEntityUID(k)
 		if err != nil {
 			return err
 		}

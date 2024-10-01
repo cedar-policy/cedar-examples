@@ -3,7 +3,8 @@ package entitystore
 import (
 	"encoding/json"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
+	"github.com/cedar-policy/cedar-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -14,34 +15,34 @@ func TestList(t *testing.T) {
 		var e Entity
 		l := NewList(
 			ListUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.List.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.List.String()),
 						ID:   "1",
 					},
 				},
 			},
 			"Cedar blog post",
 			UserUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.User.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.User.String()),
 						ID:   "kesha",
 					},
 				},
 			},
 			TeamUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.Team.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.Team.String()),
 						ID:   "temp",
 					},
 				},
 			},
 			TeamUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.Team.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.Team.String()),
 						ID:   "admin",
 					},
 				},
@@ -57,34 +58,34 @@ func TestList_Marshal(t *testing.T) {
 	t.Run("check marshal valid case", func(t *testing.T) {
 		list := NewList(
 			ListUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.List.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.List.String()),
 						ID:   "1",
 					},
 				},
 			},
 			"Cedar blog post",
 			UserUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.User.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.User.String()),
 						ID:   "kesha",
 					},
 				},
 			},
 			TeamUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.Team.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.Team.String()),
 						ID:   "temp",
 					},
 				},
 			},
 			TeamUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.Team.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.Team.String()),
 						ID:   "admin",
 					},
 				},

@@ -3,6 +3,7 @@ package entitystore
 import (
 	"encoding/json"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -13,7 +14,7 @@ func TestUser(t *testing.T) {
 		var e Entity
 		u := NewUser(
 			UserUID{
-				EntityUID: NewEntityUID(entitytype.User, "andrew"),
+				EntityUID: entityuid.NewEntityUID(entitytype.User, "andrew"),
 			},
 			"test_location",
 			0,
@@ -42,7 +43,7 @@ func TestUser_Unmarshal(t *testing.T) {
 		assert.Equal(
 			t,
 			UserUID{
-				NewEntityUID(entitytype.User, "kesha"),
+				entityuid.NewEntityUID(entitytype.User, "kesha"),
 			},
 			u.EUID,
 		)
@@ -51,12 +52,12 @@ func TestUser_Unmarshal(t *testing.T) {
 		assert.Contains(
 			t,
 			u.Parents,
-			NewEntityUID(entitytype.Application, "TinyTodo"),
+			entityuid.NewEntityUID(entitytype.Application, "TinyTodo"),
 		)
 		assert.Contains(
 			t,
 			u.Parents,
-			NewEntityUID(entitytype.Team, "temp"),
+			entityuid.NewEntityUID(entitytype.Team, "temp"),
 		)
 	})
 }

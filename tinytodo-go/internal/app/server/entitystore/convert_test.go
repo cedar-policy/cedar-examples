@@ -3,7 +3,8 @@ package entitystore
 import (
 	"encoding/json"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
+	"github.com/cedar-policy/cedar-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -16,7 +17,7 @@ func TestEntityStore_AsEntities(t *testing.T) {
 		require.NoError(t, json.Unmarshal(f, &es))
 		assert.Equal(
 			t,
-			NewEntityUID(entitytype.Application, "TinyTodo"),
+			entityuid.NewEntityUID(entitytype.Application, "TinyTodo"),
 			es.App.EUID,
 		)
 
@@ -26,19 +27,28 @@ func TestEntityStore_AsEntities(t *testing.T) {
 		assert.Contains(
 			t,
 			entities,
-			cedar.NewEntityUID(entitytype.Application.String(), "TinyTodo"),
+			types.NewEntityUID(
+				types.EntityType(entitytype.Application.String()),
+				"TinyTodo",
+			),
 		)
 
 		assert.Contains(
 			t,
 			entities,
-			cedar.NewEntityUID(entitytype.User.String(), "kesha"),
+			types.NewEntityUID(
+				types.EntityType(entitytype.User.String()),
+				"kesha",
+			),
 		)
 
 		assert.Contains(
 			t,
 			entities,
-			cedar.NewEntityUID(entitytype.Team.String(), "temp"),
+			types.NewEntityUID(
+				types.EntityType(entitytype.Team.String()),
+				"temp",
+			),
 		)
 	})
 }

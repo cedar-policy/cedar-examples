@@ -1,29 +1,36 @@
-package entitystore
+package entityuid
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-go/types"
 	"strings"
 )
 
-// EntityUID is a transparent wrapper around cedar.EntityUID used to represent entities in EntityStore, so that we
-// can define our own UnmarshalJSON and MarshalJSON functions.
+// EntityUID is a transparent wrapper around types.EntityUID used to represent entities in EntityStore, so that we
+// can define our own UnmarshalJSON and MarshalJSON methods.
 //
-// The textual representation of an EntityUID is similar to that of a cedar.EntityUID, for example:
+// The textual representation of an EntityUID is similar to that of a types.EntityUID, for example:
 //
 //	"User::\"kesha\""
+//
+// Also see [this issue] to understand why we need our own UnmarshalJSON and MarshalJSON methods.
+//
+// [this issue]: https://github.com/cedar-policy/cedar-examples/issues/186
 type EntityUID struct {
-	cedar.EntityUID
+	types.EntityUID
 }
 
 // NewEntityUID creates an EntityUID from an entitytype.EntityType and ID.
 //
-// It is a simple wrapper around cedar.NewEntityUID with constraints on the valid types.
+// It is a simple wrapper around types.NewEntityUID with constraints on the valid types.
 func NewEntityUID(typ entitytype.EntityType, id string) EntityUID {
 	return EntityUID{
-		EntityUID: cedar.NewEntityUID(typ.String(), id),
+		EntityUID: types.NewEntityUID(
+			types.EntityType(typ.String()),
+			types.String(id),
+		),
 	}
 }
 
@@ -51,7 +58,10 @@ func ParseEntityUID(uid string) (EntityUID, error) {
 	if len(id) > 0 && id[len(id)-1] == '"' {
 		id = id[:len(id)-1]
 	}
-	return EntityUID{EntityUID: cedar.NewEntityUID(entityType.String(), id)}, nil
+	return EntityUID{EntityUID: types.NewEntityUID(
+		types.EntityType(entityType.String()),
+		types.String(id),
+	)}, nil
 }
 
 // UnmarshalJSON converts a textual representation of EntityUID into a EntityUID.
@@ -59,12 +69,6 @@ func ParseEntityUID(uid string) (EntityUID, error) {
 // For example,
 //
 //	"User::\"kesha\""
-//
-// Based on https://pkg.go.dev/encoding/json.
-//
-// Note that the pointer receiver is not an error -- UnmarshalJSON is supposed to act on pointers.
-//
-// See https://stackoverflow.com/a/57922284 for an explanation.
 func (e *EntityUID) UnmarshalJSON(data []byte) error {
 
 	var v interface{}
@@ -95,8 +99,8 @@ func (e *EntityUID) UnmarshalJSON(data []byte) error {
 		id = id[:len(id)-1]
 	}
 
-	e.Type = entityType.String()
-	e.ID = id
+	e.Type = types.EntityType(entityType.String())
+	e.ID = types.String(id)
 
 	return nil
 }
@@ -106,9 +110,6 @@ func (e *EntityUID) UnmarshalJSON(data []byte) error {
 // For example, "User::\"kesha\""
 //
 // Based on https://pkg.go.dev/encoding/json.
-//
-// Note that the value receiver is not an error -- MarshalJSON is supposed to act on values.
 func (e EntityUID) MarshalJSON() ([]byte, error) {
-	// TODO: make this less awkward
 	return []byte(fmt.Sprintf("%q", e.EntityUID.String())), nil
 }

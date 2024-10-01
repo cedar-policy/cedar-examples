@@ -1,7 +1,8 @@
 package entitystore
 
 import (
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
+	"github.com/cedar-policy/cedar-go/types"
 )
 
 // TeamUID is a transparent wrapper around EntityUID, to make it clear that we want a Team's EntityUID.
@@ -10,7 +11,7 @@ import (
 //
 // [blog post]: https://sentry.io/answers/alias-type-definitions/
 type TeamUID struct {
-	EntityUID
+	entityuid.EntityUID
 }
 
 // Team represents the team entity.
@@ -20,27 +21,27 @@ type TeamUID struct {
 //
 // This is because List should only be created via the APIs, hence the generation of the ID is controlled.
 type Team struct {
-	UID     TeamUID     `json:"uid"`     // note the naming
-	Parents []EntityUID `json:"parents"` // can be TeamUID or UserUID
+	UID     TeamUID               `json:"uid"`     // note the naming
+	Parents []entityuid.EntityUID `json:"parents"` // can be TeamUID or UserUID
 }
 
 // NewTeam creates a new Team; if parents is nil, we create an empty slice so that there will be no problems with
 // client processing.
-func NewTeam(uid TeamUID, parents []EntityUID) *Team {
+func NewTeam(uid TeamUID, parents []entityuid.EntityUID) *Team {
 	if parents == nil {
-		parents = []EntityUID{}
+		parents = []entityuid.EntityUID{}
 	}
 	return &Team{uid, parents}
 }
 
-// AsCedarEntity converts Team into a cedar.Entity, to be passed to the Cedar authorization engine when it evaluates a
+// AsCedarEntity converts Team into a types.Entity, to be passed to the Cedar authorization engine when it evaluates a
 // request.
-func (t *Team) AsCedarEntity() *cedar.Entity {
-	var parents []cedar.EntityUID
+func (t *Team) AsCedarEntity() *types.Entity {
+	var parents []types.EntityUID
 	for _, parent := range t.Parents {
 		parents = append(parents, parent.EntityUID)
 	}
-	return &cedar.Entity{
+	return &types.Entity{
 		UID:     t.UID.EntityUID.EntityUID,
 		Parents: parents,
 	}
