@@ -31,7 +31,7 @@ func New(typ entitytype.EntityType, id string) EntityUID {
 // ParseEntityUID converts the Cedar language representation of a types.EntityType into an EntityUID.
 // Additionally, it checks that the type of the EntityUID matches one of the enums defined in entitytype.EntityType.
 //
-// Example Cedar language representation of a types.EntityUID:
+// Example input:
 //
 //	"User::\"kesha\""
 func ParseEntityUID(uid string) (EntityUID, error) {
@@ -64,10 +64,9 @@ func ParseEntityUID(uid string) (EntityUID, error) {
 //
 //	"User::\"kesha\""
 //
-// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json and Python client in tinytodo do not
-// conform to the [Cedar language entities and context syntax].
-//
-// Also see [this Github issue].
+// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json and Python client in tinytodo expect
+// entities in the Cedar language syntax rather than the JSON syntax (also see
+// [Cedar language entities and context syntax] and [this Github issue]).
 //
 // [Cedar language entities and context syntax]: https://docs.cedarpolicy.com/auth/entities-syntax.html
 // [this Github issue]: https://github.com/cedar-policy/cedar-examples/issues/186
@@ -113,10 +112,9 @@ func (e *EntityUID) UnmarshalJSON(data []byte) error {
 //
 //	"User::\"kesha\""
 //
-// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json and Python client in tinytodo do not
-// conform to the [Cedar language entities and context syntax].
-//
-// Also see [this Github issue].
+// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json and Python client in tinytodo expect
+// entities in the Cedar language syntax rather than the JSON syntax (also see
+// [Cedar language entities and context syntax] and [this Github issue]).
 //
 // [Cedar language entities and context syntax]: https://docs.cedarpolicy.com/auth/entities-syntax.html
 // [this Github issue]: https://github.com/cedar-policy/cedar-examples/issues/186
