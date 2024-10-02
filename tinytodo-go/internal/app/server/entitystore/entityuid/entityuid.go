@@ -64,8 +64,8 @@ func ParseEntityUID(uid string) (EntityUID, error) {
 //
 //	"User::\"kesha\""
 //
-// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json provided in the tinytodo example
-// does not conform to the [Cedar language entities and context syntax].
+// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json and Python client in tinytodo do not
+// conform to the [Cedar language entities and context syntax].
 //
 // Also see [this Github issue].
 //
@@ -107,11 +107,19 @@ func (e *EntityUID) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// MarshalJSON converts a EntityUID into a textual representation.
+// MarshalJSON converts a EntityUID into its Cedar language representation.
 //
 // Example output (enclosing double quotes included):
 //
 //	"User::\"kesha\""
+//
+// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json and Python client in tinytodo do not
+// conform to the [Cedar language entities and context syntax].
+//
+// Also see [this Github issue].
+//
+// [Cedar language entities and context syntax]: https://docs.cedarpolicy.com/auth/entities-syntax.html
+// [this Github issue]: https://github.com/cedar-policy/cedar-examples/issues/186
 func (e EntityUID) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%q", e.EntityUID.String())), nil
 }
