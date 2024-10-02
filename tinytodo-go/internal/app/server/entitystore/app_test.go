@@ -20,7 +20,7 @@ func Test_App(t *testing.T) {
 		require.NoError(t, json.Unmarshal(marshalled, &app))
 		assert.Equal(
 			t,
-			entityuid.NewEntityUID(entitytype.Application, "TinyTodo"),
+			entityuid.New(entitytype.Application, "TinyTodo"),
 			app.EUID,
 		)
 	})

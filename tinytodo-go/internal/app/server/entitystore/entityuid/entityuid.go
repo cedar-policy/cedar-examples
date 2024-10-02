@@ -16,10 +16,10 @@ type EntityUID struct {
 	types.EntityUID
 }
 
-// NewEntityUID creates an EntityUID from an entitytype.EntityType and ID.
+// New creates an EntityUID from an entitytype.EntityType and ID.
 //
 // It is a simple wrapper around types.NewEntityUID with constraints on the valid types.
-func NewEntityUID(typ entitytype.EntityType, id string) EntityUID {
+func New(typ entitytype.EntityType, id string) EntityUID {
 	return EntityUID{
 		EntityUID: types.NewEntityUID(
 			types.EntityType(typ.String()),

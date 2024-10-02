@@ -17,7 +17,7 @@ func TestEntityStore_AsEntities(t *testing.T) {
 		require.NoError(t, json.Unmarshal(f, &es))
 		assert.Equal(
 			t,
-			entityuid.NewEntityUID(entitytype.Application, "TinyTodo"),
+			entityuid.New(entitytype.Application, "TinyTodo"),
 			es.App.EUID,
 		)
 

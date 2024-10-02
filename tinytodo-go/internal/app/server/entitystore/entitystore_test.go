@@ -25,12 +25,12 @@ func Test_EntityStore(t *testing.T) {
 		require.NoError(t, json.Unmarshal(f, &es))
 
 		userUID := UserUID{
-			EntityUID: entityuid.NewEntityUID(entitytype.User, "kesha"),
+			EntityUID: entityuid.New(entitytype.User, "kesha"),
 		}
 		teamUID := TeamUID{
-			EntityUID: entityuid.NewEntityUID(entitytype.Team, "temp"),
+			EntityUID: entityuid.New(entitytype.Team, "temp"),
 		}
-		applicationEUID := entityuid.NewEntityUID(entitytype.Application, "TinyTodo")
+		applicationEUID := entityuid.New(entitytype.Application, "TinyTodo")
 
 		assert.Contains(t, es.Users, userUID)
 		assert.Equal(

@@ -14,7 +14,7 @@ func TestTeam(t *testing.T) {
 		var e Entity
 		team := NewTeam(
 			TeamUID{
-				EntityUID: entityuid.NewEntityUID(entitytype.Team, "temp"),
+				EntityUID: entityuid.New(entitytype.Team, "temp"),
 			},
 			nil,
 		)
@@ -26,7 +26,7 @@ func TestTeam(t *testing.T) {
 func TestTeamUID_Marshal(t *testing.T) {
 	t.Run("marshal TeamUID", func(t *testing.T) {
 		teamUID := TeamUID{
-			EntityUID: entityuid.NewEntityUID(entitytype.Team, "temp"),
+			EntityUID: entityuid.New(entitytype.Team, "temp"),
 		}
 		got, err := json.MarshalIndent(teamUID, "", "  ")
 		require.NoError(t, err)
@@ -49,14 +49,14 @@ func TestTeam_Unmarshal(t *testing.T) {
 		assert.Equal(
 			t,
 			TeamUID{
-				EntityUID: entityuid.NewEntityUID(entitytype.Team, "temp"),
+				EntityUID: entityuid.New(entitytype.Team, "temp"),
 			},
 			team.UID,
 		)
 		assert.Contains(
 			t,
 			team.Parents,
-			entityuid.NewEntityUID(entitytype.Application, "TinyTodo"),
+			entityuid.New(entitytype.Application, "TinyTodo"),
 		)
 	})
 }

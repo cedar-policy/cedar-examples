@@ -14,7 +14,7 @@ func TestUser(t *testing.T) {
 		var e Entity
 		u := NewUser(
 			UserUID{
-				EntityUID: entityuid.NewEntityUID(entitytype.User, "andrew"),
+				EntityUID: entityuid.New(entitytype.User, "andrew"),
 			},
 			"test_location",
 			0,
@@ -43,7 +43,7 @@ func TestUser_Unmarshal(t *testing.T) {
 		assert.Equal(
 			t,
 			UserUID{
-				entityuid.NewEntityUID(entitytype.User, "kesha"),
+				entityuid.New(entitytype.User, "kesha"),
 			},
 			u.EUID,
 		)
@@ -52,12 +52,12 @@ func TestUser_Unmarshal(t *testing.T) {
 		assert.Contains(
 			t,
 			u.Parents,
-			entityuid.NewEntityUID(entitytype.Application, "TinyTodo"),
+			entityuid.New(entitytype.Application, "TinyTodo"),
 		)
 		assert.Contains(
 			t,
 			u.Parents,
-			entityuid.NewEntityUID(entitytype.Team, "temp"),
+			entityuid.New(entitytype.Team, "temp"),
 		)
 	})
 }

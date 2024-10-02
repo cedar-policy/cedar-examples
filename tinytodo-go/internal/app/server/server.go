@@ -20,7 +20,7 @@ var (
 			},
 		),
 	)
-	ApplicationEntityUID = entitystore.App{EUID: entityuid.NewEntityUID(entitytype.Application, "TinyTodo")}
+	ApplicationEntityUID = entitystore.App{EUID: entityuid.New(entitytype.Application, "TinyTodo")}
 )
 
 // Server represents the web server that host the booking app.

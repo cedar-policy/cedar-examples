@@ -46,24 +46,24 @@ func TestServer_isAuthorized(t *testing.T) {
 	// extract users
 
 	userAndrew, ok := es.Users[entitystore.UserUID{
-		EntityUID: entityuid.NewEntityUID(entitytype.User, "andrew"),
+		EntityUID: entityuid.New(entitytype.User, "andrew"),
 	}]
 	require.True(t, ok)
 
 	userAaron, ok := es.Users[entitystore.UserUID{
-		EntityUID: entityuid.NewEntityUID(entitytype.User, "aaron"),
+		EntityUID: entityuid.New(entitytype.User, "aaron"),
 	}]
 	require.True(t, ok)
 
 	userKesha, ok := es.Users[entitystore.UserUID{
-		EntityUID: entityuid.NewEntityUID(entitytype.User, "kesha"),
+		EntityUID: entityuid.New(entitytype.User, "kesha"),
 	}]
 	require.True(t, ok)
 
 	// extract teams
 
 	teamInterns, ok := es.Teams[entitystore.TeamUID{
-		EntityUID: entityuid.NewEntityUID(entitytype.Team, "interns"),
+		EntityUID: entityuid.New(entitytype.Team, "interns"),
 	}]
 	require.True(t, ok)
 
@@ -158,7 +158,7 @@ func TestServer_isAuthorized(t *testing.T) {
 			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.GetList,
-			entityuid.NewEntityUID(entitytype.List, "non-existent"),
+			entityuid.New(entitytype.List, "non-existent"),
 		)
 		require.NoError(t, err)
 		assert.False(t, decision)

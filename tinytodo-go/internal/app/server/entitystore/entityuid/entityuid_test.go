@@ -13,13 +13,13 @@ import (
 func Test_EntityUID(t *testing.T) {
 	t.Run("verify json.Marshaler interface", func(t *testing.T) {
 		var m json.Marshaler
-		e := NewEntityUID(entitytype.Application, "TinyTodo")
+		e := New(entitytype.Application, "TinyTodo")
 		m = e
 		require.NotNil(t, m)
 	})
 	t.Run("verify json.Unmarshaler interface", func(t *testing.T) {
 		var m json.Unmarshaler
-		e := NewEntityUID(entitytype.Application, "TinyTodo")
+		e := New(entitytype.Application, "TinyTodo")
 		m = &e
 		require.NotNil(t, m)
 	})

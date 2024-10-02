@@ -32,7 +32,7 @@ func (e *EntityStore) GetNextListUID() ListUID {
 	var id int
 	for {
 		listUID := ListUID{
-			EntityUID: entityuid.NewEntityUID(entitytype.List, strconv.Itoa(id)),
+			EntityUID: entityuid.New(entitytype.List, strconv.Itoa(id)),
 		}
 		if _, found := e.Lists[listUID]; !found {
 			return listUID
@@ -46,7 +46,7 @@ func (e *EntityStore) InsertNextTeam() TeamUID {
 	var id int
 	for {
 		teamUID := TeamUID{
-			EntityUID: entityuid.NewEntityUID(entitytype.Team, strconv.Itoa(id)),
+			EntityUID: entityuid.New(entitytype.Team, strconv.Itoa(id)),
 		}
 		if _, found := e.Teams[teamUID]; !found {
 			e.Teams[teamUID] = NewTeam(teamUID, nil)
