@@ -9,15 +9,9 @@ import (
 )
 
 // EntityUID is a transparent wrapper around types.EntityUID used to represent entities in EntityStore, so that we
-// can define our own UnmarshalJSON and MarshalJSON methods.
+// can define our own JSON marshaller.
 //
-// The textual representation of an EntityUID is similar to that of a types.EntityUID, for example:
-//
-//	"User::\"kesha\""
-//
-// Also see [this issue] to understand why we need our own UnmarshalJSON and MarshalJSON methods.
-//
-// [this issue]: https://github.com/cedar-policy/cedar-examples/issues/186
+// See EntityUID.MarshalJSON to understand why we need to define our own marshaller.
 type EntityUID struct {
 	types.EntityUID
 }
@@ -34,10 +28,10 @@ func NewEntityUID(typ entitytype.EntityType, id string) EntityUID {
 	}
 }
 
-// ParseEntityUID converts the textual representation of an EntityUID into an EntityUID. Additionally, it checks that
-// the type of the EntityUID matches one of the enums defined in entitytype.EntityType.
+// ParseEntityUID converts the Cedar language representation of a types.EntityType into an EntityUID.
+// Additionally, it checks that the type of the EntityUID matches one of the enums defined in entitytype.EntityType.
 //
-// Example textual representation of an EntityUID:
+// Example Cedar language representation of a types.EntityUID:
 //
 //	"User::\"kesha\""
 func ParseEntityUID(uid string) (EntityUID, error) {
@@ -64,11 +58,19 @@ func ParseEntityUID(uid string) (EntityUID, error) {
 	)}, nil
 }
 
-// UnmarshalJSON converts a textual representation of EntityUID into a EntityUID.
+// UnmarshalJSON converts a Cedar language representation of a types.EntityUID into an EntityUID.
 //
-// For example,
+// Example input (enclosing double quotes are optional):
 //
 //	"User::\"kesha\""
+//
+// We cannot rely on types.EntityUID.UnmarshalJSON because the entities.json provided in the tinytodo example
+// does not conform to the [Cedar language entities and context syntax].
+//
+// Also see [this Github issue].
+//
+// [Cedar language entities and context syntax]: https://docs.cedarpolicy.com/auth/entities-syntax.html
+// [this Github issue]: https://github.com/cedar-policy/cedar-examples/issues/186
 func (e *EntityUID) UnmarshalJSON(data []byte) error {
 
 	var v interface{}
@@ -107,9 +109,9 @@ func (e *EntityUID) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON converts a EntityUID into a textual representation.
 //
-// For example, "User::\"kesha\""
+// Example output (enclosing double quotes included):
 //
-// Based on https://pkg.go.dev/encoding/json.
+//	"User::\"kesha\""
 func (e EntityUID) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%q", e.EntityUID.String())), nil
 }
