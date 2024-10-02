@@ -1,4 +1,4 @@
-package entitystore
+package team
 
 import (
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
@@ -25,9 +25,9 @@ type Team struct {
 	Parents []entityuid.EntityUID `json:"parents"` // can be TeamUID or UserUID
 }
 
-// NewTeam creates a new Team; if parents is nil, we create an empty slice so that there will be no problems with
+// New creates a new Team; if parents is nil, we create an empty slice so that there will be no problems with
 // client processing.
-func NewTeam(uid TeamUID, parents []entityuid.EntityUID) *Team {
+func New(uid TeamUID, parents []entityuid.EntityUID) *Team {
 	if parents == nil {
 		parents = []entityuid.EntityUID{}
 	}

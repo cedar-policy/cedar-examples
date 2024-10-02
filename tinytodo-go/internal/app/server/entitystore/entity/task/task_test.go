@@ -1,7 +1,8 @@
-package entitystore
+package task
 
 import (
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
@@ -13,7 +14,7 @@ import (
 
 func TestTask(t *testing.T) {
 	t.Run("check interface", func(t *testing.T) {
-		var e Entity
+		var e entity.Entity
 		task := &Task{
 			UID: TaskUID{
 				EntityUID: entityuid.EntityUID{

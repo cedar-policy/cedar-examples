@@ -1,4 +1,4 @@
-package entitystore
+package app
 
 import (
 	"encoding/json"

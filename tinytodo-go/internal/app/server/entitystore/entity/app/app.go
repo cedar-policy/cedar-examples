@@ -1,4 +1,4 @@
-package entitystore
+package app
 
 import (
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"

@@ -1,4 +1,4 @@
-package entitystore
+package entity
 
 import (
 	"github.com/cedar-policy/cedar-go/types"

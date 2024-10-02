@@ -1,7 +1,8 @@
-package entitystore
+package team
 
 import (
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/stretchr/testify/assert"
@@ -11,8 +12,8 @@ import (
 
 func TestTeam(t *testing.T) {
 	t.Run("check interface", func(t *testing.T) {
-		var e Entity
-		team := NewTeam(
+		var e entity.Entity
+		team := New(
 			TeamUID{
 				EntityUID: entityuid.New(entitytype.Team, "temp"),
 			},

@@ -3,6 +3,9 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/list"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/team"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/user"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"os"
 	"path"
@@ -45,24 +48,24 @@ func TestServer_isAuthorized(t *testing.T) {
 
 	// extract users
 
-	userAndrew, ok := es.Users[entitystore.UserUID{
+	userAndrew, ok := es.Users[user.UserUID{
 		EntityUID: entityuid.New(entitytype.User, "andrew"),
 	}]
 	require.True(t, ok)
 
-	userAaron, ok := es.Users[entitystore.UserUID{
+	userAaron, ok := es.Users[user.UserUID{
 		EntityUID: entityuid.New(entitytype.User, "aaron"),
 	}]
 	require.True(t, ok)
 
-	userKesha, ok := es.Users[entitystore.UserUID{
+	userKesha, ok := es.Users[user.UserUID{
 		EntityUID: entityuid.New(entitytype.User, "kesha"),
 	}]
 	require.True(t, ok)
 
 	// extract teams
 
-	teamInterns, ok := es.Teams[entitystore.TeamUID{
+	teamInterns, ok := es.Teams[team.TeamUID{
 		EntityUID: entityuid.New(entitytype.Team, "interns"),
 	}]
 	require.True(t, ok)
@@ -101,7 +104,7 @@ func TestServer_isAuthorized(t *testing.T) {
 	list0Readers := es.InsertNextTeam() // readers for list0
 	list0Editors := es.InsertNextTeam() // editors for list0
 
-	list0 := entitystore.NewList(
+	list0 := list.New(
 		list0UID,
 		"Cedar blog post",
 		userAndrew.EUID,

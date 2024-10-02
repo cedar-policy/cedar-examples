@@ -3,8 +3,10 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/action"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/list"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/team"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/user"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/role"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
@@ -47,7 +49,7 @@ func (s *Server) handleGetAPIListsGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	s.logger.InfoContext(
 		r.Context(),
@@ -95,7 +97,7 @@ func (s *Server) handleGetAPIListsGet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// client expects allowedLists to be an empty list (vs nil), don't convert to var declaration
-	allowedLists := []*entitystore.List{}
+	allowedLists := []*list.List{}
 
 	for listEUID, list := range s.es.Lists {
 		listAllowed, _, err := s.isAuthorized(
@@ -173,7 +175,7 @@ func (s *Server) handlePostAPIListCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	s.logger.InfoContext(
 		r.Context(),
@@ -235,7 +237,7 @@ func (s *Server) handlePostAPIListCreate(w http.ResponseWriter, r *http.Request)
 		slog.Any("newEditor", newEditor),
 	)
 
-	s.es.Lists[listUID] = entitystore.NewList(
+	s.es.Lists[listUID] = list.New(
 		listUID,
 		req.Name,
 		userUID,
@@ -273,7 +275,7 @@ func (s *Server) handleGetAPIListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	listUID_, err := entityuid.ParseEntityUID(r.URL.Query().Get("list"))
 	if err != nil {
@@ -294,7 +296,7 @@ func (s *Server) handleGetAPIListGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	listUID := entitystore.ListUID{EntityUID: listUID_}
+	listUID := list.ListUID{EntityUID: listUID_}
 
 	s.logger.InfoContext(
 		r.Context(),
@@ -402,7 +404,7 @@ func (s *Server) handlePostAPITaskCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	listUID_, err := entityuid.ParseEntityUID(req.List)
 	if err != nil {
@@ -423,7 +425,7 @@ func (s *Server) handlePostAPITaskCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	listUID := entitystore.ListUID{EntityUID: listUID_}
+	listUID := list.ListUID{EntityUID: listUID_}
 
 	s.logger.InfoContext(
 		r.Context(),
@@ -552,7 +554,7 @@ func (s *Server) handlePostAPITaskUpdate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	listUID_, err := entityuid.ParseEntityUID(req.List)
 	if err != nil {
@@ -573,7 +575,7 @@ func (s *Server) handlePostAPITaskUpdate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	listUID := entitystore.ListUID{EntityUID: listUID_}
+	listUID := list.ListUID{EntityUID: listUID_}
 
 	taskState := taskstate.Parse(req.State)
 	if taskState == taskstate.Unknown {
@@ -748,7 +750,7 @@ func (s *Server) handleDeleteAPITaskDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	listUID_, err := entityuid.ParseEntityUID(req.List)
 	if err != nil {
@@ -769,7 +771,7 @@ func (s *Server) handleDeleteAPITaskDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	listUID := entitystore.ListUID{EntityUID: listUID_}
+	listUID := list.ListUID{EntityUID: listUID_}
 
 	s.logger.InfoContext(
 		r.Context(),
@@ -923,7 +925,7 @@ func (s *Server) handleDeleteAPIListDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	listUID_, err := entityuid.ParseEntityUID(req.List)
 	if err != nil {
@@ -944,7 +946,7 @@ func (s *Server) handleDeleteAPIListDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	listUID := entitystore.ListUID{EntityUID: listUID_}
+	listUID := list.ListUID{EntityUID: listUID_}
 
 	s.logger.InfoContext(
 		r.Context(),
@@ -1066,7 +1068,7 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	listUID_, err := entityuid.ParseEntityUID(req.List)
 	if err != nil {
@@ -1087,7 +1089,7 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	listUID := entitystore.ListUID{EntityUID: listUID_}
+	listUID := list.ListUID{EntityUID: listUID_}
 
 	shareWith, err := entityuid.ParseEntityUID(req.ShareWith) // can be User or Team
 	if err != nil {
@@ -1179,7 +1181,7 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 
 	list := s.es.Lists[listUID]
 
-	var roleTeamUID entitystore.TeamUID
+	var roleTeamUID team.TeamUID
 
 	switch rr {
 	case role.Editor:
@@ -1197,14 +1199,14 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if shareWithTeam, ok := s.es.Teams[entitystore.TeamUID{EntityUID: shareWith}]; ok {
+	if shareWithTeam, ok := s.es.Teams[team.TeamUID{EntityUID: shareWith}]; ok {
 		s.logger.InfoContext(
 			r.Context(),
 			"found share_with Team entity",
 			slog.Any("shareWithTeam", shareWithTeam),
 		)
 		shareWithTeam.Parents = append(shareWithTeam.Parents, roleTeamUID.EntityUID)
-	} else if shareWithUser, ok := s.es.Users[entitystore.UserUID{EntityUID: shareWith}]; ok {
+	} else if shareWithUser, ok := s.es.Users[user.UserUID{EntityUID: shareWith}]; ok {
 		s.logger.InfoContext(
 			r.Context(),
 			"found share_with User entity",
@@ -1308,7 +1310,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userUID := entitystore.UserUID{EntityUID: userUID_}
+	userUID := user.UserUID{EntityUID: userUID_}
 
 	listUID_, err := entityuid.ParseEntityUID(req.List)
 	if err != nil {
@@ -1329,7 +1331,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	listUID := entitystore.ListUID{EntityUID: listUID_}
+	listUID := list.ListUID{EntityUID: listUID_}
 
 	unshareWith, err := entityuid.ParseEntityUID(req.UnshareWith) // can be User or Team
 	if err != nil {
@@ -1421,7 +1423,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 
 	list := s.es.Lists[listUID]
 
-	var roleTeamUID entitystore.TeamUID
+	var roleTeamUID team.TeamUID
 
 	switch rr {
 	case role.Editor:
@@ -1439,7 +1441,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if unshareWithTeam, ok := s.es.Teams[entitystore.TeamUID{EntityUID: unshareWith}]; ok {
+	if unshareWithTeam, ok := s.es.Teams[team.TeamUID{EntityUID: unshareWith}]; ok {
 		s.logger.InfoContext(
 			r.Context(),
 			"found unshare_with Team entity",
@@ -1452,7 +1454,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 			slog.Any("unshareWithTeam", unshareWithTeam),
 			slog.Any("removed", roleTeamUID),
 		)
-	} else if unshareWithUser, ok := s.es.Users[entitystore.UserUID{EntityUID: unshareWith}]; ok {
+	} else if unshareWithUser, ok := s.es.Users[user.UserUID{EntityUID: unshareWith}]; ok {
 		s.logger.InfoContext(
 			r.Context(),
 			"found unshare_with User entity",

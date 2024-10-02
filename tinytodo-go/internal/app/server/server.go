@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/app"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-go"
@@ -20,7 +21,7 @@ var (
 			},
 		),
 	)
-	ApplicationEntityUID = entitystore.App{EUID: entityuid.New(entitytype.Application, "TinyTodo")}
+	ApplicationEntityUID = app.App{EUID: entityuid.New(entitytype.Application, "TinyTodo")}
 )
 
 // Server represents the web server that host the booking app.

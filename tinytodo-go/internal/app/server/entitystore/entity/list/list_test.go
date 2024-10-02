@@ -1,7 +1,10 @@
-package entitystore
+package list
 
 import (
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/team"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/user"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-go/types"
@@ -12,8 +15,8 @@ import (
 
 func TestList(t *testing.T) {
 	t.Run("check interface", func(t *testing.T) {
-		var e Entity
-		l := NewList(
+		var e entity.Entity
+		l := New(
 			ListUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
@@ -23,7 +26,7 @@ func TestList(t *testing.T) {
 				},
 			},
 			"Cedar blog post",
-			UserUID{
+			user.UserUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
 						Type: types.EntityType(entitytype.User.String()),
@@ -31,7 +34,7 @@ func TestList(t *testing.T) {
 					},
 				},
 			},
-			TeamUID{
+			team.TeamUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
 						Type: types.EntityType(entitytype.Team.String()),
@@ -39,7 +42,7 @@ func TestList(t *testing.T) {
 					},
 				},
 			},
-			TeamUID{
+			team.TeamUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
 						Type: types.EntityType(entitytype.Team.String()),
@@ -56,7 +59,7 @@ func TestList(t *testing.T) {
 
 func TestList_Marshal(t *testing.T) {
 	t.Run("check marshal valid case", func(t *testing.T) {
-		list := NewList(
+		list := New(
 			ListUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
@@ -66,7 +69,7 @@ func TestList_Marshal(t *testing.T) {
 				},
 			},
 			"Cedar blog post",
-			UserUID{
+			user.UserUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
 						Type: types.EntityType(entitytype.User.String()),
@@ -74,7 +77,7 @@ func TestList_Marshal(t *testing.T) {
 					},
 				},
 			},
-			TeamUID{
+			team.TeamUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
 						Type: types.EntityType(entitytype.Team.String()),
@@ -82,7 +85,7 @@ func TestList_Marshal(t *testing.T) {
 					},
 				},
 			},
-			TeamUID{
+			team.TeamUID{
 				EntityUID: entityuid.EntityUID{
 					EntityUID: types.EntityUID{
 						Type: types.EntityType(entitytype.Team.String()),

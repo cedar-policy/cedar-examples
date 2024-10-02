@@ -1,6 +1,9 @@
-package entitystore
+package list
 
 import (
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/task"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/team"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/user"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
@@ -24,19 +27,26 @@ type ListUID struct {
 //
 // This is because List should only be created via the APIs, hence the generation of the ID is controlled.
 type List struct {
-	UID     ListUID `json:"uid"`
-	Name    string  `json:"name"`
-	Owner   UserUID `json:"owner"`
-	Readers TeamUID `json:"readers"` // plural because its a team of readers
-	Editors TeamUID `json:"editors"` // plural because its a team of editors
-	Tasks   []*Task `json:"tasks"`
+	UID     ListUID      `json:"uid"`
+	Name    string       `json:"name"`
+	Owner   user.UserUID `json:"owner"`
+	Readers team.TeamUID `json:"readers"` // plural because its a team of readers
+	Editors team.TeamUID `json:"editors"` // plural because its a team of editors
+	Tasks   []*task.Task `json:"tasks"`
 }
 
-// NewList creates a new List; if tasks is nil, we create an empty slice so that there will be no problems with
+// New creates a new List; if tasks is nil, we create an empty slice so that there will be no problems with
 // client processing.
-func NewList(uid ListUID, name string, owner UserUID, readers TeamUID, editors TeamUID, tasks []*Task) *List {
+func New(
+	uid ListUID,
+	name string,
+	owner user.UserUID,
+	readers team.TeamUID,
+	editors team.TeamUID,
+	tasks []*task.Task,
+) *List {
 	if tasks == nil {
-		tasks = []*Task{}
+		tasks = []*task.Task{}
 	}
 	return &List{uid, name, owner, readers, editors, tasks}
 }
@@ -73,8 +83,8 @@ func (l *List) AsCedarEntity() *types.Entity {
 // Although the task ID starts from 0, the client will adjust it with a +1 offset.
 func (l *List) InsertTask(name string) int {
 	id := len(l.Tasks) // simply use the current number of tasks (non-negative integer) as the ID for the next task
-	l.Tasks = append(l.Tasks, &Task{
-		UID: TaskUID{
+	l.Tasks = append(l.Tasks, &task.Task{
+		UID: task.TaskUID{
 			EntityUID: entityuid.EntityUID{
 				EntityUID: types.EntityUID{
 					Type: types.EntityType(entitytype.Task.String()),
