@@ -44,7 +44,7 @@ var (
 func init() {
 	// verify that all Actions are valid EUIDs
 	for k, act := range Name {
-		euid, err := entityuid.ParseEntityUID(act)
+		euid, err := entityuid.Parse(act)
 		if err != nil {
 			panic(err)
 		}

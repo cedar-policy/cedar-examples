@@ -30,7 +30,7 @@ func (s *Server) handleGetHome(w http.ResponseWriter, r *http.Request) {
 //	]
 func (s *Server) handleGetAPIListsGet(w http.ResponseWriter, r *http.Request) {
 
-	userUID_, err := entityuid.ParseEntityUID(r.URL.Query().Get("uid"))
+	userUID_, err := entityuid.Parse(r.URL.Query().Get("uid"))
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -156,7 +156,7 @@ func (s *Server) handlePostAPIListCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userUID_, err := entityuid.ParseEntityUID(req.UID)
+	userUID_, err := entityuid.Parse(req.UID)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -256,7 +256,7 @@ func (s *Server) handlePostAPIListCreate(w http.ResponseWriter, r *http.Request)
 //
 //	{'uid': 'List::"0"', 'owner': 'User::"andrew"', 'name': 'a', 'tasks': [], 'readers': 'Team::"1"', 'editors': 'Team::"2"'}
 func (s *Server) handleGetAPIListGet(w http.ResponseWriter, r *http.Request) {
-	userUID_, err := entityuid.ParseEntityUID(r.URL.Query().Get("uid"))
+	userUID_, err := entityuid.Parse(r.URL.Query().Get("uid"))
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -277,7 +277,7 @@ func (s *Server) handleGetAPIListGet(w http.ResponseWriter, r *http.Request) {
 
 	userUID := user.UserUID{EntityUID: userUID_}
 
-	listUID_, err := entityuid.ParseEntityUID(r.URL.Query().Get("list"))
+	listUID_, err := entityuid.Parse(r.URL.Query().Get("list"))
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -385,7 +385,7 @@ func (s *Server) handlePostAPITaskCreate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userUID_, err := entityuid.ParseEntityUID(req.UID)
+	userUID_, err := entityuid.Parse(req.UID)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -406,7 +406,7 @@ func (s *Server) handlePostAPITaskCreate(w http.ResponseWriter, r *http.Request)
 
 	userUID := user.UserUID{EntityUID: userUID_}
 
-	listUID_, err := entityuid.ParseEntityUID(req.List)
+	listUID_, err := entityuid.Parse(req.List)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -535,7 +535,7 @@ func (s *Server) handlePostAPITaskUpdate(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userUID_, err := entityuid.ParseEntityUID(req.UID)
+	userUID_, err := entityuid.Parse(req.UID)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -556,7 +556,7 @@ func (s *Server) handlePostAPITaskUpdate(w http.ResponseWriter, r *http.Request)
 
 	userUID := user.UserUID{EntityUID: userUID_}
 
-	listUID_, err := entityuid.ParseEntityUID(req.List)
+	listUID_, err := entityuid.Parse(req.List)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -731,7 +731,7 @@ func (s *Server) handleDeleteAPITaskDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userUID_, err := entityuid.ParseEntityUID(req.UID)
+	userUID_, err := entityuid.Parse(req.UID)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -752,7 +752,7 @@ func (s *Server) handleDeleteAPITaskDelete(w http.ResponseWriter, r *http.Reques
 
 	userUID := user.UserUID{EntityUID: userUID_}
 
-	listUID_, err := entityuid.ParseEntityUID(req.List)
+	listUID_, err := entityuid.Parse(req.List)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -906,7 +906,7 @@ func (s *Server) handleDeleteAPIListDelete(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userUID_, err := entityuid.ParseEntityUID(req.UID)
+	userUID_, err := entityuid.Parse(req.UID)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -927,7 +927,7 @@ func (s *Server) handleDeleteAPIListDelete(w http.ResponseWriter, r *http.Reques
 
 	userUID := user.UserUID{EntityUID: userUID_}
 
-	listUID_, err := entityuid.ParseEntityUID(req.List)
+	listUID_, err := entityuid.Parse(req.List)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -1049,7 +1049,7 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userUID_, err := entityuid.ParseEntityUID(req.UID)
+	userUID_, err := entityuid.Parse(req.UID)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -1070,7 +1070,7 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 
 	userUID := user.UserUID{EntityUID: userUID_}
 
-	listUID_, err := entityuid.ParseEntityUID(req.List)
+	listUID_, err := entityuid.Parse(req.List)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -1091,7 +1091,7 @@ func (s *Server) handlePostAPIShare(w http.ResponseWriter, r *http.Request) {
 
 	listUID := list.ListUID{EntityUID: listUID_}
 
-	shareWith, err := entityuid.ParseEntityUID(req.ShareWith) // can be User or Team
+	shareWith, err := entityuid.Parse(req.ShareWith) // can be User or Team
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -1291,7 +1291,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userUID_, err := entityuid.ParseEntityUID(req.UID)
+	userUID_, err := entityuid.Parse(req.UID)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -1312,7 +1312,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 
 	userUID := user.UserUID{EntityUID: userUID_}
 
-	listUID_, err := entityuid.ParseEntityUID(req.List)
+	listUID_, err := entityuid.Parse(req.List)
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),
@@ -1333,7 +1333,7 @@ func (s *Server) handleDeleteAPIShare(w http.ResponseWriter, r *http.Request) {
 
 	listUID := list.ListUID{EntityUID: listUID_}
 
-	unshareWith, err := entityuid.ParseEntityUID(req.UnshareWith) // can be User or Team
+	unshareWith, err := entityuid.Parse(req.UnshareWith) // can be User or Team
 	if err != nil {
 		s.logger.InfoContext(
 			r.Context(),

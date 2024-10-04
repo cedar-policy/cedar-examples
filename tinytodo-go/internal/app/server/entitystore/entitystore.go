@@ -77,7 +77,7 @@ func (im *UserUIDToUserMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[user.UserUID]*user.User)
 	for k, v := range sk {
-		ki, err := entityuid.ParseEntityUID(k)
+		ki, err := entityuid.Parse(k)
 		if err != nil {
 			return err
 		}
@@ -105,7 +105,7 @@ func (im *TeamUIDToTeamMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[team.TeamUID]*team.Team)
 	for k, v := range sk {
-		ki, err := entityuid.ParseEntityUID(k)
+		ki, err := entityuid.Parse(k)
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (im *ListUIDToListMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[list.ListUID]*list.List)
 	for k, v := range sk {
-		ki, err := entityuid.ParseEntityUID(k)
+		ki, err := entityuid.Parse(k)
 		if err != nil {
 			return err
 		}
@@ -157,7 +157,7 @@ func (im *TaskUIDToTaskMap) UnmarshalJSON(bytes []byte) error {
 	// Copy the values
 	*im = make(map[task.TaskUID]*task.Task)
 	for k, v := range sk {
-		ki, err := entityuid.ParseEntityUID(k)
+		ki, err := entityuid.Parse(k)
 		if err != nil {
 			return err
 		}

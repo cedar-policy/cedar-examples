@@ -76,7 +76,7 @@ func TestEntityUID_MarshalJSON(t *testing.T) {
 	}
 }
 
-func Test_ParseEntityUID(t *testing.T) {
+func Test_Parse(t *testing.T) {
 	tests := []struct {
 		name    string
 		euid    string
@@ -142,11 +142,11 @@ func Test_ParseEntityUID(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseEntityUID(tt.euid)
-			if !tt.wantErr(t, err, fmt.Sprintf("ParseEntityUID(%v)", tt.euid)) {
+			got, err := Parse(tt.euid)
+			if !tt.wantErr(t, err, fmt.Sprintf("Parse(%v)", tt.euid)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "ParseEntityUID(%v)", tt.euid)
+			assert.Equalf(t, tt.want, got, "Parse(%v)", tt.euid)
 		})
 	}
 }

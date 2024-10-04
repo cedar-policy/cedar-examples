@@ -28,13 +28,13 @@ func New(typ entitytype.EntityType, id string) EntityUID {
 	}
 }
 
-// ParseEntityUID converts the Cedar language representation of a types.EntityType into an EntityUID.
+// Parse converts the Cedar language representation of a types.EntityType into an EntityUID.
 // Additionally, it checks that the type of the EntityUID matches one of the enums defined in entitytype.EntityType.
 //
 // Example input:
 //
 //	"User::\"kesha\""
-func ParseEntityUID(uid string) (EntityUID, error) {
+func Parse(uid string) (EntityUID, error) {
 	parts := strings.Split(uid, "::")
 	if len(parts) != 2 {
 		return EntityUID{}, fmt.Errorf("wrong number of components, expected %d, got %d", 2, len(parts))
