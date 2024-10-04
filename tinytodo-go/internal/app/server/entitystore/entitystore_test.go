@@ -2,7 +2,10 @@ package entitystore
 
 import (
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/team"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/user"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -23,22 +26,22 @@ func Test_EntityStore(t *testing.T) {
 		var es EntityStore
 		require.NoError(t, json.Unmarshal(f, &es))
 
-		userUID := UserUID{
-			EntityUID: NewEntityUID(entitytype.User, "kesha"),
+		userUID := user.UserUID{
+			EntityUID: entityuid.New(entitytype.User, "kesha"),
 		}
-		teamUID := TeamUID{
-			EntityUID: NewEntityUID(entitytype.Team, "temp"),
+		teamUID := team.TeamUID{
+			EntityUID: entityuid.New(entitytype.Team, "temp"),
 		}
-		applicationEUID := NewEntityUID(entitytype.Application, "TinyTodo")
+		applicationEUID := entityuid.New(entitytype.Application, "TinyTodo")
 
 		assert.Contains(t, es.Users, userUID)
 		assert.Equal(
 			t,
-			NewUser(
+			user.New(
 				userUID,
 				"ABC17",
 				5,
-				[]EntityUID{
+				[]entityuid.EntityUID{
 					// order matters
 					applicationEUID,
 					teamUID.EntityUID,
@@ -50,7 +53,7 @@ func Test_EntityStore(t *testing.T) {
 		assert.Contains(t, es.Teams, teamUID)
 		assert.Equal(
 			t,
-			NewTeam(teamUID, []EntityUID{applicationEUID}),
+			team.New(teamUID, []entityuid.EntityUID{applicationEUID}),
 			es.Teams[teamUID],
 		)
 		assert.Equal(t, applicationEUID, es.App.EUID)

@@ -3,8 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/action"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-go"
 	"log/slog"
 )
@@ -16,9 +16,9 @@ import (
 // Non-existent entities (resources) will result in an error. (TODO: we may not want this behaviour)
 func (s *Server) isAuthorized(
 	ctx context.Context,
-	principal entitystore.EntityUID,
+	principal entityuid.EntityUID,
 	action action.Action,
-	resource entitystore.EntityUID,
+	resource entityuid.EntityUID,
 ) (bool, cedar.Diagnostic, error) {
 
 	// we have to generate entities every time, because the entities may have been updated

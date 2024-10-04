@@ -1,13 +1,14 @@
-// Package action contains the enum Action that represents the different actions supported by entitystore.EntityStore.
+// Package action contains the enum Action that represents the different actions supported by TinyTodo.
 package action
 
 import (
-	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
+	"github.com/cedar-policy/cedar-go/types"
 	"strings"
 )
 
-// Action is an enum that represents the different entity types supported by Cedar.
+// Action is an enum that represents the different entity types supported by TinyTodo.
 type Action int
 
 const (
@@ -37,17 +38,17 @@ var (
 		DeleteList: "Action::\"DeleteList\"",
 	}
 
-	EntityUID = map[Action]entitystore.EntityUID{}
+	EntityUID = map[Action]entityuid.EntityUID{}
 )
 
 func init() {
 	// verify that all Actions are valid EUIDs
 	for k, act := range Name {
-		euid, err := entitystore.ParseEntityUID(act)
+		euid, err := entityuid.Parse(act)
 		if err != nil {
 			panic(err)
 		}
-		if euid.Type != entitytype.Action.String() {
+		if euid.Type != types.EntityType(entitytype.Action.String()) {
 			panic(err)
 		}
 		EntityUID[k] = euid
@@ -68,6 +69,6 @@ func Parse(act string) Action {
 	return Unknown
 }
 
-func (a Action) GetEUID() entitystore.EntityUID {
+func (a Action) GetEUID() entityuid.EntityUID {
 	return EntityUID[a]
 }

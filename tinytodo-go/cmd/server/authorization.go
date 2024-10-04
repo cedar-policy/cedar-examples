@@ -12,7 +12,7 @@ const (
 	DefaultEntitiesFileName    = "entities.json" // this is not in the Cedar entity schema, conversion required
 )
 
-func prepareCedarPolicyEntities() (*entitystore.EntityStore, cedar.PolicySet, error) {
+func prepareCedarPolicyEntities() (*entitystore.EntityStore, *cedar.PolicySet, error) {
 
 	entitiesFile, err := os.ReadFile(DefaultEntitiesFileName)
 	if err != nil {
@@ -29,7 +29,7 @@ func prepareCedarPolicyEntities() (*entitystore.EntityStore, cedar.PolicySet, er
 		return nil, nil, fmt.Errorf("failed to read Cedar policy file: %w", err)
 	}
 
-	ps, err := cedar.NewPolicySet(DefaultCedarPolicyFileName, psFile)
+	ps, err := cedar.NewPolicySetFromBytes(DefaultCedarPolicyFileName, psFile)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create Cedar policy set: %w", err)
 	}

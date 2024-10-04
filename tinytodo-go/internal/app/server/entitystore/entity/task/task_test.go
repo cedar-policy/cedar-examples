@@ -1,10 +1,12 @@
-package entitystore
+package task
 
 import (
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -12,12 +14,12 @@ import (
 
 func TestTask(t *testing.T) {
 	t.Run("check interface", func(t *testing.T) {
-		var e Entity
+		var e entity.Entity
 		task := &Task{
 			UID: TaskUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.Task.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.Task.String()),
 						ID:   "1",
 					},
 				},
@@ -35,9 +37,9 @@ func TestTask_Marshal(t *testing.T) {
 	t.Run("check marshal valid case", func(t *testing.T) {
 		task := Task{
 			UID: TaskUID{
-				EntityUID: EntityUID{
-					EntityUID: cedar.EntityUID{
-						Type: entitytype.Task.String(),
+				EntityUID: entityuid.EntityUID{
+					EntityUID: types.EntityUID{
+						Type: types.EntityType(entitytype.Task.String()),
 						ID:   "1",
 					},
 				},

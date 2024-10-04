@@ -3,6 +3,10 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/list"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/team"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity/user"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"os"
 	"path"
 	"testing"
@@ -27,7 +31,7 @@ func TestServer_isAuthorized(t *testing.T) {
 	// read policies
 
 	psFile := readFile(t, path.Join("../../../", "policies.cedar"))
-	ps, err := cedar.NewPolicySet("policies.cedar", psFile)
+	ps, err := cedar.NewPolicySetFromBytes("policies.cedar", psFile)
 	require.NoError(t, err)
 
 	// read entities (will be modified later)
@@ -44,25 +48,25 @@ func TestServer_isAuthorized(t *testing.T) {
 
 	// extract users
 
-	userAndrew, ok := es.Users[entitystore.UserUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.User, "andrew"),
+	userAndrew, ok := es.Users[user.UserUID{
+		EntityUID: entityuid.New(entitytype.User, "andrew"),
 	}]
 	require.True(t, ok)
 
-	userAaron, ok := es.Users[entitystore.UserUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.User, "aaron"),
+	userAaron, ok := es.Users[user.UserUID{
+		EntityUID: entityuid.New(entitytype.User, "aaron"),
 	}]
 	require.True(t, ok)
 
-	userKesha, ok := es.Users[entitystore.UserUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.User, "kesha"),
+	userKesha, ok := es.Users[user.UserUID{
+		EntityUID: entityuid.New(entitytype.User, "kesha"),
 	}]
 	require.True(t, ok)
 
 	// extract teams
 
-	teamInterns, ok := es.Teams[entitystore.TeamUID{
-		EntityUID: entitystore.NewEntityUID(entitytype.Team, "interns"),
+	teamInterns, ok := es.Teams[team.TeamUID{
+		EntityUID: entityuid.New(entitytype.Team, "interns"),
 	}]
 	require.True(t, ok)
 
@@ -100,7 +104,7 @@ func TestServer_isAuthorized(t *testing.T) {
 	list0Readers := es.InsertNextTeam() // readers for list0
 	list0Editors := es.InsertNextTeam() // editors for list0
 
-	list0 := entitystore.NewList(
+	list0 := list.New(
 		list0UID,
 		"Cedar blog post",
 		userAndrew.EUID,
@@ -157,7 +161,7 @@ func TestServer_isAuthorized(t *testing.T) {
 			context.Background(),
 			userAaron.EUID.EntityUID,
 			action.GetList,
-			entitystore.NewEntityUID(entitytype.List, "non-existent"),
+			entityuid.New(entitytype.List, "non-existent"),
 		)
 		require.NoError(t, err)
 		assert.False(t, decision)

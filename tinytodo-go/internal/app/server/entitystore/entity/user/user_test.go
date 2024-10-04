@@ -1,8 +1,10 @@
-package entitystore
+package user
 
 import (
 	"encoding/json"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entity"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -10,10 +12,10 @@ import (
 
 func TestUser(t *testing.T) {
 	t.Run("check interface", func(t *testing.T) {
-		var e Entity
-		u := NewUser(
+		var e entity.Entity
+		u := New(
 			UserUID{
-				EntityUID: NewEntityUID(entitytype.User, "andrew"),
+				EntityUID: entityuid.New(entitytype.User, "andrew"),
 			},
 			"test_location",
 			0,
@@ -42,7 +44,7 @@ func TestUser_Unmarshal(t *testing.T) {
 		assert.Equal(
 			t,
 			UserUID{
-				NewEntityUID(entitytype.User, "kesha"),
+				entityuid.New(entitytype.User, "kesha"),
 			},
 			u.EUID,
 		)
@@ -51,12 +53,12 @@ func TestUser_Unmarshal(t *testing.T) {
 		assert.Contains(
 			t,
 			u.Parents,
-			NewEntityUID(entitytype.Application, "TinyTodo"),
+			entityuid.New(entitytype.Application, "TinyTodo"),
 		)
 		assert.Contains(
 			t,
 			u.Parents,
-			NewEntityUID(entitytype.Team, "temp"),
+			entityuid.New(entitytype.Team, "temp"),
 		)
 	})
 }
