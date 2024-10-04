@@ -1,4 +1,4 @@
-// Package action contains the enum Action that represents the different actions supported by entitystore.EntityStore.
+// Package action contains the enum Action that represents the different actions supported by TinyTodo.
 package action
 
 import (
@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// Action is an enum that represents the different entity types supported by types.
+// Action is an enum that represents the different entity types supported by TinyTodo.
 type Action int
 
 const (
