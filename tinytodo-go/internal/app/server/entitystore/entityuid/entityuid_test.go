@@ -1,10 +1,10 @@
-package entitystore
+package entityuid
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entitytype"
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-go/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -13,47 +13,53 @@ import (
 func Test_EntityUID(t *testing.T) {
 	t.Run("verify json.Marshaler interface", func(t *testing.T) {
 		var m json.Marshaler
-		e := NewEntityUID(entitytype.Application, "TinyTodo")
+		e := New(entitytype.Application, "TinyTodo")
 		m = e
 		require.NotNil(t, m)
 	})
 	t.Run("verify json.Unmarshaler interface", func(t *testing.T) {
 		var m json.Unmarshaler
-		e := NewEntityUID(entitytype.Application, "TinyTodo")
+		e := New(entitytype.Application, "TinyTodo")
 		m = &e
 		require.NotNil(t, m)
 	})
 }
 
 func TestEntityUID_MarshalJSON(t *testing.T) {
-	type fields struct {
-		EntityUID cedar.EntityUID
-	}
 	tests := []struct {
-		name    string
-		fields  fields
-		wantErr assert.ErrorAssertionFunc
+		name      string
+		entityUID types.EntityUID
+		wantErr   assert.ErrorAssertionFunc
 	}{
 		{
 			"valid user",
-			fields{EntityUID: cedar.NewEntityUID(entitytype.User.String(), "kesha")},
+			types.NewEntityUID(
+				types.EntityType(entitytype.User.String()),
+				"kesha",
+			),
 			assert.NoError,
 		},
 		{
 			"valid team",
-			fields{EntityUID: cedar.NewEntityUID(entitytype.Team.String(), "temp")},
+			types.NewEntityUID(
+				types.EntityType(entitytype.Team.String()),
+				"temp",
+			),
 			assert.NoError,
 		},
 		{
 			"valid application",
-			fields{EntityUID: cedar.NewEntityUID(entitytype.Application.String(), "TinyTodo")},
+			types.NewEntityUID(
+				types.EntityType(entitytype.Application.String()),
+				"TinyTodo",
+			),
 			assert.NoError,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			e := EntityUID{
-				EntityUID: tt.fields.EntityUID,
+				EntityUID: tt.entityUID,
 			}
 			got, err := e.MarshalJSON()
 			if !tt.wantErr(t, err, fmt.Sprintf("MarshalJSON()")) {
@@ -70,22 +76,19 @@ func TestEntityUID_MarshalJSON(t *testing.T) {
 	}
 }
 
-func Test_ParseEntityUID(t *testing.T) {
-	type args struct {
-		euid string
-	}
+func Test_Parse(t *testing.T) {
 	tests := []struct {
 		name    string
-		args    args
+		euid    string
 		want    EntityUID
 		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "valid user ID",
-			args: args{euid: "User::\"kesha\""},
+			euid: "User::\"kesha\"",
 			want: EntityUID{
-				cedar.EntityUID{
-					Type: entitytype.User.String(),
+				types.EntityUID{
+					Type: types.EntityType(entitytype.User.String()),
 					ID:   "kesha",
 				},
 			},
@@ -93,10 +96,10 @@ func Test_ParseEntityUID(t *testing.T) {
 		},
 		{
 			name: "valid user ID without quotes",
-			args: args{euid: "User::kesha"},
+			euid: "User::kesha",
 			want: EntityUID{
-				cedar.EntityUID{
-					Type: entitytype.User.String(),
+				types.EntityUID{
+					Type: types.EntityType(entitytype.User.String()),
 					ID:   "kesha",
 				},
 			},
@@ -104,10 +107,10 @@ func Test_ParseEntityUID(t *testing.T) {
 		},
 		{
 			name: "valid team ID",
-			args: args{euid: "Team::\"temp\""},
+			euid: "Team::\"temp\"",
 			want: EntityUID{
-				cedar.EntityUID{
-					Type: entitytype.Team.String(),
+				types.EntityUID{
+					Type: types.EntityType(entitytype.Team.String()),
 					ID:   "temp",
 				},
 			},
@@ -115,10 +118,10 @@ func Test_ParseEntityUID(t *testing.T) {
 		},
 		{
 			name: "valid application ID",
-			args: args{euid: "Application::\"TinyTodo\""},
+			euid: "Application::\"TinyTodo\"",
 			want: EntityUID{
-				cedar.EntityUID{
-					Type: entitytype.Application.String(),
+				types.EntityUID{
+					Type: types.EntityType(entitytype.Application.String()),
 					ID:   "TinyTodo",
 				},
 			},
@@ -126,24 +129,24 @@ func Test_ParseEntityUID(t *testing.T) {
 		},
 		{
 			name:    "invalid ID",
-			args:    args{euid: "::"},
+			euid:    "::",
 			want:    EntityUID{},
 			wantErr: assert.Error,
 		},
 		{
 			name:    "malformed ID",
-			args:    args{euid: "Application:\"TinyTodo\""},
+			euid:    "Application:\"TinyTodo\"",
 			want:    EntityUID{},
 			wantErr: assert.Error,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseEntityUID(tt.args.euid)
-			if !tt.wantErr(t, err, fmt.Sprintf("ParseEntityUID(%v)", tt.args.euid)) {
+			got, err := Parse(tt.euid)
+			if !tt.wantErr(t, err, fmt.Sprintf("Parse(%v)", tt.euid)) {
 				return
 			}
-			assert.Equalf(t, tt.want, got, "ParseEntityUID(%v)", tt.args.euid)
+			assert.Equalf(t, tt.want, got, "Parse(%v)", tt.euid)
 		})
 	}
 }

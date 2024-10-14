@@ -1,8 +1,9 @@
-package entitystore
+package task
 
 import (
+	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/entityuid"
 	"github.com/cedar-policy/cedar-examples/tinytodo-go/internal/app/server/entitystore/taskstate"
-	"github.com/cedar-policy/cedar-go"
+	"github.com/cedar-policy/cedar-go/types"
 )
 
 // TaskUID is a transparent wrapper around EntityUID, to make it clear that we want a Task's EntityUID.
@@ -11,7 +12,7 @@ import (
 //
 // [blog post]: https://sentry.io/answers/alias-type-definitions/
 type TaskUID struct {
-	EntityUID
+	entityuid.EntityUID
 }
 
 // Task represents the task entity.
@@ -22,15 +23,15 @@ type Task struct {
 	State taskstate.TaskState `json:"state"`
 }
 
-// AsCedarEntity converts Task into a cedar.Entity, to be passed to the Cedar authorization engine when it evaluates a
+// AsCedarEntity converts Task into a types.Entity, to be passed to the Cedar authorization engine when it evaluates a
 // request.
-func (t *Task) AsCedarEntity() *cedar.Entity {
+func (t *Task) AsCedarEntity() *types.Entity {
 
-	records := make(cedar.Record)
-	records["name"] = cedar.String(t.Name)
-	records["state"] = cedar.String(t.State.String())
+	records := make(types.Record)
+	records["name"] = types.String(t.Name)
+	records["state"] = types.String(t.State.String())
 
-	return &cedar.Entity{
+	return &types.Entity{
 		UID: t.UID.EntityUID.EntityUID,
 		//Parents:    nil,
 		Attributes: records,
