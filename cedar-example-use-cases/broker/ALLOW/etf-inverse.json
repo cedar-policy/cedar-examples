@@ -1,0 +1,6 @@
+{
+    "principal": "User::\"Trader\"",
+    "action": "Action::\"TradeETF\"",
+    "resource": "ETF::\"PSQ\"",
+    "context": {}
+}
