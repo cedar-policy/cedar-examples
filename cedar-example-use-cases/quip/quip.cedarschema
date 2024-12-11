@@ -1,0 +1,78 @@
+// Entities
+// All enums are modeled as just String here
+
+entity User {
+    id: String,
+    name: String,
+    disabled: Bool,
+    shared_folder_ids?: Set<Folder>, // folders that are explicitly shared with the user
+};
+
+entity Folder {
+  id: String,
+  title: String,
+  creator_id: User,
+  member_ids: Set<User>,
+ };
+
+entity Thread {
+  id: String,
+  author_id: User,
+  title: String,
+  user_ids?: Set<User>, // the individuals a document is shared with (not through a folder)
+  shared_folder_ids?: Set<Folder>, // the folders added to a document (including the folder the document is in)
+  expanded_user_ids?: Set<User>, // all the users in the folders 
+  access_levels?: 
+    Set<{      
+      member_id: User,
+      level_of_access: String
+    }>, 
+    // access_levels will have all the necessary information about who has access to what (consolidates the user_ids, shared_folder_ids,expanded_user_ids in one place)
+    // it does not however include author, so there has to be another policy for that
+  parent_folder?: Folder 
+};
+
+//Actions 
+action ThreadFullAccessActions;
+action ThreadEditActions;
+action ThreadCommentActions;
+action ThreadViewActions;
+action FolderFullAccessActions;
+
+action viewThread
+   in [ThreadFullAccessActions, ThreadEditActions,
+       ThreadCommentActions, ThreadViewActions]
+  appliesTo {
+    principal: User,
+    resource: Thread,
+  };
+
+//Theres only full access or no access for folders 
+action viewFolder, editFolder, shareFolder
+   in [FolderFullAccessActions]
+  appliesTo {
+    principal: User,
+    resource: Folder,
+  };
+
+action editThread
+   in [ThreadFullAccessActions, ThreadEditActions]
+  appliesTo {
+    principal: User,
+    resource: Thread,
+  };
+
+  action shareThread
+   in [ThreadFullAccessActions]
+  appliesTo {
+    principal: User,
+    resource: Thread,
+  };
+
+action commentThread
+   in [ThreadFullAccessActions, ThreadEditActions,
+       ThreadCommentActions]
+  appliesTo {
+    principal: User,
+    resource: Thread,
+  };
