@@ -44,6 +44,10 @@ fn main() {
 
     //print a policy in JSON format
     to_json();
+
+    //Authorization example
+    let decision = authorization();
+    println!("{:?}", decision);
 }
 /// parse a policy
 fn parse_policy() {
@@ -471,3 +475,31 @@ fn create_p_a_r() -> (EntityUid, EntityUid, EntityUid) {
     let r = EntityUid::from_type_name_and_id(r_name, r_eid);
     (p, a, r)
 }
+
+/// Demonstrates a basic Cedar authorization flow
+/// Returns a Response indicating whether the access is allowed or denied
+fn authorization() -> Response {
+    let (principal, action, resource) = create_p_a_r();
+    let context_json_val = serde_json::json!({});
+    let context = Context::from_json_value(context_json_val, None).unwrap();
+
+    // Construct the authorization request combining principal, action, resource, and context
+    let request = Request::new(principal, action, resource, context, None)
+        .expect("request validation error");
+
+    // Define the policy that determines access rules
+    // This policy permits user "alice" to perform "update" action on "VacationPhoto94.jpg"
+    let policies_str = r#"permit(
+    principal == User::"alice",
+    action == Action::"view",
+    resource == Album::"trip"
+    );"#;
+
+    // Evaluate the authorization request against the policy and entities
+    let policy_set = PolicySet::from_str(policies_str).expect("policy parse error");
+    let entities_json = r#"[]"#;
+    let entities = Entities::from_json_str(entities_json, None).expect("entity parse error");
+    let authorizer = Authorizer::new();
+    authorizer.is_authorized(&request, &policy_set, &entities)
+}
+
