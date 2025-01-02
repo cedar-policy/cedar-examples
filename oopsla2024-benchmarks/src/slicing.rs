@@ -35,9 +35,9 @@ impl SliceKey {
                 PrincipalOrResourceConstraint::IsIn(_, EntityReference::EUID(uid)) => {
                     Some((**uid).clone())
                 }
-                PrincipalOrResourceConstraint::Eq(EntityReference::Slot)
-                | PrincipalOrResourceConstraint::In(EntityReference::Slot)
-                | PrincipalOrResourceConstraint::IsIn(_, EntityReference::Slot) => None,
+                PrincipalOrResourceConstraint::Eq(EntityReference::Slot(_))
+                | PrincipalOrResourceConstraint::In(EntityReference::Slot(_))
+                | PrincipalOrResourceConstraint::IsIn(_, EntityReference::Slot(_)) => None,
             },
             resource: match policy.resource_constraint().as_inner() {
                 PrincipalOrResourceConstraint::Any => None,
@@ -51,9 +51,9 @@ impl SliceKey {
                 PrincipalOrResourceConstraint::IsIn(_, EntityReference::EUID(uid)) => {
                     Some((**uid).clone())
                 }
-                PrincipalOrResourceConstraint::Eq(EntityReference::Slot)
-                | PrincipalOrResourceConstraint::In(EntityReference::Slot)
-                | PrincipalOrResourceConstraint::IsIn(_, EntityReference::Slot) => None,
+                PrincipalOrResourceConstraint::Eq(EntityReference::Slot(_))
+                | PrincipalOrResourceConstraint::In(EntityReference::Slot(_))
+                | PrincipalOrResourceConstraint::IsIn(_, EntityReference::Slot(_)) => None,
             },
         }
     }
