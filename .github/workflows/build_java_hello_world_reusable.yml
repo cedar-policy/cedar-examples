@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         toolchain:
-          - '1.80'
+          - stable
     steps:
       - name: Setup Java
         uses: actions/setup-java@v4
