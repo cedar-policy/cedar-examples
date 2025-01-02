@@ -436,7 +436,7 @@ impl AppContext {
             // Construct template linking environment
             let target_euid: &cedar_policy::EntityUid = r.share_with.as_ref();
             let list_euid: &cedar_policy::EntityUid = r.list.as_ref();
-            let env: HashMap<SlotId, cedar_policy::EntityUid> = [
+            let env: std::collections::HashMap<SlotId, cedar_policy::EntityUid> = [
                 (SlotId::principal(), target_euid.clone()),
                 (SlotId::resource(), list_euid.clone()),
             ]
