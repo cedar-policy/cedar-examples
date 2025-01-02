@@ -248,6 +248,7 @@ impl ExampleApp {
             enable_unspecified_apply_spec: false,
             enable_action_in_constraints: false,
         };
+        #[allow(deprecated)]
         GeneratorSchema::from_raw_schemafrag(schema, settings, u)
             .expect("failed to generate schema")
     }
