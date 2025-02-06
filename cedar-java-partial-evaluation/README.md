@@ -34,15 +34,14 @@ docker build -t sample_app_partial_eval .
 docker run sample_app_partial_eval
 ```
 ### Setup on EC2 Amazon Linux
-Once you have setup an EC2 instance with Amazon Linux. You can install JDK21 using the following command:
+Once you have setup an EC2 instance with Amazon Linux 2023, you can install JDK21 using the following command:
 ```
 sudo yum install java-21-amazon-corretto-devel
 ```
 or follow the instructions [here.](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/amazon-linux-install.html)
 
 Then you can run the application using the Gradle wrapper by executing `./gradlew run` in your terminal.
-
-Note: The sample application has been tested with `JDK21`
+Note: The sample application has been tested with `JDK21`.
 
 ## Details
 
@@ -50,7 +49,7 @@ Note: The sample application has been tested with `JDK21`
 The sample application provides basic policy-set, schema and entities:
 1. Policy Set: `$PROJECTDIR/app/src/main/resources/policies.cedar` - Contains Cedar authorization policies
 2. Schema: `$PROJECTDIR/app/src/main/resources/sampleapp.cedarschema` - Defines the schema for entities and their relationships
-3. Entities: `$PROJECTDIR/app/src/main/resources/entities.json` - JSON representation of entities created programmatically in `cedarjavapoc_partialeval.SampleAuthorizationApp.buildEntities`. Note: CedarJava currently does not support loading entities directly from a file. This file is just a reflection of programatically created entities in the sample application. If you are modifying entities, make sure to modify `cedarjavapoc_partialeval.SampleAuthorizationApp.buildEntities`
+3. Entities: `$PROJECTDIR/app/src/main/resources/entities.json` - JSON representation of entities created programmatically in `cedarjavapoc_partialeval.SampleAuthorizationApp.buildEntities`. Note: CedarJava (at the time of writing) does not support loading entities directly from a file. This file is just a reflection of programatically created entities in the sample application. If you are modifying entities, make sure to modify `cedarjavapoc_partialeval.SampleAuthorizationApp.buildEntities`
 
 ### Sample Authorization App
 `SampleAuthorizationApp` provides two public methods (excl. constructor):
