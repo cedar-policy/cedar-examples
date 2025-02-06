@@ -1,0 +1,26 @@
+entity Document in DocumentGroup;
+entity UserGroup;
+entity User in UserGroup;
+entity DocumentGroup;
+
+action Read appliesTo {
+  principal: [User, UserGroup],
+  resource: [Document, DocumentGroup]
+};
+
+action Write appliesTo {
+  principal: [User, UserGroup],
+  resource: [Document, DocumentGroup],
+  context: {
+    authenticated: Bool
+  }
+};
+
+action Delete appliesTo {
+  principal: [User, UserGroup],
+  resource: [Document, DocumentGroup],
+  context: {
+    authenticated: Bool,
+    delete_confirmation: Bool
+  }
+};
