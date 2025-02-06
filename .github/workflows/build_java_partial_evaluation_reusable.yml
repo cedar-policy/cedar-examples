@@ -26,7 +26,7 @@ jobs:
       - name: Checkout cedar-examples
         uses: actions/checkout@v4
         with:
-          repository: mudit-chaudhary/cedar-examples
+          repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
       - name: Build cedar-java-partial-evaluation
         working-directory: ./cedar-java-partial-evaluation
