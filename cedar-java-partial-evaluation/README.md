@@ -1,8 +1,9 @@
 # CedarJava Partial Evaluation Sample App
-## Description
 This is a sample application which uses CedarJava to showcase Cedar Partial Evaluation to:
 1. Find policies and resources relevant to a given partial request (principal, action, resource = unknown)
 3. Perform simple authorization for a complete request without partial evaluation
+
+The application uses [cedar-java](https://central.sonatype.com/artifact/com.cedarpolicy/cedar-java) as a dependency from the Maven Central repository. The cedar-java library provides Java bindings for Cedar. For more information about the dependency configuration, see `app/build.gradle`.
 
 ## Running the application
 
@@ -19,7 +20,6 @@ gradle run
 
 # To run tests
 ./gradlew test
-
 ```
 If you get a permissions denied error while running `./gradlew run` you might have to provide permissions to gradlew using `chmod u+x ./gradlew`
 
