@@ -12,7 +12,7 @@ This repository contains examples demonstrating the use of [Cedar](https://githu
 | [`cedar-policy-language-in-action`][] | Cedar        | Cedar policies and schemas for the [Cedar policy language in action](https://catalog.workshops.aws/cedar-policy-language-in-action) workshop                                         |
 | [`cedar-example-use-cases`][]         | Cedar        | Cedar policies and schemas for two example applications                                                                                                                              |
 | [`oopsla2024-benchmarks`][]           | Various      | Cedar policies and schemas, along with benchmarking code and scripts, used for the performance evaluation of the [OOPSLA2024 paper on Cedar](https://dl.acm.org/doi/10.1145/3649835) |
-
+| [`cedar-java-partial-evaluation`][]   | Java         | A simple application demonstrating partial evaluation capabilities using the [Cedar Java APIs][] |
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
@@ -33,3 +33,4 @@ This project is licensed under the Apache-2.0 License.
 [`oopsla2024-benchmarks`]: ./oopsla2024-benchmarks
 [`tinytodo`]: ./tinytodo
 [`tinytodo-go`]: ./tinytodo-go
+[`cedar-java-partial-evaluation`]: ./cedar-java-partial-evaluation
