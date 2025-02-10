@@ -26,6 +26,13 @@ jobs:
       cedar_java_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
       cedar_examples_ref: ${{ github.href }}
 
+  java-partial-evaluation:
+    needs: get-branch-name
+    uses: ./.github/workflows/build_java_partial_evaluation_reusable.yml
+    with:
+      cedar_java_ref: refs/heads/${{ needs.get-branch-name.outputs.branch_name }}
+      cedar_examples_ref: ${{ github.href }}
+
   run-example-use-cases:
     needs: get-branch-name
     uses: ./.github/workflows/run_example_use_cases_reusable.yml
