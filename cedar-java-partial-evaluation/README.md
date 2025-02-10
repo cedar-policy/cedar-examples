@@ -1,7 +1,7 @@
 # CedarJava Partial Evaluation Sample App
 This is a sample application which uses CedarJava to showcase Cedar Partial Evaluation to:
 1. Find policies and resources relevant to a given partial request (principal, action, resource = unknown)
-3. Perform simple authorization for a complete request without partial evaluation
+2. Perform simple authorization for a complete request without partial evaluation
 
 The application uses [cedar-java](https://central.sonatype.com/artifact/com.cedarpolicy/cedar-java) as a dependency from the Maven Central repository. The cedar-java library provides Java bindings for Cedar. For more information about the dependency configuration, see `app/build.gradle`.
 
@@ -38,7 +38,7 @@ Once you have setup an EC2 instance with Amazon Linux 2023, you can install JDK2
 ```
 sudo yum install java-21-amazon-corretto-devel
 ```
-or follow the instructions [here.](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/amazon-linux-install.html)
+or follow the instructions [here](https://docs.aws.amazon.com/corretto/latest/corretto-21-ug/amazon-linux-install.html).
 
 Then you can run the application using the Gradle wrapper by executing `./gradlew run` in your terminal.
 Note: The sample application has been tested with `JDK21`.
@@ -54,8 +54,7 @@ The sample application provides basic policy-set, schema and entities:
 ### Sample Authorization App
 `SampleAuthorizationApp` provides two public methods (excl. constructor):
 
-1. `simpleAuthorization()` - Performs authorization evaluation for a complete request using `isAuthorized()`. 
-
+1. `simpleAuthorization()` - Performs authorization evaluation for a complete request using `isAuthorized()`.  
 2. `partialEvaluation()` - Performs partial authorization evaluation using `isAuthorizedPartial()` for requests where resource is unknown. Returns a list of relevant policies and entities that may determine the authorization outcome.
 
 Users can invoke the desired method and modify parameters in `Launcher` to experiment with the functionality.
