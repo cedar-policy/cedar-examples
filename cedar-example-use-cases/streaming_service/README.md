@@ -1,6 +1,7 @@
 # Streaming service policies
 
 This use-case simulates a streaming service to watch on-demand movies or shows.
+The example makes use of the experimental `datetime` extension which requires feature flags to enable it (i.e., `--features datetime` when Cedar is being installed or compiled).
 
 ## Use-case
 
