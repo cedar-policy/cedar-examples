@@ -1,0 +1,13 @@
+{
+    "principal": "Subscriber::\"Charlie\"",
+    "action": "Action::\"watch\"",
+    "resource": "Show::\"Breach\"",
+    "context": {
+        "now": {
+            "timestamp" : {
+                "fn": "datetime",
+                "arg": "2025-02-20T13:00:00-0500"
+            }
+        }
+    }
+}
