@@ -1,0 +1,13 @@
+{
+    "principal": "Subscriber::\"Dave\"",
+    "action": "Action::\"watch\"",
+    "resource": "Show::\"Buddies\"",
+    "context": {
+        "now": {
+            "timestamp" : {
+                "fn": "datetime",
+                "arg": "2025-02-20T22:00:00Z"
+            }
+        }
+    }
+}

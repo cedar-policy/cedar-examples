@@ -1,0 +1,115 @@
+[
+    {
+        "uid": {
+            "type": "Subscriber",
+            "id": "Alice"
+        },
+        "attrs": {
+            "subscription" : {
+                "tier": "standard"
+            },
+            "profile" : {
+                "isKid": false
+            }
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "FreeMember",
+            "id": "Bob"
+        },
+        "attrs": {},
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Subscriber",
+            "id": "Charlie"
+        },
+        "attrs": {
+            "subscription" : {
+                "tier": "premium"
+            },
+            "profile" : {
+                "isKid": false
+            }
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Subscriber",
+            "id": "Dave"
+        },
+        "attrs": {
+            "subscription" : {
+                "tier": "standard"
+            },
+            "profile" : {
+                "isKid": true
+            }
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Movie",
+            "id": "The Godparent"
+        },
+        "attrs": {
+            "isFree" : true,
+            "needsRentOrBuy" : false,
+            "isOscarNominated": true
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Movie",
+            "id": "The Gleaming"
+        },
+        "attrs": {
+            "isFree" : false,
+            "needsRentOrBuy" : false,
+            "isOscarNominated": false
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Movie",
+            "id": "Devilish"
+        },
+        "attrs": {
+            "isFree" : false,
+            "needsRentOrBuy" : true,
+            "isOscarNominated": true
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Show",
+            "id": "Buddies"
+        },
+        "attrs": {
+            "isFree" : false,
+            "releaseDate": "2024-10-10",
+            "isEarlyAccess": false
+        },
+        "parents": []
+    },
+    {
+        "uid": {
+            "type": "Show",
+            "id": "Breach"
+        },
+        "attrs": {
+            "isFree" : false,
+            "releaseDate": "2025-02-21",
+            "isEarlyAccess": true
+        },
+        "parents": []
+    }
+]

@@ -29,11 +29,13 @@ jobs:
           repository: cedar-policy/cedar
           ref: ${{ inputs.cedar_policy_ref }}
           path: ./cedar
+      - name: protoc
+      - run: sudo apt-get install protobuf-compiler
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: Build cli
         working-directory: ./cedar
-        run: cargo build --bin cedar
+        run: cargo build --bin cedar --all-features
       - name: Run validation and authorization
         working-directory: ./cedar-example-use-cases
         run: |
