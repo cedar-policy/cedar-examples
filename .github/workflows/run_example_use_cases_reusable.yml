@@ -29,6 +29,8 @@ jobs:
           repository: cedar-policy/cedar
           ref: ${{ inputs.cedar_policy_ref }}
           path: ./cedar
+      - name: protoc
+      - run: sudo apt-get install protobuf-compiler
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: Build cli
