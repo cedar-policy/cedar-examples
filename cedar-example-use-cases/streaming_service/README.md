@@ -6,8 +6,9 @@ This use-case simulates a streaming service to watch on-demand movies or shows.
 
 Members of the streaming service can be either `FreeMember` or `Subscriber`.
 `Subscriber` is a paid membership with two tiers: `standard` and `premium`.
-There are two main rules to grant access to content:
- - `subscriber-content-access`: A `Subscriber` can watch any content as long it is not *Early Access* (for `Show`s) or it requires to *Rent or Buy* (for `Movie`s).
+There are three main rules to grant access to content:
+ - `subscriber-content-access/show`: A `Subscriber` can watch any `Show` as long it is not *Early Access*.
+ - `subscriber-content-access/movie`: A `Subscriber` can watch any `Movie` as long it does not require to *Rent or Buy*.
  - `free-content-access`: A `FreeMember` can watch any content as long as it is free content.
 
 The other three rules require the `datetime` extension to be encoded:
@@ -25,7 +26,7 @@ The test setup defines the following entities, in `entities.json`:
 We have created six scenarios.
 Note that all requests except the last one use the same time: `2025-02-20T13:00:00-0500` (EST timezone offset).
 
-1. `Alice` watches `Buddies` -- this is allowed per rule `subscriber-content-access`: `Alice` is a `Subscriber` so she can watch any
+1. `Alice` watches `Buddies` -- this is allowed per rule `subscriber-content-access/show`: `Alice` is a `Subscriber` so she can watch any
 `Show` as long as it does not require *Early Access*.
 2. `Bob` watches `The Godparent` -- this is allowed per rule `free-content-access`: `Bob` is a `FreeMember` and `The Godparent` is free content.
 3. `Bob` watches `The Gleaming` -- this is denied because ``free-content-access` is not satisfied: : `Bob` is a `FreeMember` but `The Gleaming` cannot be watched for free.

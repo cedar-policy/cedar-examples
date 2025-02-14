@@ -1,15 +1,20 @@
-// Subscriber Content Access
-@id("subscriber-content-access")
+// Subscriber Content Access (Shows)
+@id("subscriber-content-access/show")
 permit (
   principal is Subscriber,
   action == Action::"watch",
-  resource
+  resource is Show
 )
-when
-{
-  (resource is Show && !resource.isEarlyAccess) ||
-  (resource is Movie && !resource.needsRentOrBuy)
-};
+unless { resource.isEarlyAccess };
+
+// Subscriber Content Access (Movies)
+@id("subscriber-content-access/movie")
+permit (
+  principal is Subscriber,
+  action == Action::"watch",
+  resource is Movie
+)
+unless { resource.needsRentOrBuy };
 
 // Free Content Access
 @id("free-content-access")
