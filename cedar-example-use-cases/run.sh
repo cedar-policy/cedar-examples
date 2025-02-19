@@ -50,4 +50,10 @@ validate "hotel_chains/templated" "policies.cedar" "policies.cedarschema" "linke
 authorize "hotel_chains/templated" "policies.cedar" "entities.json" "policies.cedarschema" "linked"
 format "hotel_chains/templated" "policies.cedar"
 
+# Streaming service
+echo -e "\nTesting Streaming service..."
+validate "streaming_service" "policies.cedar" "policies.cedarschema"
+authorize "streaming_service" "policies.cedar" "entities.json" "policies.cedarschema"
+format "streaming_service" "policies.cedar"
+
 exit "$any_failed"

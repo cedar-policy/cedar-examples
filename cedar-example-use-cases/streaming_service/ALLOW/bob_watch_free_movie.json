@@ -1,0 +1,13 @@
+{
+    "principal": "FreeMember::\"Bob\"",
+    "action": "Action::\"watch\"",
+    "resource": "Movie::\"The Godparent\"",
+    "context": {
+        "now": {
+            "timestamp" : {
+                "fn": "datetime",
+                "arg": "2025-02-20T13:00:00-0500"
+            }
+        }
+    }
+}
