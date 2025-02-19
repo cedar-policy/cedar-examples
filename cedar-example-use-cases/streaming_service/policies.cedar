@@ -65,6 +65,9 @@ forbid (
 )
 when
 {
+  // `toTime()` returns the duration modulo one day (i.e., it ignores the "date"
+  // component). Here, we use it to calculate the current time and compare the
+  // result against durations that represent 6:00AM and 9:00PM.
   principal.profile.isKid &&
   (context.now.timestamp.toTime() >= duration("21h") ||
    context.now.timestamp.toTime() < duration("6h"))
