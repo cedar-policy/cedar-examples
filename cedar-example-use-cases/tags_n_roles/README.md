@@ -1,30 +1,37 @@
 # Tag & role policies
 
-Hypothetical example for a company ABC Technologies.
+This example details an authorization model based on resource tags and role assignments for ABC Tech.
+For more information about exploring this example using the Cedar CLI, see [Cedar Example Use Cases](https://github.com/cedar-policy/cedar-examples/tree/release/4.0.x/cedar-example-use-cases).
 
-## Basic model
+## Use Case
 
-ABC Tech principals are `User`s. Users have one or more `Role`s. This is indicated in the entity hierarchy (the `User` is `in` each of their `Role`s). A role has a corresponding `Action` group whose name mentions the roles; the member `Action`s of the group are the actions that members of the role can carry out. For each role the user is a member of, the user has a set of associated _tags_. The associated tags are collected as optional attributes in the `User` entity, as discussed below.
+ABC Tech principals are `User`s. Users have one or more `Role`s. Each role has a corresponding `Action group`; the member `Action`s of the group are the actions that members of the role can carry out. For each role the user is a member of, the user has a set of associated `tag`s. The associated tags are collected as optional attributes in the `User` entity.
 
-ABC Tech resources are `Workspace` objects. Each of these objects has associated tags, also stored as optional attributes, similarly to users. At a high level: If a user is a member of a role, and their tags associated with the role _match_ the tags on a resource, then they are permitted to carry out any of the role's associated actions on that resource.
+ABC Tech resources are `Workspace` objects. Each workspace has a set of associated tags, stored as optional attributes, similarly to users. 
 
-## Tag matching
+At a high level: If a user is a member of a role, and the tags associated with the role match the tags on a resource, then they are permitted to carry out any of the role's associated actions on that resource.
 
-ABC Tech tags are organized in to _tag groups_ -- the group name is effectively a tag key. Each group has a set of associated string values. For example, the tag group `country` might have potential values `Italy`, `Germany` and `USA`, and a workspace or user with this tag may have any or all of these potential values. The tag value `ALL` is special: It says that the associated tag should be considered as having all possible tag values. For example, if `country` had tag value `[ "ALL" ]` then it matches all of `Italy`, `Germany`, and `USA`.
+## Approaches
+### Tag matching
 
-A `User`'s tags are collected by its `allowedTagsForRole` attribute, which is a record. The record has one attribute for each possible role in the system; these attributes are optional since not all users will be in all roles. Each role attribute is itself a record, whose attributes are the names of all possible tag groups; as with roles, these attributes are optional since not all users will have all tags. Each tag group attribute is associated with a set of strings, i.e., the values for that tag.
+ABC Tech tags are organized in to _tag groups_ — the group name is effectively a tag key. Each group has a set of associated string values, or tags. For example, the tag group `country` might have potential values `Italy`, `Germany`, and `USA` and a workspace or user with this tag may have any or all of these potential values. The tag value `ALL` is special: It says that the associated tag should be considered as having all possible tag values. For example, if country had tag value [ "ALL" ] then it matches all of `Italy`, `Germany`, and `USA`.
 
-A `Workspace`'s tags are collected in its `tags` attribute, which is itself a record whose attributes are the names of all possible tag groups. As with `User`s, each tag group attribute is optional, and is a set of strings that enumerate the tag's values.
+A `User` entity's tags are collected by its `allowedTagsForRole` attribute, which is a record. `allowedTagsForRole` has one attribute for each possible role in the system, such as `Role A`. These attributes are optional since not all users will be in all roles. Each `Role` attribute is itself a record, whose attributes are the names of all possible tag groups, such as `country`. These attributes are optional since not all users will have all tags.
 
-A `User`'s tags for a particular role _match_ the tags on a `Workspace` when for all of the `User`'s tags, if the resource also has that tag then the resource's tag values are _all_ included in the `User`'s tag value. The tag value `"ALL"` is treated specially here: if either `User` or `Workspace` has it in a tag's values, then the tag is considered to match. Note that that this logic implicitly treats the case that the `User` does not have a tag as equivalent to having the tag mapped to `"ALL"`. (This is weird logic, yes, but that's what they want!)
+A `Workspace` entities tags are collected in its `tags` attribute, which is a record, whose attributes are the names of all possible tag groups, such as `country`. These attributes are optional since not all workspaces will have all tags.
 
-## Policy and schema management
+A user's tags for a particular role match the tags on a workspace when for all of the user's tags the workspace has a matching tag. The tag value `"ALL"` is treated specially here: if either the user or the workspace has `ALL` in a tag's values, then the tag is considered to match. 
+
+Note: This logic implicitly treats the case that the user does not have a tag as equivalent to having the tag mapped to "ALL".
+
+
+### Policy and schema management
 
 To implement this approach we use _dynamically created_ policies. In particular:
 
 Each time we **create a new role**:
 1. We update the schema to define a new optional attribute for that role in the `allowedTagsForRole` attribute in a `User`. We must also update the `action` definitions in the schema to include memberships in a newly created action group for the new role.
-2. We add a new policy to the policy store, specialized to the new role. The policy is exactly the same as all existing policies, but with references to a role made to the newly created role name.
+2. We add a new policy to the policy store, specialized to the new role. The policy is exactly the same as all existing policies, but with references to the newly created role name.
 
 If we delete the role, we remove the corresponding policy and action and tags definitions in the schema.
 
@@ -36,14 +43,265 @@ If we delete the tag we remove it from the schema, and we drop its `when` clause
 
 Creating, modifying, or deleting users, workspaces, and tag values has no effect on the existing policies or schemas.
 
-## Examples
+## Entities
+### User
+A user that is assigned at least one role to be assigned permissions
 
-The example authorizations are for two users, Bob and Alice, on a single resource. Two are in the ALLOW subdirectory, and the third is in the DENY subdirectory:
-- The authz `joe_read.json` is ALLOW per policy0 because Joe is a member of Role-A and the ReadWorkspace action is as well, and the tags match. Note that policy1 is not satisfied because even though ReadWorkspace is also included in Role-B's actions, Joe's tags for Role-B do not match.
-- The authz `alice_read.json` is ALLOW per policy1 because Alice is a member of Role-B and the ReadWorkspace action is as well, and the tags match.
-- The last authz `alice_update.json` is DENY by default because the action UpdateWorkspace action is not a Role-B action, and that's the only role Alice is in.
+### Role
+A role is a set of tags that determine what users that are assigned this role can do.
 
-## Variations
+### Workspace
+A resource that users can take action on if the tags of the role and the workspace match.
+
+## Actions 
+
+### Role-A-Actions, Role-B-Actions
+Action groups that are used to easily assign a set of actions to a role
+
+### UpdateWorkspace
+
+Allow a user with role of Role-A to update a workspace.
+
+### DeleteWorkspace
+
+Allow a user with role of Role-A to delete a workspace.
+
+### ReadWorkspace
+
+Allow a user with role of Role-A or Role-B to read a workspace.
+
+## Schema
+
+### Entity Types
+
+* `Role`
+    * attributes:
+        * `production_status`
+        * `country`
+        * `stage`
+* `User`
+    * attributes
+        * `Role-A`
+        * `Role-B`
+* `Workspace`
+    * attributes
+        * `production_status`
+        * `country`
+        * `stage`
+
+### Action types
+
+* `Role-A Actions`, `Role-B Actions`: action groups
+* `UpdateWorkspace`, `DeletWorkspace`
+    * MemberOfTypes: `Role-A Actions`
+    * principals: `User`
+    * resources: `Workspace`
+* `ReadWorkspace`
+    * MemberOfTypes: `Role-A Actions`, `Role-B Actions`
+    * principals: `User`
+    * resources: `Workspace`
+## Policies
+
+### Role-A policy
+```
+@id("Role-A policy")
+permit (
+  principal in Role::"Role-A",
+  action in [Action::"Role-A Actions"],
+  resource
+)
+when
+{
+  // match the production_status tag if present for this role
+  principal.allowedTagsForRole has "Role-A" &&
+  (if
+     principal.allowedTagsForRole["Role-A"] has production_status
+   then
+     if
+       resource.tags has production_status
+     then
+       principal.allowedTagsForRole
+         [
+         "Role-A"
+         ]
+         .production_status
+         .contains
+         (
+           "ALL"
+         ) ||
+       resource.tags.production_status.contains("ALL") ||
+       principal.allowedTagsForRole
+         [
+         "Role-A"
+         ]
+         .production_status
+         .containsAll
+         (
+           resource.tags["production_status"]
+         )
+     else
+       true
+   else
+     true)
+}
+when
+{
+  // match the country tag if present for this role
+  principal.allowedTagsForRole has "Role-A" &&
+  (if
+     principal.allowedTagsForRole["Role-A"] has country
+   then
+     if
+       resource.tags has country
+     then
+       principal.allowedTagsForRole["Role-A"].country.contains("ALL") ||
+       resource.tags.country.contains("ALL") ||
+       principal.allowedTagsForRole
+         [
+         "Role-A"
+         ]
+         .country
+         .containsAll
+         (
+           resource.tags["country"]
+         )
+     else
+       true
+   else
+     true)
+}
+when
+{
+  // match the stage tag if present for this role
+  principal.allowedTagsForRole has "Role-A" &&
+  (if
+     principal.allowedTagsForRole["Role-A"] has stage
+   then
+     if
+       resource.tags has stage
+     then
+       principal.allowedTagsForRole["Role-A"].stage.contains("ALL") ||
+       resource.tags.stage.contains("ALL") ||
+       principal.allowedTagsForRole
+         [
+         "Role-A"
+         ]
+         .stage
+         .containsAll
+         (
+           resource.tags["stage"]
+         )
+     else
+       true
+   else
+     true)
+};
+```
+### Role-B policy
+
+```
+@id("Role-B policy")
+permit (
+  principal in Role::"Role-B",
+  action in [Action::"Role-B Actions"],
+  resource
+)
+when
+{
+  principal.allowedTagsForRole has "Role-B" &&
+  (if
+     principal.allowedTagsForRole["Role-B"] has production_status
+   then
+     if
+       resource.tags has production_status
+     then
+       principal.allowedTagsForRole
+         [
+         "Role-B"
+         ]
+         .production_status
+         .contains
+         (
+           "ALL"
+         ) ||
+       resource.tags.production_status.contains("ALL") ||
+       principal.allowedTagsForRole
+         [
+         "Role-B"
+         ]
+         .production_status
+         .containsAll
+         (
+           resource.tags["production_status"]
+         )
+     else
+       true
+   else
+     true)
+}
+when
+{
+  principal.allowedTagsForRole has "Role-B" &&
+  (if
+     principal.allowedTagsForRole["Role-B"] has country
+   then
+     if
+       resource.tags has country
+     then
+       principal.allowedTagsForRole["Role-B"].country.contains("ALL") ||
+       resource.tags.country.contains("ALL") ||
+       principal.allowedTagsForRole
+         [
+         "Role-B"
+         ]
+         .country
+         .containsAll
+         (
+           resource.tags["country"]
+         )
+     else
+       true
+   else
+     true)
+}
+when
+{
+  principal.allowedTagsForRole has "Role-B" &&
+  (if
+     principal.allowedTagsForRole["Role-B"] has stage
+   then
+     if
+       resource.tags has stage
+     then
+       principal.allowedTagsForRole["Role-B"].stage.contains("ALL") ||
+       resource.tags.stage.contains("ALL") ||
+       principal.allowedTagsForRole
+         [
+         "Role-B"
+         ]
+         .stage
+         .containsAll
+         (
+           resource.tags["stage"]
+         )
+     else
+       true
+   else
+     true)
+};
+```
+
+## Tests
+
+The example authorizations are for two users, `Joe` and `Alice`, on a single resource. Two are in the ALLOW subdirectory, and the third is in the DENY subdirectory:
+
+* The authz `joe_read.json` is ALLOW per `Role-A policy` because Joe is a member of `Role-A` and the `ReadWorkspace` action is as well, and the tags match.
+  **Note**: `Role-B policy` is not satisfied because even though `ReadWorkspace` is also included in the actions for `Role-B`, Joe's tags for `Role-B` don't match.
+* The authz `alice_read.json` is ALLOW per `Role-B policy` because Alice is a member of `Role-B` and the `ReadWorkspace` action is as well, and the tags match.
+* The authz `alice_update.json` is DENY by default because the action `UpdateWorkspace` action is not a `Role-B` action, and that's the only role Alice is in.
+
+
+<!--## Variations
 
 If we added some features to Cedar, we could potentially make these policies easier to manage and/or easier to read.
 
@@ -141,6 +399,6 @@ This is likely to be of real benefit, even without macros and/or maps.
 
 ### Generalized `any?`/`all?`
 
-The three extensions mentioned above naturally "stack" to incrementally improve policies: Using maps means you only need to update schemas when you add/remove a role; using macros makes policies easier to read; and using generalized templates means that when you update tags, it's easier to update the relevant policies by updating a single template (and the schema).
+The three extensions mentioned above naturally "stack" to incrementally improve policies: Using maps means you only need to update schemas when you add/remove a role; using macros makes policies easier to read; and using generalized templates means that when you update tags, it's easier to update the relevant policies by updating a single template (and the schema).-->
 
 A completely different way of approving the problem is possible with generalized iteration operators. TBD!
