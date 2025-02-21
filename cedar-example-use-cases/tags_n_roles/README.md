@@ -47,10 +47,10 @@ Creating, modifying, or deleting users, workspaces, and tag values has no effect
 ### User
 A user that is assigned at least one role to be assigned permissions
 
-###Role
+### Role
 A role is a set of tags that determine what users that are assigned this role can do.
 
-###Workspace
+### Workspace
 A resource that users can take action on if the tags of the role and the workspace match.
 
 ## Actions 
