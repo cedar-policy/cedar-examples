@@ -69,10 +69,10 @@ Actions that can taken on a hotel.
   * principals: `User`
   * resources: `Reservation`
 * `createReservation`, `viewProperty`, `updateProperty`, `grantAccessProperty`: Actions that can be taken on a property.
-* principals: `User`
+  * principals: `User`
   * resources: `Property`
 * `createProperty`, `createHotel`, `viewHotel`, `updateHotel`, `grantAccessHotel`: Actions that can taken on a hotel.
-* principals: `User`
+  * principals: `User`
   * resources: `Hotel`
 
 ### Policies
