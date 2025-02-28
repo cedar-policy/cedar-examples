@@ -1,16 +1,24 @@
 # GitHub Model
 
-In this example, we show how you can implement GitHub's repository permission access in Cedar. There are three “views” of GitHub permissions, corresponding to *Personal*, *Organization* and *Enterprise* accounts. We’ll focus on the *Organizational* view. Our model won’t be complete since this is a tutorial. We’ll aim for a subset of features that you are probably familiar with.
+In this example, GitHub's repository permissions are implemented. .
+
+For more information about exploring this example using the Cedar CLI, see [Cedar Example Use Cases](https://github.com/cedar-policy/cedar-examples/tree/release/4.0.x/cedar-example-use-cases).
+
+## Use-case
+There are three “views” of GitHub permissions that correspond to *Personal*, *Organization* and *Enterprise* accounts. We’ll focus on the *Organizational* view. Because this is an example, our model won’t be complete.
 
 ## Entities
 
-### `User`, `Team`, and `UserGroup`
+### `User`, `Team`
 
-`User` and `Team` represent GitHub users and teams, respectively. `UserGroup` denotes a set of `User`s, so a `User` or a `Team` can be in a `UserGroup`. Entities of type `UserGroup` can also form a hierarchy.
+Represent GitHub users and teams, respectively. `UserGroup` denotes 
+### `UserGroup`
+
+Represent a set of users. Both users and teams can be in a user group. User groups can also form a hierarchy.
 
 ### `Repository`
 
-`Repository` represents GitHub repositories and is the main resource of our model. A repository has five access roles:
+Represents GitHub repositories and is the main resource of our model. A repository has five access roles:
 * reader
 * triager
 * writer
@@ -19,20 +27,28 @@ In this example, we show how you can implement GitHub's repository permission ac
 
 ### `Issue`
 
-An issue of a `Repository` is reported by a `User`. A `User` can assign, create, and delete an issue.
+Represents an issue in a repository. Users can assign, create, and delete an issue.
 
 ### `Org`
 
-It reprents a GitHub organization that has two groups of `User`s representing its members and owners, respectively.
+Reprents a GitHub organization that has two groups of users representing its members and owners, respectively.
 
 ## Actions
-* `pull`: pull a repository
-* `push`: push a repository
-* `fork`: fork a repository
-* `add_{reader, triager, writer, maintainer, admin}`: add a user to the specified role of a repository
-* `{create, delete, assign}_issue`: perform the specified operation to an issue
+### `pull`
+Pull a repository.
 
-Putting these together, we have the follwing schema.
+### `push`
+Push a repository.
+
+### `fork`
+Fork a repository.
+
+### `add_{reader, triager, writer, maintainer, admin}`
+Add a user to the specified role of a repository.
+
+### `{create, delete, assign}_issue`
+Perform the specified operation on an issue.
+
 ##  Schema
 
 ### Entity Types
@@ -43,7 +59,7 @@ Putting these together, we have the follwing schema.
   * memberOfTypes: `UserGroup`
 
 * `Repository`:
-  * attributes:
+  * Attributes:
     * `readers` a `UserGroup`
     * `triagers`: a `UserGroup`
     * `writers`: a `UserGroup`
@@ -51,12 +67,12 @@ Putting these together, we have the follwing schema.
     * `admins`: a `UserGroup`
 
 * `Issue`:
-  * attributes:
+  * Attributes:
     * repo: a `Repository`
     * reporter: a `User`
 
 * `Org`:
-  * attributes:
+  * Attributes:
     * members: a `UserGroup`
     * owners: a `UserGroup`
 
@@ -64,20 +80,18 @@ Putting these together, we have the follwing schema.
     * memberOfTypes: `UserGroup`
 
 ### Action Types
-* `pull`, `push`, `fork`, `add_reader`, `add_triager`, `add_writer`, `add_maintainer`, `add_admin`: operations on repositories
-    * principals: `User`
-    * resources: `Repository`
-* `delete_issue`, `edit_issue`, `assign_issue`: operations on issues
-    * principals: `User`
-    * resources: `Issue`
-
-Finally, let's look at policies we can write to manage repository permissions.
+* `pull`, `push`, `fork`, `add_reader`, `add_triager`, `add_writer`, `add_maintainer`, `add_admin`
+  * principals: `User`
+  * resources: `Repository`
+* `delete_issue`, `edit_issue`, `assign_issue`
+  * principals: `User`
+  * resources: `Issue`
 
 ## Policies
 
-#### Actions for Readers:
+### Actions for Readers:
 
-`User`s of role `Reader` should be able to fork and pull repositories. They can also delete and edit an issue provided they are its reporter.
+`User` entities with a role of `Reader` should be able to fork and pull repositories. They can also delete and edit an issue provided they are its reporter.
 
 ```
 permit (
@@ -111,7 +125,7 @@ when { principal in resource.repo.readers && principal == resource.reporter };
 
 #### Actions for Triagers:
 
-A `User` of role `Triager` should be able to assign an issue to any user.
+`User` entities with a role of `Triager` should be able to assign an issue to any user.
 
 ```
 permit (
@@ -124,7 +138,7 @@ when { principal in resource.repo.triagers };
 
 #### Action for Writers:
 
-A `User` of role `Writer` should be able to push to a repository and also edits its issues.
+`User` entities with a role of `Writer` should be able to push to a repository and also edits its issues.
 
 ```
 permit (
@@ -144,7 +158,7 @@ when { principal in resource.repo.writers };
 
 #### Actions for Maintainers:
 
-A maintainer can only delete issues.
+`User` entities with a role of `maintainer` can only delete issues.
 
 ```
 permit (
@@ -157,7 +171,7 @@ when { principal in resource.repo.maintainers };
 
 #### Actions for Admins:
 
-An admin can add users to the roles of a repository.
+`User` entities with a role of `admin` can add users to the roles of a repository.
 ```
 permit (
   principal,
@@ -171,3 +185,24 @@ permit (
 )
 when { principal in resource.admins };
 ```
+
+## Tests
+
+We use the following entities for our tests, included in the `entities.json` file:
+* There are 3 `User` entities, `User::"alice"`, `User::"bob"`, `User::"jane"`.
+  *  Alice is a member of the `common_knowledge_writers` and `uncommon_knowledge_writers` user groups.
+  *  Bob is a member of the `tiny_corp_owners` organization.
+  *  Jane is a member of the `common_knowledge_maintainers` user group and the `team_that_can_read_everything` team.
+* There are 3 `Repository` entities, `common_knowledge`, `uncommon_knowledge`, and `secret`.
+* There are 3 `UserGroup` entities, `common_knowledge_writers`, `uncommon_knowledge_writers`, and `common_knowledge_maintainers` that are children of the `common_knowledge` and `uncommon_knowledge` repositories, respectively.
+* The 1 `Organization` entity, `tiny_corp_owners`, has admin priveleges to all 3 repositories.
+* The 1 `Team` entity, `team_that_can_read_everything`, has read priveleges to all 3 repositories.
+
+Here are some authz requests to test, included in the `ALLOW` and `DENY` folders:
+* Alice tries to pull common_knowledge: ALLOW because she has read permissions through the `common_knowledge_writers` user group.
+* Alice tries to pull uncommon_knowledge: ALLOW because she has read permissions through the `uncommon_knowledge_writers` user group.
+* Alice tries to push uncommon_knowledge: ALLOW because she has write permissions through the `uncommon_knowledge_writers` user group.
+* Bob tries to push secret: ALLOW because he has write permissions through the `tiny_corp_owners` organization.
+* Jane tries to pull secret: ALLOW because she has read permissions through the `team_that_can_read_everything` team.
+* Alice tries to pull secret: DENY because she doesn't have read permissions.
+* Alice tries to push secret: DENY because she doesn't have write permissions.
