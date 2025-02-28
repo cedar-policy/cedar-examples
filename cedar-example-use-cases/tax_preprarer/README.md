@@ -17,34 +17,34 @@ Rule _2_ is expressed as a `forbid` rule so that it affects any _ad hoc_ `permit
 
 Rules _1a_ and _2_ are expressed as static policies, and rule _1b_ is expressed as a template-linked policy.
 
-### Entities
+## Entities
 
-#### `orgInfo`
+### `orgInfo`
 Represents information about an organization to which a professional can be assigned.
 
-#### `Professional`
+### `Professional`
 Represents a user that is preparing taxes for clients.
 
-#### `Client`
+### `Client`
 Represents a user whose taxes are being prepared.
 
-#### `Document` 
+### `Document` 
 Represents a document that is needed by a professional to prepare a client's taxes.
 
-#### `Consent`
+### `Consent`
 Represents that the client has give consent for the document to be viewed.
 
-### Actions
+## Actions
 
-#### `viewDocument`
+### `viewDocument`
 View a document.
 
-### Schema
+## Schema
 
-#### Namespace
+### Namespace
 * `Taxpreparer`
 
-#### Entity types
+### Entity types
 * `orgInfo`
   * Attributes:
     * `organization`: a String
@@ -67,13 +67,13 @@ View a document.
     * `client`: a `Client`
 	* `team_region_list`: a set of String
 	
-#### Action types
+### Action types
 * `viewDocument`
   * principals: `Professional`
   * resources: `Document`
   * context: `consent`
 
-### Policies
+## Policies
 
 ```
 // Rule 1a: organization-level access
