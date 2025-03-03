@@ -1,75 +1,102 @@
 # Document Cloud Drive Use-Case
 
-Envision a cloud-based document sharing system, like Google Drive or Dropbox. This system can be used by a single user, who is working on documents across multiple of their personal computers, by multiple users, who are collaborating on a shared set of documents, or by the public as a hosting solution. Users need to be able upload, delete, and modify the sharing permissions on their documents. Users also need to be able to view, comment on, and and modify documents that they have access to, while the system enforces correct access control logic. Since this is a multi-tenant system, it must be robust to cross-user abuse. This system includes a blocklist feature to prevent that.
+This examnple explores the authorizazation model for a cloud-based sharing system.
 
-We first define the entities involved in this system.
+For more information about exploring this example using the Cedar CLI, see [Cedar Example Use Cases](https://github.com/cedar-policy/cedar-examples/tree/release/4.0.x/cedar-example-use-cases).
+
+## Use-case
+
+Envision a cloud-based document sharing system, like Google Drive or Dropbox. This system can be used by a single user who is working on documents across multiple computers, by multiple users who are collaborating on a shared set of documents, or by the public as a hosting solution. Users need to be able to upload, delete, and modify the sharing permissions on their documents. Users also need to be able to view, comment on, and modify documents that they have access to. The system enforces correct access control logic. Since this is a multi-tenant system, it must have  a mechanism to protect against cross-user abuse. This system includes a blocklist feature to accomplish this.
+
 ## Entities
 
 ### `User`
-`User`s are the main principals of the system. They are the ones who view/edit/delete documents, as well as the ones who control sharing permissions on documents. `User`s may also block other users. For instance, if Alice blocks Bob, then Bob should not be able to view any documents Alice owns, or share anything with Alice.
+Users are the main principals of the system. They are the ones who view/edit/delete documents, as well as the ones who control sharing permissions on documents. They may also block other users. For instance, if Alice blocks Bob, then Bob should not be able to view any documents Alice owns or share anything with Alice.
 
 ### `Group`
-For convenience, `User`s can be organized into `Group`s. Documents can be shared with entire `Group`s at once. We’ll borrow from Unix and say that every `User` also has a `Group` containing only them.
+For convenience, users can be organized into groups. Documents can be shared with entire groups at once. We’ll borrow from Unix and say that every user also has a group containing only them.
 
 ### `Public`
-A principal that represents an un-authenticated user.
+A principal that represents an unauthenticated user.
 
 ### `Document`
 
-`Document`s are the core resource of the system. Every document has an owner, which is the `User` who created it. Documents have 3 axis of sharing
+Documents are the core resource of the system. Every document has an owner, which is the user who created it. Documents have 3 methods of sharing
 
 * Private: only the owner can view/edit/comment/delete the document
-* ACL: List of users/groups that are allowed view, groups allowed to comment, groups allowed to edit, groups allowed to manage.
-* Public: Can the public view/edit/comment on the document
+* Access-control List (ACL): List of users/groups that are allowed view, groups allowed to comment, groups allowed to edit, groups allowed to manage.
+* Public: The public can view/edit/comment on the document.
 
-It is always enforced that only the owner can delete or edit the sharing state of a document
-
-Next we define the actions that principals can perform.
+It is always enforced that only the owner can delete or edit the sharing state of a document.
 
 ## Actions
 
-* `CreateDocument`: Create a new document in the system. Any authenticated user can do this.
-* `ViewDocument`: Must pass ACL check
-* `DeleteDocument`: Only the owner should be able do this.
-* `CommentOnDocument`: Must pass ACL check
-* `ModifyDocument`: Must pass ACL check
-* `EditIsPrivate`: Only the owner can do this
-* `AddToShareACL`: Anyone who has manage access can do this. The owner can never have their access be revoked.
-* `EditPublic`: Anyone who has edit access can do this.
-* `CreateGroup`: Any authenticated user can do this
-* `ModifyGroup`: Only the owner of the group can do this
-* `DeleteGroup`: Only the owner of the group can do this
+### `CreateDocument`
+Create a new document in the system. Any authenticated user can do this.
 
+### `ViewDocument`
+Users must be on the ACL for the document.
 
-Let’s take this and turn it into a concrete schema:
+### `DeleteDocument`
+Only the owner of the document can do this.
+
+### `CommentOnDocument`
+Users must be on the ACL for the document.
+
+### `ModifyDocument`
+Users must be on the ACL for the document.
+
+### `EditIsPrivate`
+Only the owner of the document can do this.
+
+### `AddToShareACL`
+Users who have manage access can do this. The owner can never have their access be revoked.
+
+### `EditPublic`
+Anyone who has edit access can do this.
+
+### `CreateGroup`
+Any authenticated user can do this.
+
+### `ModifyGroup`
+Only the owner of the document can do this.
+
+### `DeleteGroup`
+Only the owner of the document can do this.
+
+## Context
+### `is_authenticated`
+Whether or not the request is from an authenticated user
+
+## Schema
 
 ### Entity Types:
 
+* `DocumentShare`
+    * A group-entity. All children of this entity are `group`s that are allowed to perform some action on a document.
 * `User`
     * attributes
-        * `personalGroup` a EUID of type `Group`, links to the group containing exactly this user
-        * `blocked` a set of EUIDs of type `User`.
-    * memberOf: `Group`, can be a member of any group. 
+        * `personalGroup` a `Group`, links to the group containing exactly this user
+        * `blocked` a set of  `User` entities.
+    * memberOfTypes: `Group`, can be a member of any group. 
     * Invariants: 
         * for any `User` `u`, `u in u.personalGroup` should always be true
             * as well as `u == u.personalGroup.owner`
 * `Group`
     * attributes:
-        * `owner`: a EUID of type `User`, denoting who can manage this group
-    * memberOf: `DocumentShare`
+        * `owner`: a `User`
+    * memberOfTypes: `DocumentShare`
 * `Document`
     * attributes:
-        * `owner` an EUID of type `User`
-        * `isPrivate` a boolean
-        * `publicAccess` a string, one of: `none`, `view`, or `edit`
-        * `viewACL` an EUID of type `DocumentShare`
-        * `modifyACL` an EUID of type `DocumentShare`
-        * `manageACL` an EUID of type `DocumentShare`
-* `DocumentShare`
-    * A group-entity. All children of this entity are `group`s that are allowed to perform some action on a document
+        * `owner`: a `User`
+        * `isPrivate`: a boolean
+        * `publicAccess`: a string, one of: `none`, `view`, or `edit`
+        * `viewACL` a `DocumentShare`
+        * `modifyACL` a `DocumentShare`
+        * `manageACL` a `DocumentShare`
 * `Public`
     * There is exactly one instance of `public` that represents the un-authenticated user.
-    * memberOf: `DocumentShare`
+    * memberOfTypes: `DocumentShare`
 * `Drive`
     * A “container entity” that represents the entire application.
 
@@ -78,41 +105,40 @@ Let’s take this and turn it into a concrete schema:
 * `CreateDocument`: Create a new document in the system. Any authenticated user can do this.
     * principals: `User`
     * resources: `Drive`
-* `ViewDocument`: Must pass ACL check
+* `ViewDocument`: Users must be on the ACL for the document.
     * principals: `User`
     * resources: `Document`
-* `DeleteDocument`: Only the owner should be able do this.
+* `DeleteDocument`: Only the owner of the document can do this.
     * principals: `User`
     * resources: `Document`
-* `ModifyDocument`: Must pass ACL check
+* `ModifyDocument`: Users must be on the ACL for the document.
     * principals: `User`
     * resources: `Document`
-* `EditIsPrivate`: Only the owner can do this
+* `EditIsPrivate`: Only the owner of the document can do this.
     * principals: `User`
     * resources: `Document`
-* `AddToShareACL`: Anyone who has manage access can do this. The owner can never have their access be revoked.
+* `AddToShareACL`: Users who have manage access can do this. The owner can never have their access be revoked.
     * principals: `User`
     * resources: `Document`
-* `EditPublicAccess`: Anyone who has manage access can do this.
+* `EditPublicAccess`: Anyone who has edit access can do this.
     * principals: `User`
     * resources: `Document`
-* `CreateGroup`: Any authenticated user can do this
+* `CreateGroup`: Any authenticated user can do this.
     * principals: `User`
     * resources: `Drive`
-* `ModifyGroup`: Only the owner of the group can do this
+* `ModifyGroup`: Only the owner of the document can do this.
     * principals: `User`
     * resources: `Group`
-* `DeleteGroup`: Only the owner of the group can do this
+* `DeleteGroup`: Only the owner of the document can do this.
     * principals: `User`
     * resources: `Group`
 
-## Context
+### Context
 
-* `is_authenticated`: Whether or not the request is from an authenticated user
-    * type: `Boolean`
+* `is_authenticated`
+    * Attributes:
+      * type: a boolean
 
-
-Finally, let's look at the policies for permission management.
 ## Policies
 
 ### Creating Documents:
@@ -125,13 +151,6 @@ permit (
   resource == Drive::"drive"
 );
 ```
-
-Any authenticated user should be able to make a document. Since the only valid principal-type here is `User`, this accomplishes that. However, the “authenticated” part isn’t anywhere *in* the policy, and isn’t checked at runtime.
-There are a couple of solutions here:
-
-1. Create an entity `Users::"AllUsers"` that every user is a part of. This makes the graph rather big, but maybe we don’t care.
-2. An `is` operator, ex: `principal is User`
-3. Runtime enforcement of action types.
 
 ### Viewing Documents
 
@@ -252,7 +271,8 @@ when { principal == resource.owner };
 
 ### Blocking
 
-If you’ve blocked someone, they can’t see any of your documents and you can’t see any of theirs. Note that we need a constraint `principal has blocked` for this policy to pass validation because `Action::"ViewDocument"` applies to either `User` or `Public` whereas the blocked list only contains `User`s. This constraint rules out the scenario where `principal` is a `Public`.
+If you’ve blocked someone, they can’t see any of your documents and you can’t see any of theirs. 
+**Note**: We need a constraint `principal has blocked` for this policy to pass validation because `Action::"ViewDocument"` applies to either `User` or `Public` whereas the blocked list only contains `User` entities. This constraint rules out the scenario where `principal` is a `Public`.
 
 ```
 forbid (
@@ -276,7 +296,7 @@ when
 
 ### Guard Rails
 
-This forbid policy is a guard-rail. We could enforce it at runtime, or prove that the other policies implement it:
+This forbid policy is a guard rail. We could enforce it at runtime, or prove that the other policies implement it:
 
 ```
 forbid (principal, action, resource)
@@ -301,3 +321,26 @@ forbid (
 )
 when { !context.is_authenticated };
 ```
+
+## Tests
+
+We use the following entities for our tests, included in the `entities.json` file:
+
+* There are 3 `User` entities, `User::"alice"`, `User::"bob"`, `User::"charlie"`.
+  *  Alice is a member of the `alice_personal` user group and has blocked Bob.
+  *  Bob is a member of the `bob_personal` user group.
+  *  Charlie is a member of the `charlie_personal` user group.
+* There are 3 `UserGroup` entities, `alice_personal`, `bob_personal`, and `charlie_personal`.
+* There is 1 `Drive` entity, `Drive::"drive"`.
+* There is 1 `DocumentShare` entity, `alice_public_view`. Both `bob_personal` and `charlie_personal` are children of this entity.  
+**Note**: `alice_personal` doesn't need to be a child of this because Alice owns the documents she creates by default.
+* There is 1 `Document` entity, `alice_public`. 
+
+Here are some authz requests to test, included in the `ALLOW` and `DENY` folders:
+
+* Alice tries to create a document in drive: ALLOW because she is authenticated.
+* Alice tries to view alice_public: ALLOW because she owns the document.
+* Charlie tries to view alice_public: ALLOW because `charlie_personal` is in `alice_public_view`.
+* Alice tries to create a document in drive: DENY because she is not authenticated.
+* Bob tries to view alice_public: DENY because, even though `bob_personal` is in `alice_public_view`, Alice has blocked him.
+
