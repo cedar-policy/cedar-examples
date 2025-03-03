@@ -75,6 +75,7 @@ An action group that includes the following actions:
 <details>
 
 <summary>Templates</summary>
+
 #### `InternalTemplateViewActions`
 An action group that includes the following actions:
 * `viewTemplate`
@@ -104,6 +105,7 @@ Presentations and templates have unique context.
 <details>
 
 <summary>Presentations</summary>
+
 #### `target`
 A user that is the target of the action. For example, getting view or edit access to a presentation.
 
@@ -112,6 +114,7 @@ A user that is the target of the action. For example, getting view or edit acces
 <details>
 
 <summary>Templates</summary>
+
 The template context helps grant view or edit access to a template based on who the user is and what market they are in.
 
 #### `targetMarket?`
@@ -149,6 +152,7 @@ A user that is the target of the action.
 <details>
 
 <summary>Presentations</summary>
+
 * `InternalPrezViewActions`
 * `ExternalPrezViewActions`
 * `PrezEditActions`
@@ -175,6 +179,7 @@ A user that is the target of the action.
 <details>
 
 <summary>Templates</summary>
+
 * `InternalTemplateViewActions`
 * `MarketTemplateViewActions`
 * `TemplateEditActions`
@@ -377,6 +382,7 @@ An action group that includes the following actions:
 <details>
 
 <summary>Templates</summary>
+
 #### `InternalTemplateViewActions`
 An action group that includes the following actions:
 * `viewTemplate`
@@ -406,6 +412,7 @@ Presentations and templates have unique context.
 <details>
 
 <summary>Presentations</summary>
+
 #### `target`
 A user that is the target of the action. For example, getting view or edit access to a presentation.
 
@@ -414,6 +421,7 @@ A user that is the target of the action. For example, getting view or edit acces
 <details>
 
 <summary>Templates</summary>
+
 The template context helps grant view or edit access to a template based on who the user is and what market they are in.
 
 #### `targetMarket?`
@@ -445,6 +453,7 @@ A user that is the target of the action.
 <details>
 
 <summary>Presentations</summary>
+
 * `InternalPrezViewActions`
 * `ExternalPrezViewActions`
 * `PrezEditActions`
@@ -471,6 +480,7 @@ A user that is the target of the action.
 <details>
 
 <summary>Templates</summary>
+
 * `InternalTemplateViewActions`
 * `MarketTemplateViewActions`
 * `TemplateEditActions`
