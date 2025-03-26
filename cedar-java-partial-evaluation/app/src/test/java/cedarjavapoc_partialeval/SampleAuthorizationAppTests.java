@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package cedarjavapoc_partialeval;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.function.Executable;
 
 import static org.junit.jupiter.api.Assertions.*;
-import cedarjavapoc_partialeval.SampleAuthorizationApp;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.cedarpolicy.model.exception.AuthException;
 import com.cedarpolicy.model.exception.InternalException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import java.util.Set;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import com.cedarpolicy.model.AuthorizationSuccessResponse.Decision;
 
 public class SampleAuthorizationAppTests {
