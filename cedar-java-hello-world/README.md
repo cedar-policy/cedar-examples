@@ -6,7 +6,7 @@ It shows how to use the Cedar Java API to evaluate a simple policy. You can look
 ## Build
 
 ### Building with the Maven release
-The Java example works with the version of Cedar available on Maven, which (at the time of writing) is v3.1.2. We specify the
+The Java example works with the version of Cedar available on Maven, which (at the time of writing) is v4.3.1. We specify the
 uber jar in build.gradle so that both the CedarJava and CedarJavaFFI libraries are included.
 
 ```shell

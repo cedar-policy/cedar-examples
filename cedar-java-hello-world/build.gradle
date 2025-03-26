@@ -6,7 +6,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:5.0.14"
+    classpath "com.github.spotbugs.snom:spotbugs-gradle-plugin:6.1.7"
     classpath "gradle.plugin.com.github.sherter.google-java-format:google-java-format-gradle-plugin:0.9"
   }
 }
@@ -61,22 +61,19 @@ spotbugs {
 }
 
 repositories {
-    maven {
-        url "https://repo1.maven.org/maven2"
-    }
+    mavenCentral()
 }
 
 
 dependencies {
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.0'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.15.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.18.3'
     implementation 'org.slf4j:slf4j-api:2.0.7'
     implementation 'org.apache.commons:commons-text:1.10.0'
-    implementation 'com.google.code.findbugs:findbugs:3.0.1'
     implementation 'com.google.guava:guava:33.1.0-jre'
     implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
     implementation 'org.apache.logging.log4j:log4j-to-slf4j:2.20.0'
-    implementation 'com.cedarpolicy:cedar-java:3.1.2:uber'
+    implementation 'com.cedarpolicy:cedar-java:4.3.1:uber'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.9.3'
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
