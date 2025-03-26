@@ -98,18 +98,14 @@ permit(
     principal == User::"John_customer",
     action == Action::"Read",
     resource == Document::"protected_doc1"
-) when {
-    context.authenticated == true
-};
+);
 
 @id("policy13")
 permit(
     principal == User::"Mark_customer",
     action == Action::"Read",
     resource == Document::"protected_doc2"
-) when {
-    context.authenticated == true
-};
+);
 
 @id("policy14")
 permit(

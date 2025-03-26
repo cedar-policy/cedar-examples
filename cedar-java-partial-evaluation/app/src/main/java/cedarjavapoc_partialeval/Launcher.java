@@ -18,16 +18,9 @@ package cedarjavapoc_partialeval;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import com.cedarpolicy.value.PrimBool;
 import com.cedarpolicy.value.Value;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.nio.channels.AcceptPendingException;
 
 import org.apache.log4j.BasicConfigurator;
 
