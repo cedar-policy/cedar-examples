@@ -667,4 +667,47 @@ describe('get valid request envs', () => {
         expect(requestEnvs.actions).toStrictEqual(['NS::Action::"a"', 'NS::Action::"a2"']);
         expect(requestEnvs.resources).toStrictEqual(['NS::R2']);
     });
+    test('human readable schema parsing', () => {
+        const schemaStr: cedar.Schema = `
+        namespace NSxx {
+            entity E;
+            entity R1 in [R] = {"p1": String};
+            entity R;
+            entity R2 in [R] = {"p1": Long};
+            entity E1 in [E] = {"p1": String};
+            entity E2 in [E] = {"p1": Long};
+            action "as";
+            action "a" in [Action::"as"] appliesTo {
+              principal: [E1, E2],
+              resource: [R1, R2],
+              context: {"c1": Long}
+            };
+            action "a1" in [Action::"as"] appliesTo {
+              principal: [E1],
+              resource: [R1],
+              context: {"c1": Long}
+            };
+            action "a2" in [Action::"as"] appliesTo {
+              principal: [E2],
+              resource: [R2],
+              context: {"c1": Long}
+            };
+          }
+        `;
+        const checkParseResult = cedar.checkParseSchema(schemaStr);
+        expect(checkParseResult.type).toEqual('success');
+        const parseResult = cedar.schemaToJson(schemaStr);
+        if (parseResult.type !== 'success') {
+            throw new Error(`Expected success in parsing schema, got ${JSON.stringify(parseResult, null, 4)}`);
+        }
+        expect(Object.keys(parseResult.json).length).toBe(1);
+        expect(Object.keys(parseResult.json)[0]).toEqual('NSxx'); 
+        if (!('NSxx' in parseResult.json)) {
+            throw new Error(`Expected NSxx in ${JSON.stringify(parseResult.json, null, 4)}`);
+        }     
+        const schemaFrag =  parseResult.json['NSxx'] as cedar.NamespaceDefinition<string>;
+        expect(Object.keys(schemaFrag.entityTypes).length).toEqual(6);        
+        expect(Object.keys(schemaFrag.actions).length).toEqual(4);        
+
+    });
 });
