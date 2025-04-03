@@ -30,7 +30,7 @@ action watch
     resource: [Movie, Show],
     context: {
       now: {
-        timestamp: datetime
+        datetime: datetime
       }
     }
   };
@@ -42,7 +42,7 @@ action rent, buy
     resource: Movie,
     context: {
       now: {
-        timestamp: datetime
+        datetime: datetime
       }
     }
   };
