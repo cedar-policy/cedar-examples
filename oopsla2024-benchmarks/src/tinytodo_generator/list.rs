@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use arbitrary::{Arbitrary, Unstructured};
 use cedar_policy_core::ast::{EntityUID, PartialValue, Value};
@@ -45,7 +45,9 @@ impl List {
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             self.euid.to_euid(),
             attrs,
-            HashSet::default(),
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::new()
         )
     }
 
