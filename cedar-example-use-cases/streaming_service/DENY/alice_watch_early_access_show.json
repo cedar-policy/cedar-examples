@@ -1,5 +1,5 @@
 {
-    "principal": "Subscriber::\"Charlie\"",
+    "principal": "Subscriber::\"Alice\"",
     "action": "Action::\"watch\"",
     "resource": "Show::\"Breach\"",
     "context": {
