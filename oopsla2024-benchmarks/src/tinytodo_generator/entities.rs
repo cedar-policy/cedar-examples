@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet, BTreeMap};
 
 use arbitrary::{Arbitrary, Unstructured};
 use lazy_static::lazy_static;
@@ -25,52 +25,72 @@ lazy_static! {
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"CreateList""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"GetLists""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"GetList""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"UpdateList""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"DeleteList""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"CreateTask""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"UpdateTask""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"DeleteTask""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Action::"EditShares""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             r#"Application::"TinyTodo""#.parse().unwrap(),
             HashMap::new(),
-            Default::default()
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::default()
         ),
     ];
 }
