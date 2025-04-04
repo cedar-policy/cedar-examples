@@ -5,7 +5,8 @@ permit (
   action == Action::"watch",
   resource is Show
 )
-unless { resource.isEarlyAccess };
+unless
+{ resource.isEarlyAccess && context.now.datetime < resource.releaseDate };
 
 // Subscriber Content Access (Movies)
 @id("subscriber-content-access/movie")
@@ -23,7 +24,7 @@ permit (
   action == Action::"watch",
   resource
 )
-when { resource.isFree == true };
+when { resource.isFree };
 
 // Promo: Rent/Buy Oscar-Nominated Movies Until the Oscars
 @id("rent-buy-oscar-movie")
@@ -35,8 +36,8 @@ permit (
 when
 {
   resource.isOscarNominated &&
-  context.now.timestamp >= datetime("2025-02-02T19:00:00-0500") &&
-  context.now.timestamp < datetime(
+  context.now.datetime >= datetime("2025-02-02T19:00:00-0500") &&
+  context.now.datetime < datetime(
       "2025-03-02T19:00:00-0500"
     ) // Oscars Night
 };
@@ -52,8 +53,7 @@ when
 {
   resource.isEarlyAccess &&
   principal.subscription.tier == "premium" &&
-  context.now.timestamp >= resource.releaseDate.offset(duration("-24h")) &&
-  context.now.timestamp < resource.releaseDate
+  context.now.datetime >= resource.releaseDate.offset(duration("-24h"))
 };
 
 // Forbid Bedtime Access to Kid Profile
@@ -63,12 +63,12 @@ forbid (
   action == Action::"watch",
   resource
 )
-when
+when { principal.profile.isKid }
+unless
 {
   // `toTime()` returns the duration modulo one day (i.e., it ignores the "date"
   // component). Here, we use it to calculate the current time and compare the
   // result against durations that represent 6:00AM and 9:00PM.
-  principal.profile.isKid &&
-  (context.now.timestamp.toTime() >= duration("21h") ||
-   context.now.timestamp.toTime() < duration("6h"))
+  duration("6h") <= context.now.datetime.toTime() &&
+  context.now.datetime.toTime() <= duration("21h")
 };

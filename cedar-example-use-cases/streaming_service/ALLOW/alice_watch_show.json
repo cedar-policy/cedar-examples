@@ -4,7 +4,7 @@
     "resource": "Show::\"Buddies\"",
     "context": {
         "now": {
-            "timestamp" : {
+            "datetime" : {
                 "fn": "datetime",
                 "arg": "2025-02-20T13:00:00-0500"
             }
