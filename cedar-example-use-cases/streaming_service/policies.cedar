@@ -69,6 +69,22 @@ unless
   // `toTime()` returns the duration modulo one day (i.e., it ignores the "date"
   // component). Here, we use it to calculate the current time and compare the
   // result against durations that represent 6:00AM and 9:00PM.
-  duration("6h") <= context.now.datetime.toTime() &&
-  context.now.datetime.toTime() <= duration("21h")
+  duration("6h") <= context.now
+    .datetime
+    .offset
+    (
+      context.now.localTimezoneOffset
+    )
+    .toTime
+    (
+    ) &&
+  context.now
+    .datetime
+    .offset
+    (
+      context.now.localTimezoneOffset
+    )
+    .toTime
+    (
+    ) <= duration("21h")
 };

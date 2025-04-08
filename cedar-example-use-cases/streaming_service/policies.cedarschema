@@ -30,7 +30,8 @@ action watch
     resource: [Movie, Show],
     context: {
       now: {
-        datetime: datetime
+        datetime: datetime,
+        localTimezoneOffset: duration
       }
     }
   };
