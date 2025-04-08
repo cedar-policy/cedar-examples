@@ -73,18 +73,12 @@ unless
     .datetime
     .offset
     (
-      context.now.localTimezoneOffset
+      context.now.localTimeOffset
     )
     .toTime
     (
     ) &&
-  context.now
-    .datetime
-    .offset
-    (
-      context.now.localTimezoneOffset
+  context.now.datetime.offset(context.now.localTimeOffset).toTime() <= duration(
+      "21h"
     )
-    .toTime
-    (
-    ) <= duration("21h")
 };

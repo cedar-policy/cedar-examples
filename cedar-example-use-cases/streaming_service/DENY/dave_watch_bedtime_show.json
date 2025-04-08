@@ -8,7 +8,7 @@
                 "fn": "datetime",
                 "arg": "2025-02-20T22:00:00-0500"
             },
-            "localTimezoneOffset" : {
+            "localTimeOffset" : {
                 "fn": "duration",
                 "arg": "-5h"
             }
