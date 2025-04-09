@@ -67,8 +67,18 @@ when { principal.profile.isKid }
 unless
 {
   // `toTime()` returns the duration modulo one day (i.e., it ignores the "date"
-  // component). Here, we use it to calculate the current time and compare the
-  // result against durations that represent 6:00AM and 9:00PM.
-  duration("6h") <= context.now.datetime.toTime() &&
-  context.now.datetime.toTime() <= duration("21h")
+  // component). Here, we use it to calculate the subscriber's local time and
+  // compare the result against durations that represent 6:00AM and 9:00PM.
+  duration("6h") <= context.now
+    .datetime
+    .offset
+    (
+      context.now.localTimeOffset
+    )
+    .toTime
+    (
+    ) &&
+  context.now.datetime.offset(context.now.localTimeOffset).toTime() <= duration(
+      "21h"
+    )
 };
