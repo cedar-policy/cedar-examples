@@ -400,8 +400,8 @@ describe('json schema functionality', () => {
         if (jsonToSchemaResult.type !== 'success') {
             throw new Error(`Expected success in conversion, got ${JSON.stringify(jsonToSchemaResult, null, 4)}`);
         }
-        expect(jsonToSchemaResult.text.includes(`entity User = {\"name\": __cedar::String};`)).toBe(true);
-        expect(jsonToSchemaResult.text.includes(`action \"sendMessage\" appliesTo {\n  principal: [User],\n  resource: [User],\n  context: {}\n};`)).toBe(true);
+        expect(jsonToSchemaResult.text.includes(`  entity User = {\n    \"name\": __cedar::String\n  };`)).toBe(true);
+        expect(jsonToSchemaResult.text.includes(`  action \"sendMessage\" appliesTo {\n    principal: [User],\n    resource: [User],\n    context: {}\n  };`)).toBe(true);
     });
 });
 
