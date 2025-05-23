@@ -12,7 +12,7 @@ entity List in [Application] = {
   "readers": Team,
   "tasks": Tasks,
 };
-entity Application;
+entity Application enum ["TinyTodo"];
 entity User in [Team, Application] = {
   "joblevel": Long,
   "location": String,
