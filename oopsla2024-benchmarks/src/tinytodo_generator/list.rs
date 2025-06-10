@@ -1,5 +1,4 @@
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use arbitrary::{Arbitrary, Unstructured};
 use cedar_policy_core::ast::{EntityUID, PartialValue, Value};
@@ -38,12 +37,17 @@ impl List {
         );
         attrs.insert(
             "tasks".into(),
-            PartialValue::Value(Value::set(self.tasks.iter().map(|task| task.to_value()))),
+            PartialValue::Value(Value::set(
+                self.tasks.iter().map(|task| task.to_value()),
+                None,
+            )),
         );
         cedar_policy_core::ast::Entity::new_with_attr_partial_value(
             self.euid.to_euid(),
             attrs,
-            HashSet::default(),
+            HashSet::new(),
+            HashSet::new(),
+            BTreeMap::new()
         )
     }
 
@@ -87,12 +91,12 @@ struct Task {
 
 impl Task {
     pub fn to_value(&self) -> Value {
-        let attrs = [
+        let attrs: [(SmolStr, _); 3] = [
             ("id".into(), Value::from(self.id)),
             ("name".into(), Value::from(self.name.clone())),
             ("state".into(), Value::from(format!("{:?}", self.state))),
         ];
-        Value::Record(Arc::new(attrs.into_iter().collect()))
+        Value::record(attrs, None)
     }
 
     pub fn from_cedar_record(rec: &Value) -> Self {

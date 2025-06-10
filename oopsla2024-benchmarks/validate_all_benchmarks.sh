@@ -1,14 +1,16 @@
-# gdrive benchmark (static policies)
-cedar validate --policies openfga-examples/gdrive/policies.cedar --schema openfga-examples/gdrive/gdrive.cedarschema.json
-
-# gdrive benchmark (templates)
-cedar validate --policies openfga-examples/gdrive-templates/policies.cedar --schema openfga-examples/gdrive-templates/gdrive-templates.cedarschema.json
+BENCHES="${BENCHES:-benches}"
 
 # gdrive benchmark (static policies)
-cedar validate --policies openfga-examples/github/policies.cedar --schema openfga-examples/github/github.cedarschema.json
+cedar validate --policies $BENCHES/gdrive/cedar/policies.cedar --schema $BENCHES/gdrive/cedar/gdrive.cedarschema.json --schema-format json
 
 # gdrive benchmark (templates)
-cedar validate --policies openfga-examples/github-templates/policies.cedar --schema openfga-examples/github-templates/github-templates.cedarschema.json
+cedar validate --policies $BENCHES/gdrive-templates/cedar/policies.cedar --schema $BENCHES/gdrive-templates/cedar/gdrive-templates.cedarschema.json --schema-format json
+
+# gdrive benchmark (static policies)
+cedar validate --policies $BENCHES/github/cedar/policies.cedar --schema $BENCHES/github/cedar/github.cedarschema.json --schema-format json
+
+# gdrive benchmark (templates)
+cedar validate --policies $BENCHES/github-templates/cedar/policies.cedar --schema $BENCHES/github-templates/cedar/github-templates.cedarschema.json --schema-format json
 
 # tinytodo benchmark
-cedar validate --policies tinytodo/tinytodo.cedar --schema tinytodo/tinytodo.cedarschema.json
+cedar validate --policies $BENCHES/tinytodo/cedar/tinytodo.cedar --schema $BENCHES/tinytodo/cedar/tinytodo.cedarschema.json --schema-format json

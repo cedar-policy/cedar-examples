@@ -1,6 +1,0 @@
-{
-    "principal": "User::\"anne\"",
-    "action": "Action::\"write\"",
-    "resource": "Document::\"public-roadmap\"",
-    "context": {}
-}

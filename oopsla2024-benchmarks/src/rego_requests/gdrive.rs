@@ -20,7 +20,7 @@ pub struct Input {
 
 impl Input {
     pub fn new(requests: Vec<Request>) -> Self {
-        let policy = std::fs::read_to_string("openfga-examples/rego/gdrive.rego").unwrap();
+        let policy = std::fs::read_to_string("benches/gdrive/rego/gdrive.rego").unwrap();
         let namespace = "gdrive";
         Self {
             policy,
@@ -120,7 +120,7 @@ impl Resource {
 
 fn build_file_graph(es: impl IntoIterator<Item = Entity>) -> FileGraph {
     es.into_iter()
-        .filter(|e| is_document_or_folder(&&e.uid()))
+        .filter(|e| is_document_or_folder(&e.uid()))
         .map(|e| {
             (
                 e.uid().to_string(),

@@ -1,0 +1,108 @@
+[   
+    {
+        "uid": {"type": "UserGroup", "id": "Admin"},
+        "parents":[],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "User", "id": "Alice_admin"},
+        "parents":[{"type": "UserGroup", "id": "Admin"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "User", "id": "Bob_admin"},
+        "parents":[{"type": "UserGroup", "id": "Admin"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "UserGroup", "id": "Customer"},
+        "parents":[],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "User", "id": "John_customer"},
+        "parents":[{"type": "UserGroup", "id": "Customer"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "User", "id": "Mark_customer"},
+        "parents":[{"type": "UserGroup", "id": "Customer"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "DocumentGroup", "id": "Public"},
+        "parents":[],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "public_doc1"},
+        "parents":[{"type": "DocumentGroup", "id": "Public"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "public_doc2"},
+        "parents":[{"type": "DocumentGroup", "id": "Public"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "public_doc3"},
+        "parents":[{"type": "DocumentGroup", "id": "Public"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "DocumentGroup", "id": "Confidential"},
+        "parents":[],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "confidential_doc1"},
+        "parents":[{"type": "DocumentGroup", "id": "Confidential"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "confidential_doc2"},
+        "parents":[{"type": "DocumentGroup", "id": "Confidential"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "confidential_doc3"},
+        "parents":[{"type": "DocumentGroup", "id": "Confidential"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "DocumentGroup", "id": "Protected"},
+        "parents":[],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "protected_doc1"},
+        "parents":[{"type": "DocumentGroup", "id": "Protected"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "protected_doc2"},
+        "parents":[{"type": "DocumentGroup", "id": "Protected"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Document", "id": "protected_doc3"},
+        "parents":[{"type": "DocumentGroup", "id": "Protected"}],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Action", "id": "Read"},
+        "parents":[],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Action", "id": "Write"},
+        "parents":[],
+        "attrs": {}
+    },
+    {
+        "uid": {"type": "Action", "id": "Delete"},
+        "parents":[],
+        "attrs": {}
+    }
+
+]

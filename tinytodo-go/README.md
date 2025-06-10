@@ -22,6 +22,6 @@ You need Python3 and Go (1.22 or later).
 
 See [TinyTodo's README](../tinytodo/README.md) for more information.
 
-## Comparison with TinyTodo
+## Comparison with [TinyTodo](../tinytodo)
 
-TinyTodo-Go is constrained by the features of [`cedar-go`](https://github.com/cedar-policy/cedar-go). Refer to [this README](https://github.com/cedar-policy/cedar-go?tab=readme-ov-file#comparison-to-the-rust-implementation) to learn about the missing features.
+TinyTodo-Go relies on [v0.3.2 of `cedar-go`](https://github.com/cedar-policy/cedar-go/releases/tag/v0.3.2). Refer to [this README](https://github.com/cedar-policy/cedar-go/tree/v0.3.2?tab=readme-ov-file#comparison-to-the-rust-implementation) to learn about the features that `cedar-go` is missing in comparison to [`cedar`](https://github.com/cedar-policy/cedar).
