@@ -11,10 +11,11 @@ There are three “views” of GitHub permissions that correspond to *Personal*,
 
 ### `User`, `Team`
 
-Represent GitHub users and teams, respectively. `UserGroup` denotes 
+Represents GitHub users and teams, respectively.
+
 ### `UserGroup`
 
-Represent a set of users. Both users and teams can be in a user group. User groups can also form a hierarchy.
+Represents a set of users. Both users and teams can be in a user group. User groups can also form a hierarchy.
 
 ### `Repository`
 
@@ -31,7 +32,7 @@ Represents an issue in a repository. Users can assign, create, and delete an iss
 
 ### `Org`
 
-Reprents a GitHub organization that has two groups of users representing its members and owners, respectively.
+Represents a GitHub organization that has two groups of users representing its members and owners, respectively.
 
 ## Actions
 ### `pull`
