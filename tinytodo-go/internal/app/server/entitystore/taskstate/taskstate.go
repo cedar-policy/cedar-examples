@@ -37,11 +37,10 @@ func Parse(et string) TaskState {
 	return Unknown
 }
 
-// MarshalJSON converts a TaskState into a textual representation.
+// MarshalJSON converts a TaskState into its Cedar language representation.
 //
-// Based on https://pkg.go.dev/encoding/json.
-//
-// Note that the value receiver is not an error -- MarshalJSON is supposed to act on values.
+// We override the default MarshalJSON because we want to marshal TaskState as a string (e.g., "Checked") instead of
+// an integer (e.g., 1).
 func (t TaskState) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("%q", t.String())), nil
 }

@@ -1,0 +1,13 @@
+{
+    "principal": "Subscriber::\"Alice\"",
+    "action": "Action::\"rent\"",
+    "resource": "Movie::\"Devilish\"",
+    "context": {
+        "now": {
+            "datetime" : {
+                "fn": "datetime",
+                "arg": "2025-02-20T13:00:00-0500"
+            }
+        }
+    }
+}

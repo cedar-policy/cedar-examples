@@ -1,0 +1,17 @@
+{
+    "principal": "Subscriber::\"Alice\"",
+    "action": "Action::\"watch\"",
+    "resource": "Show::\"Buddies\"",
+    "context": {
+        "now": {
+            "datetime" : {
+                "fn": "datetime",
+                "arg": "2025-02-20T13:00:00-0500"
+            },
+            "localTimeOffset" : {
+                "fn": "duration",
+                "arg": "-5h"
+            }
+        }
+    }
+}
