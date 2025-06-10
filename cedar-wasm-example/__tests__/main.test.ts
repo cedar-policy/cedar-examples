@@ -220,7 +220,7 @@ describe('formatter tests', () => {
         `};
         const formattingResult = cedar.formatPolicies(call);
         expect(formattingResult.type).toBe('success');
-        expect('formatted_policy' in formattingResult && formattingResult.formatted_policy).toBe('permit (principal, action, resource);');
+        expect('formatted_policy' in formattingResult && formattingResult.formatted_policy).toBe('permit (principal, action, resource);\n');
     });
 
     test('executes successfully but returns failure when passed an invalid policy', () => {

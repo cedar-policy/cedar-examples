@@ -16,7 +16,7 @@
 
 use itertools::Itertools;
 use lazy_static::lazy_static;
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 use tracing::{error, info, trace};
 
 use cedar_policy::{
@@ -436,7 +436,7 @@ impl AppContext {
             // Construct template linking environment
             let target_euid: &cedar_policy::EntityUid = r.share_with.as_ref();
             let list_euid: &cedar_policy::EntityUid = r.list.as_ref();
-            let env: HashMap<SlotId, cedar_policy::EntityUid> = [
+            let env: std::collections::HashMap<SlotId, cedar_policy::EntityUid> = [
                 (SlotId::principal(), target_euid.clone()),
                 (SlotId::resource(), list_euid.clone()),
             ]
@@ -527,12 +527,9 @@ impl AppContext {
         Ok(AppResponse::Lists(
                 slice
                 .filter(|t| matches!(
-                    partial_response.reauthorize(
-                        HashMap::from_iter(
-                            std::iter::once(
-                                ("resource".into(), RestrictedExpression::new_entity_uid(EntityUid::from(t.uid().clone()).into()))
-                            )
-                        ),
+                    partial_response.reauthorize_with_bindings(
+                        std::iter::once(
+                            ("resource".into(), &RestrictedExpression::new_entity_uid(EntityUid::from(t.uid().clone()).into()))),
                         &self.authorizer,
                         &entities),
                     Ok(r) if matches!(r.decision(), Some(Decision::Allow))))

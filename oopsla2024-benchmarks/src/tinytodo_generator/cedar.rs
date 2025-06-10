@@ -129,9 +129,9 @@ pub struct Request {
 impl Request {
     pub fn to_cedar_request(&self) -> cedar_policy_core::ast::Request {
         cedar_policy_core::ast::Request::new(
-            self.principal.to_euid(),
-            self.action.to_euid(),
-            self.resource.to_euid(),
+            (self.principal.to_euid(), None),
+            (self.action.to_euid(), None),
+            (self.resource.to_euid(), None),
             Context::empty(),
             None::<&RequestSchemaAllPass>,
             Extensions::all_available(),
@@ -143,8 +143,8 @@ impl Request {
 impl From<cedar_policy_core::ast::Request> for Request {
     fn from(r: cedar_policy_core::ast::Request) -> Self {
         let expect_concrete = |uidentry: &cedar_policy_core::ast::EntityUIDEntry| -> Arc<cedar_policy_core::ast::EntityUID> { match uidentry {
-            cedar_policy_core::ast::EntityUIDEntry::Known(euid) => Arc::clone(euid),
-            cedar_policy_core::ast::EntityUIDEntry::Unknown => panic!("expected concrete entry"),
+            cedar_policy_core::ast::EntityUIDEntry::Known{euid, loc:_} => Arc::clone(euid),
+            cedar_policy_core::ast::EntityUIDEntry::Unknown{ .. } => panic!("expected concrete entry"),
         }};
         let principal = expect_concrete(r.principal());
         let action = expect_concrete(r.action());

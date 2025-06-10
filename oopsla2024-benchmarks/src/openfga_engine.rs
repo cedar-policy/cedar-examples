@@ -71,16 +71,16 @@ impl<'a> OpenFgaEngine<'a> {
     pub fn execute(&self, request: Request) -> SingleExecutionReport {
         let tuple = OpenFgaTuple {
             user: match request.principal() {
-                EntityUIDEntry::Known(p) => (self.app.convert_euid)(p),
-                EntityUIDEntry::Unknown => panic!("can't handle requests with Unknown"),
+                EntityUIDEntry::Known { euid, .. } => (self.app.convert_euid)(euid),
+                EntityUIDEntry::Unknown { .. } => panic!("can't handle requests with Unknown"),
             },
             relation: match request.action() {
-                EntityUIDEntry::Known(a) => (self.app.convert_euid)(a),
-                EntityUIDEntry::Unknown => panic!("can't handle requests with Unknown"),
+                EntityUIDEntry::Known { euid, .. } => (self.app.convert_euid)(euid),
+                EntityUIDEntry::Unknown { .. } => panic!("can't handle requests with Unknown"),
             },
             object: match request.resource() {
-                EntityUIDEntry::Known(r) => (self.app.convert_euid)(r),
-                EntityUIDEntry::Unknown => panic!("can't handle requests with Unknown"),
+                EntityUIDEntry::Known { euid, .. } => (self.app.convert_euid)(euid),
+                EntityUIDEntry::Unknown { .. } => panic!("can't handle requests with Unknown"),
             },
         };
         let allowed = self.client.check(&tuple);
@@ -103,7 +103,8 @@ impl<'a> OpenFgaEngine<'a> {
             errors: vec![], // all errors in OpenFGA are currently panics
             context_attrs: request
                 .context()
-                .map(|ctx| ctx.iter().map(|it| it.count()).unwrap_or(0))
+                .cloned()
+                .map(|ctx| ctx.into_iter().count())
                 .unwrap_or(0),
         }
     }
@@ -168,11 +169,11 @@ impl<'a> GithubConverter<'a> {
                             if ancestor.entity_type() == &self.ghtypes.repopermission
                                 || ancestor.entity_type() == &self.ghtypes.orgpermission
                             {
-                                self.repo_org_permission_to_tuple(ancestor, &entity.uid())
+                                self.repo_org_permission_to_tuple(ancestor, entity.uid())
                             } else if ancestor.entity_type() == &self.ghtypes.team
                                 || ancestor.entity_type() == &self.ghtypes.org
                             {
-                                self.parent_to_tuple(&entity.uid(), ancestor)
+                                self.parent_to_tuple(entity.uid(), ancestor)
                             } else {
                                 panic!("unexpected ancestor of User: {ancestor}")
                             }
@@ -183,9 +184,9 @@ impl<'a> GithubConverter<'a> {
                         .ancestors()
                         .map(|ancestor| {
                             if ancestor.entity_type() == &self.ghtypes.repopermission {
-                                self.repo_org_permission_to_tuple(ancestor, &entity.uid())
+                                self.repo_org_permission_to_tuple(ancestor, entity.uid())
                             } else if ancestor.entity_type() == &self.ghtypes.team {
-                                self.parent_to_tuple(&entity.uid(), ancestor)
+                                self.parent_to_tuple(entity.uid(), ancestor)
                             } else {
                                 panic!("unexpected ancestor of Team: {ancestor}")
                             }
@@ -198,14 +199,14 @@ impl<'a> GithubConverter<'a> {
                     vec![OpenFgaTuple {
                         user: (self.app.convert_euid)(&owner),
                         relation: "owner".to_string(),
-                        object: (self.app.convert_euid)(&entity.uid()),
+                        object: (self.app.convert_euid)(entity.uid()),
                     }]
                 } else if entity.uid().entity_type() == &self.ghtypes.org {
                     entity
                         .ancestors()
                         .map(|ancestor| {
                             if ancestor.entity_type() == &self.ghtypes.orgpermission {
-                                self.repo_org_permission_to_tuple(ancestor, &entity.uid())
+                                self.repo_org_permission_to_tuple(ancestor, entity.uid())
                             } else {
                                 panic!("unexpected ancestor of Org: {ancestor}")
                             }
@@ -281,7 +282,7 @@ impl<'a> GithubConverter<'a> {
         OpenFgaTuple {
             user,
             relation: if perm.entity_type() == &self.ghtypes.repopermission {
-                format!("{relation}")
+                relation.to_string()
             } else {
                 format!("repo_{relation}") // orgs have relations like "repo_reader" etc, while repos have "reader" etc. I didn't make the rules
             },
@@ -303,7 +304,7 @@ impl<'a> GithubConverter<'a> {
         OpenFgaTuple {
             user,
             relation: "member".to_string(),
-            object: (self.app.convert_euid)(&parent),
+            object: (self.app.convert_euid)(parent),
         }
     }
 }
@@ -354,19 +355,19 @@ impl<'a> GdriveConverter<'a> {
                 if entity.uid().entity_type() == &self.gdtypes.user {
                     let groups = entity
                         .ancestors()
-                        .map(|ancestor| self.parent_to_tuple(&entity.uid(), ancestor));
+                        .map(|ancestor| self.parent_to_tuple(entity.uid(), ancestor));
                     let owned_documents = utils::pv_expect_set_euids(
                         entity
                             .get("ownedDocuments")
                             .expect("user should have .ownedDocuments"),
                     )
-                    .map(|owned_doc| self.owner_to_tuple(&entity.uid(), &owned_doc));
+                    .map(|owned_doc| self.owner_to_tuple(entity.uid(), &owned_doc));
                     let owned_folders = utils::pv_expect_set_euids(
                         entity
                             .get("ownedFolders")
                             .expect("user should have .ownedFolders"),
                     )
-                    .map(|owned_folder| self.owner_to_tuple(&entity.uid(), &owned_folder));
+                    .map(|owned_folder| self.owner_to_tuple(entity.uid(), &owned_folder));
                     groups
                         .chain(owned_documents)
                         .chain(owned_folders)
@@ -376,9 +377,9 @@ impl<'a> GdriveConverter<'a> {
                     .ancestors()
                     .map(|ancestor| {
                         if ancestor.entity_type() == &self.gdtypes.folder {
-                            self.parent_folder(&entity.uid(), ancestor)
+                            self.parent_folder(entity.uid(), ancestor)
                         } else if ancestor.entity_type() == &self.gdtypes.view {
-                            self.view_to_tuple(ancestor, &entity.uid())
+                            self.view_to_tuple(ancestor, entity.uid())
                         } else {
                             panic!("Expected all ancestors of a Folder to be either Folder or View")
                         }
@@ -389,9 +390,9 @@ impl<'a> GdriveConverter<'a> {
                         .ancestors()
                         .map(|ancestor| {
                             if ancestor.entity_type() == &self.gdtypes.folder {
-                                self.parent_folder(&entity.uid(), ancestor)
+                                self.parent_folder(entity.uid(), ancestor)
                             } else if ancestor.entity_type() == &self.gdtypes.view {
-                                self.view_to_tuple(ancestor, &entity.uid())
+                                self.view_to_tuple(ancestor, entity.uid())
                             } else {
                                 panic!(
                                 "Expected all ancestors of a Document to be either Folder or View"
@@ -404,7 +405,7 @@ impl<'a> GdriveConverter<'a> {
                             .get("isPublic")
                             .expect("Document should have .isPublic"),
                     ) {
-                        tuples.push(self.public_view(&entity.uid()));
+                        tuples.push(self.public_view(entity.uid()));
                     }
                     tuples
                 } else {
@@ -552,17 +553,17 @@ impl<'a> TinyTodoConverter<'a> {
                     vec![OpenFgaTuple {
                         user: "user:*".to_string(),
                         relation: "member".to_string(),
-                        object: (self.app.convert_euid)(&entity.uid()),
+                        object: (self.app.convert_euid)(entity.uid()),
                     }]
                 } else if entity.uid().entity_type() == &self.types.user {
                     entity
                         .ancestors()
-                        .filter_map(|ancestor| self.parent_to_tuple(&entity.uid(), ancestor))
+                        .filter_map(|ancestor| self.parent_to_tuple(entity.uid(), ancestor))
                         .collect()
                 } else if entity.uid().entity_type() == &self.types.team {
                     entity
                         .ancestors()
-                        .filter_map(|ancestor| self.parent_to_tuple(&entity.uid(), ancestor))
+                        .filter_map(|ancestor| self.parent_to_tuple(entity.uid(), ancestor))
                         .collect()
                 } else if entity.uid().entity_type() == &self.types.list {
                     let owner = utils::pv_expect_euid(
@@ -572,7 +573,7 @@ impl<'a> TinyTodoConverter<'a> {
                         OpenFgaTuple {
                             user: (self.app.convert_euid)(&owner),
                             relation: "owner".to_string(), // read this as "is the owner of"
-                            object: (self.app.convert_euid)(&entity.uid()),
+                            object: (self.app.convert_euid)(entity.uid()),
                         }
                     };
                     let reader_tuple = {
@@ -581,7 +582,7 @@ impl<'a> TinyTodoConverter<'a> {
                                 .get("readers")
                                 .expect("List entity should have .readers"),
                         );
-                        self.reader_editor_to_tuple(&reader_team, &entity.uid(), false)
+                        self.reader_editor_to_tuple(&reader_team, entity.uid(), false)
                     };
                     let editor_tuple = {
                         let editor_team = utils::pv_expect_euid(
@@ -589,7 +590,7 @@ impl<'a> TinyTodoConverter<'a> {
                                 .get("editors")
                                 .expect("List entity should have .editors"),
                         );
-                        self.reader_editor_to_tuple(&editor_team, &entity.uid(), true)
+                        self.reader_editor_to_tuple(&editor_team, entity.uid(), true)
                     };
                     vec![owner_tuple, reader_tuple, editor_tuple]
                 } else {

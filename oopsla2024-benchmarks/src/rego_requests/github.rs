@@ -17,7 +17,7 @@ pub struct GithubOpaInput {
 
 impl GithubOpaInput {
     pub fn new(requests: Vec<GithubRequest>) -> Self {
-        let policy = std::fs::read_to_string("openfga-examples/rego/github.rego").unwrap();
+        let policy = std::fs::read_to_string("benches/github/rego/github.rego").unwrap();
         let namespace = "github";
         Self {
             policy,

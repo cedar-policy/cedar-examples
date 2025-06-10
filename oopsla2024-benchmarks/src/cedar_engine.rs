@@ -58,7 +58,8 @@ impl CedarEngine {
     pub fn execute(&self, request: Request) -> SingleExecutionReport {
         let num_context_attrs = request
             .context()
-            .map(|ctx| ctx.iter().map(|it| it.count()).unwrap_or(0))
+            .cloned()
+            .map(|ctx| ctx.into_iter().count())
             .unwrap_or(0);
         let start = Instant::now();
         let response = self
@@ -128,7 +129,8 @@ impl CedarOptEngine {
     pub fn execute(&self, request: Request, slicer: &Slicer) -> SingleExecutionReport {
         let num_context_attrs = request
             .context()
-            .map(|ctx| ctx.iter().map(|it| it.count()).unwrap_or(0))
+            .cloned()
+            .map(|ctx| ctx.into_iter().count())
             .unwrap_or(0);
         let start = Instant::now();
         let sliced = slicer

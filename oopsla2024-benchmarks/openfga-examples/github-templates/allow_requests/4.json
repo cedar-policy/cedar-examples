@@ -1,6 +1,0 @@
-{
-    "principal": "User::\"charles\"",
-    "action": "Action::\"write\"",
-    "resource": "Repository::\"openfga/openfga\"",
-    "context": {}
-}
