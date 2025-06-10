@@ -1,6 +1,6 @@
 # GitHub Model
 
-In this example, GitHub's repository permissions are implemented. .
+In this example, GitHub's repository permissions are implemented.
 
 For more information about exploring this example using the Cedar CLI, see [Cedar Example Use Cases](https://github.com/cedar-policy/cedar-examples/tree/release/4.0.x/cedar-example-use-cases).
 
