@@ -1,0 +1,36 @@
+namespace PhotoSharing {
+    entity Photo = {
+        "filename": __cedar::String,
+        "owner": User,
+        "private": __cedar::Bool
+    };
+    entity User = {
+        "company": __cedar::String,
+        "email": __cedar::String,
+        "isAdmin": __cedar::Bool
+    };
+    action "comment"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+    action "create"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+    action "delete"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+    action "view"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+}
