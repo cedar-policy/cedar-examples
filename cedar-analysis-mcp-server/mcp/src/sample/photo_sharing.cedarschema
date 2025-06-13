@@ -1,0 +1,36 @@
+namespace PhotoSharing {
+    entity Photo = {
+        "filename": String,
+        "owner": User,
+        "private": Bool
+    };
+    entity User = {
+        "company": String,
+        "email": String,
+        "isAdmin": Bool
+    };
+    action "comment"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+    action "create"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+    action "delete"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+    action "view"
+    appliesTo {
+        principal: [User],
+        resource: [Photo],
+        context: {}
+    };
+}
