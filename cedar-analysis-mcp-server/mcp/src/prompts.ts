@@ -1,26 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-/**
- * Register all prompts with the MCP server
- * 
- * This function registers prompts with the server using inline content.
- * 
- * @param server - The MCP server instance to register prompts with
- */
-export function registerAllPrompts(server: McpServer): void {
-  // Register the add-and-verify-new-policy-workflow prompt
-  server.prompt(
-    "add-and-verify-new-policy-workflow",
-    "Analyzes the impact of adding new Cedar policies to your existing policy set. Shows permission changes, provides authorization examples, and identifies policy issues.",
-    {}, // No arguments for this prompt
-    async () => {
-      return {
-        messages: [
-          {
-            role: "assistant",
-            content: {
-              type: "text",
-              text: `# Add and Verify New Policy Workflow
+const ADD_AND_VERIFY_POLICY_WORKFLOW_PROMPT = `# Add and Verify New Policy Workflow
 
 ## Overview
 
@@ -167,7 +147,29 @@ New policy: sample/company_based_policy.cedar
 ### Analysis Issues  
 - Review error messages for syntax problems
 - Ensure schema matches policy entities
-- Check that all required entities/actions are defined`
+- Check that all required entities/actions are defined`;
+
+/**
+ * Register all prompts with the MCP server
+ * 
+ * This function registers prompts with the server using inline content.
+ * 
+ * @param server - The MCP server instance to register prompts with
+ */
+export function registerAllPrompts(server: McpServer): void {
+  // Register the add-and-verify-new-policy-workflow prompt
+  server.prompt(
+    "add-and-verify-new-policy-workflow",
+    "Analyzes the impact of adding new Cedar policies to your existing policy set. Shows permission changes, provides authorization examples, and identifies policy issues.",
+    {}, // No arguments for this prompt
+    async () => {
+      return {
+        messages: [
+          {
+            role: "assistant",
+            content: {
+              type: "text",
+              text: ADD_AND_VERIFY_POLICY_WORKFLOW_PROMPT
             }
           }
         ]

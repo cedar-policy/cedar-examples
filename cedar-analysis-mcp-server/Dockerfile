@@ -32,7 +32,6 @@ ENV CEDAR_SPEC_ROOT=/opt/src/cedar-deps
 
 # Clone `cedar` repositories
 WORKDIR $CEDAR_SPEC_ROOT
-RUN git clone --depth 1 https://github.com/cedar-policy/cedar
 RUN git clone --depth 1 https://github.com/cedar-policy/cedar-spec
 
 # Build CLI and Lean library
