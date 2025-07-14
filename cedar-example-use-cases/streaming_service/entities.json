@@ -6,7 +6,7 @@
         },
         "attrs": {
             "subscription" : {
-                "tier": "standard"
+                "tier": 2
             },
             "profile" : {
                 "isKid": false
@@ -29,7 +29,7 @@
         },
         "attrs": {
             "subscription" : {
-                "tier": "premium"
+                "tier": 3
             },
             "profile" : {
                 "isKid": false
@@ -44,7 +44,7 @@
         },
         "attrs": {
             "subscription" : {
-                "tier": "standard"
+                "tier": 2
             },
             "profile" : {
                 "isKid": true
@@ -58,8 +58,7 @@
             "id": "The Godparent"
         },
         "attrs": {
-            "isFree" : true,
-            "needsRentOrBuy" : false,
+            "tier" : 0,
             "isOscarNominated": true
         },
         "parents": []
@@ -70,8 +69,7 @@
             "id": "The Gleaming"
         },
         "attrs": {
-            "isFree" : false,
-            "needsRentOrBuy" : false,
+             "tier" : 1,
             "isOscarNominated": false
         },
         "parents": []
@@ -82,8 +80,7 @@
             "id": "Devilish"
         },
         "attrs": {
-            "isFree" : false,
-            "needsRentOrBuy" : true,
+            "tier" : 3,
             "isOscarNominated": true
         },
         "parents": []
@@ -94,7 +91,7 @@
             "id": "Buddies"
         },
         "attrs": {
-            "isFree" : false,
+            "tier" : 1,
             "releaseDate": "2024-10-10",
             "isEarlyAccess": false
         },
@@ -106,7 +103,7 @@
             "id": "Breach"
         },
         "attrs": {
-            "isFree" : false,
+            "tier" : 1,
             "releaseDate": "2025-02-21",
             "isEarlyAccess": true
         },

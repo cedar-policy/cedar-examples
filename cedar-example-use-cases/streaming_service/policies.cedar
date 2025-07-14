@@ -9,13 +9,14 @@ unless
 { resource.isEarlyAccess && context.now.datetime < resource.releaseDate };
 
 // Subscriber Content Access (Movies)
+/// A subscriber can watch a movie that requires a less privileged or equal tier
 @id("subscriber-content-access/movie")
 permit (
   principal is Subscriber,
   action == Action::"watch",
   resource is Movie
 )
-unless { resource.needsRentOrBuy };
+when { resource.tier <= principal.tier };
 
 // Free Content Access
 @id("free-content-access")
@@ -24,7 +25,8 @@ permit (
   action == Action::"watch",
   resource
 )
-when { resource.isFree };
+// When tier is equal to 0, it means that the resource is free
+when { resource.tier == 0 };
 
 // Promo: Rent/Buy Oscar-Nominated Movies Until the Oscars
 @id("rent-buy-oscar-movie")
@@ -52,7 +54,7 @@ permit (
 when
 {
   resource.isEarlyAccess &&
-  principal.subscription.tier == "premium" &&
+  principal.tier == 3 &&
   context.now.datetime >= resource.releaseDate.offset(duration("-24h"))
 };
 

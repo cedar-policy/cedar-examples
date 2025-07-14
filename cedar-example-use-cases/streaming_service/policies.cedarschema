@@ -1,7 +1,11 @@
 // Types
-type Subscription = {
-  tier: String
-};
+/// Subscription tier integer encoding:
+/// 0: free
+/// 1: basic
+/// 2: standard
+/// 3: premium
+type SubscriptionTier = Long;
+
 type Profile = {
   isKid: Bool
 };
@@ -9,16 +13,15 @@ type Profile = {
 // Entities
 entity FreeMember;
 entity Subscriber = {
-  subscription: Subscription,
+  tier: SubscriptionTier,
   profile: Profile
 };
 entity Movie = {
-  isFree: Bool,
-  needsRentOrBuy: Bool,
+  tier: SubscriptionTier,
   isOscarNominated: Bool
 };
 entity Show = {
-  isFree: Bool,
+  tier: SubscriptionTier,
   releaseDate: datetime,
   isEarlyAccess: Bool
 };
