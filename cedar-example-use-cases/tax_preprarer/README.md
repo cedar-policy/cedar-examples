@@ -128,7 +128,7 @@ The setup also includes file `linked`, which links the ad-hoc access template to
 
 
 
-Here are some authz requests to test, included in the `ALLOW` and `DENY` folders:
+Here are some authorization requests to test, included in the `ALLOW` and `DENY` folders:
 * Alice requests access to ABC: ALLOW per rules `1a` and `2`. Alice is part of the appropriate serviceline, organization, and location, and the request shows that her particular location has been consented to by Ramon.
 * Alice requests access to DEF: ALLOW per rules `1b` and `2`. Alice has been granted ad hoc access, and the request shows that her particular location has been consented to by Ramon.
 * Bob requests access to DEF: ALLOW per rules `1a` and `2`. Bob is part of the appropriate serviceline, organization, and location, and the request shows that his particular location has been consented to by Ramon.
