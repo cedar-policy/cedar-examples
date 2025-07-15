@@ -5,9 +5,7 @@
             "id": "Alice"
         },
         "attrs": {
-            "subscription" : {
-                "tier": 2
-            },
+            "tier": 2,
             "profile" : {
                 "isKid": false
             }
@@ -28,9 +26,7 @@
             "id": "Charlie"
         },
         "attrs": {
-            "subscription" : {
-                "tier": 3
-            },
+            "tier": 3,
             "profile" : {
                 "isKid": false
             }
@@ -43,9 +39,7 @@
             "id": "Dave"
         },
         "attrs": {
-            "subscription" : {
-                "tier": 2
-            },
+            "tier": 2,
             "profile" : {
                 "isKid": true
             }
