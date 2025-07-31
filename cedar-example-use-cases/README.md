@@ -1,11 +1,11 @@
 # Cedar Example Use Cases
 
 This repository contains Cedar policies that model the authorization logic of six example applications.
-* The [document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox. 
+* The [document cloud drive example](./document_cloud) models a cloud-based document sharing system, like Google Drive or Dropbox.
 * The [GitHub example](./github_example) mimics GitHub's repository access permissions.
 * The [Hotel chains example](./hotel_chains) models permissions according to the hierarchy of a hotel chain.
 * The [Tags & roles example](./tags_n_roles) implements tag-based access control -- access is granted according to matching tags between principals and resources, where principal-side tags are attached to roles a principal can play.
-* The [Tax preparer example](./tax_preprarer) grants access to sensitive documents based on a principal's organizational memberships, so long as overall consent has been provided by the doc owner.
+* The [Tax preparer example](./tax_preparer) grants access to sensitive documents based on a principal's organizational memberships, so long as overall consent has been provided by the doc owner.
 * The [Streaming service example](./streaming_service/) models a streaming service with on-demand content. The example makes use of the `datetime` extension to implement time-based rules like early access for premium members.
 
 ## Quick Start
