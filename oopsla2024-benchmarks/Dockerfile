@@ -1,4 +1,4 @@
-FROM rust:1.81-bookworm
+FROM rust:1.89-bookworm
 RUN echo 'deb http://deb.debian.org/debian bookworm-backports main' >> /etc/apt/sources.list
 RUN apt-get update && apt-get install -y git python3-matplotlib python3-pandas golang-1.21-go openjdk-17-jdk vim && \
     rm -rf /var/lib/apt/lists/*
