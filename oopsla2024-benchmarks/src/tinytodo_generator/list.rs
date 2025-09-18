@@ -47,7 +47,7 @@ impl List {
             attrs,
             HashSet::new(),
             HashSet::new(),
-            BTreeMap::new()
+            BTreeMap::new(),
         )
     }
 
