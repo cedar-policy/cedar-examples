@@ -22,9 +22,9 @@ format "tags_n_roles" "policies.cedar"
 
 # Tax preparer
 echo -e "\nTesting Tax preparer..."
-validate "tax_preprarer" "policies.cedar" "policies.cedarschema" "linked"
-authorize "tax_preprarer" "policies.cedar" "entities.json" "policies.cedarschema" "linked"
-format "tax_preprarer" "policies.cedar"
+validate "tax_preparer" "policies.cedar" "policies.cedarschema" "linked"
+authorize "tax_preparer" "policies.cedar" "entities.json" "policies.cedarschema" "linked"
+format "tax_preparer" "policies.cedar"
 
 # Sales org static
 echo -e "\nTesting Sales Orgs (static)..."

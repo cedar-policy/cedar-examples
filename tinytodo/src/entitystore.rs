@@ -157,14 +157,6 @@ impl EntityStore {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
-pub enum EntityType {
-    List,
-    User,
-    Team,
-    Application,
-}
-
 #[derive(Debug, Clone, Error)]
 pub enum EntityDecodeError {
     #[error("The following required attribute was missing: {0}")]

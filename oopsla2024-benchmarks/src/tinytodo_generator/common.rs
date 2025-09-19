@@ -20,7 +20,7 @@ impl Entity {
             HashMap::new(),
             HashSet::new(),
             self.parents.iter().map(|uid| uid.to_euid()).collect(),
-            BTreeMap::new()
+            BTreeMap::new(),
         )
     }
 

@@ -1,11 +1,11 @@
 use arbitrary::Unstructured;
+use cedar_policy_core::validator::{json_schema::Fragment, ValidatorSchema};
 use cedar_policy_core::{
     ast::{AnyId, Entity, EntityUID, PolicyID, PolicySet},
     entities::{json::err::JsonDeserializationErrorContext, EntityUidJson},
     parser::parse_policyset,
 };
 use cedar_policy_generators::{schema::Schema as GeneratorSchema, settings::ABACSettings};
-use cedar_policy_validator::{json_schema::Fragment, ValidatorSchema};
 use std::{fs::File, path::Path, process::Command};
 
 /// Everything we need for an example application used as a benchmark
@@ -27,7 +27,10 @@ pub struct ExampleApp {
 /// Given an argument representing the number of entities per type to generate,
 /// generate Cedar entites and perhaps Cedar template links
 pub type BespokeGenerator = Box<
-    dyn Fn(&cedar_policy_validator::ValidatorSchema, usize) -> (Vec<Entity>, Vec<TemplateLink>),
+    dyn Fn(
+        &cedar_policy_core::validator::ValidatorSchema,
+        usize,
+    ) -> (Vec<Entity>, Vec<TemplateLink>),
 >;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -246,6 +249,8 @@ impl ExampleApp {
             enable_arbitrary_func_call: false,
             enable_unknowns: false,
             enable_action_in_constraints: false,
+            per_action_request_env_limit: ABACSettings::default_per_action_request_env_limit(),
+            total_action_request_env_limit: ABACSettings::default_total_action_request_env_limit(),
         };
         #[allow(deprecated)]
         GeneratorSchema::from_raw_schemafrag(schema, settings, u)
@@ -322,7 +327,7 @@ fn separate_process_bespoke_generator(
                 .unwrap_or_else(|| pretty_panic("__entity key should have a 'type' subkey"))
                 == "TemplateLink"
         });
-        let coreschema = cedar_policy_validator::CoreSchema::new(cedar_schema);
+        let coreschema = cedar_policy_core::validator::CoreSchema::new(cedar_schema);
         let eparser = EntityJsonParser::new(
             Some(&coreschema),
             Extensions::all_available(),
