@@ -6,7 +6,7 @@ use cedar_benchmarks::{
 use cedar_policy_core::ast::Request;
 use cedar_policy_core::entities::{Entities, EntityJson, TCComputation};
 use cedar_policy_core::extensions::Extensions;
-use cedar_policy_validator::CoreSchema;
+use cedar_policy_core::validator::CoreSchema;
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use std::collections::BTreeMap;
 use std::fs::File;

@@ -1,12 +1,12 @@
 use super::{ExampleApp, SingleExecutionReport, TemplateLink};
 use crate::slicing::Slicer;
+use cedar_policy_core::validator::CoreSchema;
 use cedar_policy_core::{
     ast::{Entity, PolicyID, PolicySet, Request, SlotId},
     authorizer::Authorizer,
     entities::{Entities, TCComputation},
     extensions::Extensions,
 };
-use cedar_policy_validator::CoreSchema;
 use std::time::Instant;
 
 pub struct CedarEngine {
@@ -122,7 +122,7 @@ impl CedarOptEngine {
         }
     }
 
-    pub fn get_slicer(&self) -> Slicer {
+    pub fn get_slicer(&self) -> Slicer<'_> {
         crate::slicing::Slicer::new(&self.policies)
     }
 
