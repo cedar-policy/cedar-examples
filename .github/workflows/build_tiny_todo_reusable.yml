@@ -26,7 +26,7 @@ jobs:
       - name: Use the specified branch
         run: cd tinytodo && head -n -2 Cargo.toml > Temp.toml && mv Temp.toml Cargo.toml && printf 'rev = "${{ inputs.cedar_policy_ref }}"' >> Cargo.toml
       - name: rustup
-        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }} && rustup component add rustfmt
       - name: cargo fmt
         working-directory: ./tinytodo
         run: cargo fmt --all --check
