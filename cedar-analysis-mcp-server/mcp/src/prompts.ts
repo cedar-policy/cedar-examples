@@ -176,6 +176,4 @@ export function registerAllPrompts(server: McpServer): void {
       };
     }
   );
-  
-  console.log("Registered prompt: add-and-verify-new-policy-workflow");
 }
