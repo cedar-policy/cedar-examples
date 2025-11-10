@@ -214,8 +214,8 @@ describe('formatter tests', () => {
             lineWidth: 100,
             indentWidth: 2,
             policyText: `
-            permit(principal,        action, 
-                
+            permit(principal,        action,
+
                   resource);
         `};
         const formattingResult = cedar.formatPolicies(call);
@@ -235,7 +235,7 @@ describe('formatter tests', () => {
    >_   / /_\ /_\ \   _<
      / (  \o/\\o/  ) \
      >._\ .-,_)-. /_.<
- jgs     /__/ \__\ 
+ jgs     /__/ \__\
            '---'`};
         const formattingResult = cedar.formatPolicies(call);
         expect(formattingResult.type).toBe('failure');
@@ -250,7 +250,7 @@ describe('json policy functionality', () => {
                 action in [Action::"pwn", Action::"code"],
                 resource in Code::"wasm"
             ) when {
-                (principal.team == "AVP" && !resource.isReadonly) || principal.benchpress >= 300 
+                (principal.team == "AVP" && !resource.isReadonly) || principal.benchpress >= 300
             };
             `
         );
@@ -400,7 +400,7 @@ describe('json schema functionality', () => {
         if (jsonToSchemaResult.type !== 'success') {
             throw new Error(`Expected success in conversion, got ${JSON.stringify(jsonToSchemaResult, null, 4)}`);
         }
-        expect(jsonToSchemaResult.text.includes(`  entity User = {\n    \"name\": __cedar::String\n  };`)).toBe(true);
+        expect(jsonToSchemaResult.text.includes(`  entity User = {\n    name: __cedar::String\n  };`)).toBe(true);
         expect(jsonToSchemaResult.text.includes(`  action \"sendMessage\" appliesTo {\n    principal: [User],\n    resource: [User],\n    context: {}\n  };`)).toBe(true);
     });
 });
