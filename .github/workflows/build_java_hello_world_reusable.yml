@@ -19,21 +19,21 @@ jobs:
           - stable
     steps:
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'corretto'
           java-version: '17'
       - name: Setup Zig
-        uses: goto-bus-stop/setup-zig@v2.2.0
+        uses: goto-bus-stop/setup-zig@v2.2.1
         with:
           version: 0.11.0
       - name: Checkout cedar-examples
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
       - name: Checkout cedar-java
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: cedar-policy/cedar-java
           ref: ${{ inputs.cedar_java_ref }}
