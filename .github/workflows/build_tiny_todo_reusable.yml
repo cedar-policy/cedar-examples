@@ -19,7 +19,7 @@ jobs:
           - stable
     steps:
       - name: Checkout cedar-examples
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
