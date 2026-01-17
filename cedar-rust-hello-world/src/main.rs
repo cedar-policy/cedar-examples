@@ -45,6 +45,7 @@ fn main() {
     //print a policy in JSON format
     to_json();
 }
+
 /// parse a policy
 fn parse_policy() {
     println!("Example: Parsing a Cedar Policy");
@@ -60,7 +61,7 @@ fn parse_policy() {
     let p = PolicySet::from_str(src);
     match p {
         Ok(pset) => {
-            let pid = PolicyId::from_str("policy_id_00").unwrap();
+            let pid = PolicyId::from_str("policy0").unwrap();
             let policy = PolicySet::policy(&pset, &pid);
             if let Some(p) = policy {
                 println!("Policy:{}", p);
