@@ -3,12 +3,14 @@
 permit (
   principal,
   action in
-    [GitApp::Action::"pushRepo",
-     GitApp::Action::"pullRepo",
-     GitApp::Action::"forkRepo",
-     GitApp::Action::"addRepoReporter",
-     GitApp::Action::"addRepoContributor",
-     GitApp::Action::"addRepoAdmin"],
+    [
+      GitApp::Action::"pushRepo",
+      GitApp::Action::"pullRepo",
+      GitApp::Action::"forkRepo",
+      GitApp::Action::"addRepoReporter",
+      GitApp::Action::"addRepoContributor",
+      GitApp::Action::"addRepoAdmin"
+    ],
   resource in GitApp::Application::"GitApp"
 )
 when { principal in resource.admins };
@@ -18,11 +20,13 @@ when { principal in resource.admins };
 permit (
   principal,
   action in
-    [GitApp::Action::"addIssue",
-     GitApp::Action::"editIssue",
-     GitApp::Action::"assignIssue",
-     GitApp::Action::"closeIssue",
-     GitApp::Action::"deleteIssue"],
+    [
+      GitApp::Action::"addIssue",
+      GitApp::Action::"editIssue",
+      GitApp::Action::"assignIssue",
+      GitApp::Action::"closeIssue",
+      GitApp::Action::"deleteIssue"
+    ],
   resource in GitApp::Application::"GitApp"
 )
 when { principal in resource.admins };
@@ -32,9 +36,11 @@ when { principal in resource.admins };
 permit (
   principal,
   action in
-    [GitApp::Action::"pullRepo",
-     GitApp::Action::"forkRepo",
-     GitApp::Action::"addIssue"],
+    [
+      GitApp::Action::"pullRepo",
+      GitApp::Action::"forkRepo",
+      GitApp::Action::"addIssue"
+    ],
   resource in GitApp::Application::"GitApp"
 )
 when { resource has reporters && principal in resource.reporters };
@@ -44,10 +50,12 @@ when { resource has reporters && principal in resource.reporters };
 permit (
   principal,
   action in
-    [GitApp::Action::"addIssue",
-     GitApp::Action::"editIssue",
-     GitApp::Action::"assignIssue",
-     GitApp::Action::"closeIssue"],
+    [
+      GitApp::Action::"addIssue",
+      GitApp::Action::"editIssue",
+      GitApp::Action::"assignIssue",
+      GitApp::Action::"closeIssue"
+    ],
   resource in GitApp::Application::"GitApp"
 )
 when { resource has contributors && principal in resource.contributors };
@@ -57,9 +65,11 @@ when { resource has contributors && principal in resource.contributors };
 permit (
   principal,
   action in
-    [GitApp::Action::"pushRepo",
-     GitApp::Action::"pullRepo",
-     GitApp::Action::"forkRepo"],
+    [
+      GitApp::Action::"pushRepo",
+      GitApp::Action::"pullRepo",
+      GitApp::Action::"forkRepo"
+    ],
   resource in GitApp::Application::"GitApp"
 )
 when { resource has contributors && principal in resource.contributors };

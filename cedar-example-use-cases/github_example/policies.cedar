@@ -62,11 +62,13 @@ when { principal in resource.repo.maintainers };
 permit (
   principal,
   action in
-    [Action::"add_reader",
-     Action::"add_triager",
-     Action::"add_writer",
-     Action::"add_maintainer",
-     Action::"add_admin"],
+    [
+      Action::"add_reader",
+      Action::"add_triager",
+      Action::"add_writer",
+      Action::"add_maintainer",
+      Action::"add_admin"
+    ],
   resource
 )
 when { principal in resource.admins };

@@ -76,8 +76,7 @@ unless
       context.now.localTimeOffset
     )
     .toTime
-    (
-    ) &&
+    () &&
   context.now.datetime.offset(context.now.localTimeOffset).toTime() <= duration(
       "21h"
     )

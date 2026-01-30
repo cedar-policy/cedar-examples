@@ -9,9 +9,11 @@ permit (
 permit (
   principal == ?principal,
   action in
-    [Action::"viewReservation",
-     Action::"updateReservation",
-     Action::"createReservation"],
+    [
+      Action::"viewReservation",
+      Action::"updateReservation",
+      Action::"createReservation"
+    ],
   resource in ?resource
 );
 
@@ -19,10 +21,12 @@ permit (
 permit (
   principal == ?principal,
   action in
-    [Action::"viewReservation",
-     Action::"updateReservation",
-     Action::"createReservation",
-     Action::"grantAccessReservation"],
+    [
+      Action::"viewReservation",
+      Action::"updateReservation",
+      Action::"createReservation",
+      Action::"grantAccessReservation"
+    ],
   resource in ?resource
 );
 
@@ -37,12 +41,14 @@ permit (
 permit (
   principal == ?principal,
   action in
-    [Action::"viewHotel",
-     Action::"updateHotel",
-     Action::"createHotel",
-     Action::"viewProperty",
-     Action::"updateProperty",
-     Action::"createProperty"],
+    [
+      Action::"viewHotel",
+      Action::"updateHotel",
+      Action::"createHotel",
+      Action::"viewProperty",
+      Action::"updateProperty",
+      Action::"createProperty"
+    ],
   resource in ?resource
 );
 
@@ -50,13 +56,15 @@ permit (
 permit (
   principal == ?principal,
   action in
-    [Action::"viewHotel",
-     Action::"updateHotel",
-     Action::"createHotel",
-     Action::"grantAccessHotel",
-     Action::"viewProperty",
-     Action::"updateProperty",
-     Action::"createProperty",
-     Action::"grantAccessProperty"],
+    [
+      Action::"viewHotel",
+      Action::"updateHotel",
+      Action::"createHotel",
+      Action::"grantAccessHotel",
+      Action::"viewProperty",
+      Action::"updateProperty",
+      Action::"createProperty",
+      Action::"grantAccessProperty"
+    ],
   resource in ?resource
 );
