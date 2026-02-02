@@ -15,9 +15,7 @@ when
        resource.tags has production_status
      then
        principal.allowedTagsForRole
-         [
-         "Role-A"
-         ]
+         ["Role-A"]
          .production_status
          .contains
          (
@@ -25,9 +23,7 @@ when
          ) ||
        resource.tags.production_status.contains("ALL") ||
        principal.allowedTagsForRole
-         [
-         "Role-A"
-         ]
+         ["Role-A"]
          .production_status
          .containsAll
          (
@@ -51,9 +47,7 @@ when
        principal.allowedTagsForRole["Role-A"].country.contains("ALL") ||
        resource.tags.country.contains("ALL") ||
        principal.allowedTagsForRole
-         [
-         "Role-A"
-         ]
+         ["Role-A"]
          .country
          .containsAll
          (
@@ -77,9 +71,7 @@ when
        principal.allowedTagsForRole["Role-A"].stage.contains("ALL") ||
        resource.tags.stage.contains("ALL") ||
        principal.allowedTagsForRole
-         [
-         "Role-A"
-         ]
+         ["Role-A"]
          .stage
          .containsAll
          (
@@ -108,9 +100,7 @@ when
        resource.tags has production_status
      then
        principal.allowedTagsForRole
-         [
-         "Role-B"
-         ]
+         ["Role-B"]
          .production_status
          .contains
          (
@@ -118,9 +108,7 @@ when
          ) ||
        resource.tags.production_status.contains("ALL") ||
        principal.allowedTagsForRole
-         [
-         "Role-B"
-         ]
+         ["Role-B"]
          .production_status
          .containsAll
          (
@@ -143,9 +131,7 @@ when
        principal.allowedTagsForRole["Role-B"].country.contains("ALL") ||
        resource.tags.country.contains("ALL") ||
        principal.allowedTagsForRole
-         [
-         "Role-B"
-         ]
+         ["Role-B"]
          .country
          .containsAll
          (
@@ -168,9 +154,7 @@ when
        principal.allowedTagsForRole["Role-B"].stage.contains("ALL") ||
        resource.tags.stage.contains("ALL") ||
        principal.allowedTagsForRole
-         [
-         "Role-B"
-         ]
+         ["Role-B"]
          .stage
          .containsAll
          (
