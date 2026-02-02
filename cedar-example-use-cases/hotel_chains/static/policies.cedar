@@ -15,11 +15,9 @@ when
 permit (
   principal,
   action in
-    [
-      Action::"viewReservation",
-      Action::"updateReservation",
-      Action::"createReservation"
-    ],
+    [Action::"viewReservation",
+     Action::"updateReservation",
+     Action::"createReservation"],
   resource
 )
 when
@@ -32,11 +30,10 @@ when
 permit (
   principal,
   action in
-    [
-      Action::"viewReservation",
-      Action::"updateReservation",
-      Action::"createReservation",
-      Action::"grantAccessReservation"
+    [Action::"viewReservation",
+     Action::"updateReservation",
+     Action::"createReservation",
+     Action::"grantAccessReservation"
     // ... other actions for all resource types
     ],
   resource
@@ -65,14 +62,12 @@ when
 permit (
   principal,
   action in
-    [
-      Action::"viewProperty",
-      Action::"updateProperty",
-      Action::"createProperty",
-      Action::"viewHotel",
-      Action::"updateHotel",
-      Action::"createHotel"
-    ],
+    [Action::"viewProperty",
+     Action::"updateProperty",
+     Action::"createProperty",
+     Action::"viewHotel",
+     Action::"updateHotel",
+     Action::"createHotel"],
   resource
 )
 when
@@ -86,16 +81,14 @@ when
 permit (
   principal,
   action in
-    [
-      Action::"viewProperty",
-      Action::"updateProperty",
-      Action::"createProperty",
-      Action::"grantAccessProperty",
-      Action::"viewHotel",
-      Action::"updateHotel",
-      Action::"createHotel",
-      Action::"grantAccessHotel"
-    ],
+    [Action::"viewProperty",
+     Action::"updateProperty",
+     Action::"createProperty",
+     Action::"grantAccessProperty",
+     Action::"viewHotel",
+     Action::"updateHotel",
+     Action::"createHotel",
+     Action::"grantAccessHotel"],
   resource
 )
 when

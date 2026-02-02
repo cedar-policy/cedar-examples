@@ -60,11 +60,9 @@ unless { resource.isPrivate };
 permit (
   principal,
   action in
-    [
-      Action::"EditIsPrivate",
-      Action::"AddToShareACL",
-      Action::"EditPublicAccess"
-    ],
+    [Action::"EditIsPrivate",
+     Action::"AddToShareACL",
+     Action::"EditPublicAccess"],
   resource
 )
 when { principal == resource.owner };
@@ -92,14 +90,12 @@ when { principal == resource.owner };
 forbid (
   principal,
   action in
-    [
-      Action::"ViewDocument",
-      Action::"ModifyDocument",
-      Action::"EditIsPrivate",
-      Action::"AddToShareACL",
-      Action::"EditPublicAccess",
-      Action::"DeleteDocument"
-    ],
+    [Action::"ViewDocument",
+     Action::"ModifyDocument",
+     Action::"EditIsPrivate",
+     Action::"AddToShareACL",
+     Action::"EditPublicAccess",
+     Action::"DeleteDocument"],
   resource
 )
 when
