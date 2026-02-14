@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/cedar-policy/cedar-go v0.3.2
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/stretchr/testify v1.9.0
 )
 
