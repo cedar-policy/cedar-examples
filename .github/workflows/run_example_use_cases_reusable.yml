@@ -1,14 +1,13 @@
 name: Run example use cases
 on:
-    workflow_call:
-      inputs:
-        cedar_policy_ref:
-          required: true
-          type: string
-        cedar_examples_ref:
-          required: true
-          type: string
-
+  workflow_call:
+    inputs:
+      cedar_policy_ref:
+        required: true
+        type: string
+      cedar_examples_ref:
+        required: true
+        type: string
 jobs:
   run_example_use_cases:
     name: Run example use cases
@@ -30,7 +29,7 @@ jobs:
           ref: ${{ inputs.cedar_policy_ref }}
           path: ./cedar
       - name: protoc
-        run: sudo apt-get install protobuf-compiler
+        run: sudo apt-get update && sudo apt-get install protobuf-compiler
       - name: rustup
         run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - name: Build cli
@@ -39,12 +38,12 @@ jobs:
       - name: Run validation and authorization
         working-directory: ./cedar-example-use-cases
         run: |
-             export PATH="$PWD/../cedar/target/debug/":$PATH
-             echo $PATH
-             ./run.sh
+          export PATH="$PWD/../cedar/target/debug/":$PATH
+          echo $PATH
+          ./run.sh
       - name: Run validation and authorization for cedar-policy-language-in-action
         working-directory: ./cedar-policy-language-in-action
         run: |
-             export PATH="$PWD/../cedar/target/debug/":$PATH
-             echo $PATH
-             ./run.sh
+          export PATH="$PWD/../cedar/target/debug/":$PATH
+          echo $PATH
+          ./run.sh
