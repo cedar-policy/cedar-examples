@@ -1,0 +1,76 @@
+[
+  {
+    "uid": { "type": "Agent::Principal", "id": "claude-code-3a2f" },
+    "attrs": {
+      "agent_id": "claude-code-3a2f",
+      "trust_score": "0.85",
+      "ring": 1,
+      "session_id": "sess-9af21"
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::Principal", "id": "untrusted-worker-abc" },
+    "attrs": {
+      "agent_id": "untrusted-worker-abc",
+      "trust_score": "0.30",
+      "ring": 3
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::File", "id": "workspace-readme" },
+    "attrs": {
+      "path": "/workspace/README.md"
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::File", "id": "ssh-key" },
+    "attrs": {
+      "path": "/home/user/.ssh/id_rsa"
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::Endpoint", "id": "aws-metadata" },
+    "attrs": {
+      "host": "169.254.169.254",
+      "port": 80,
+      "protocol": "http"
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::Endpoint", "id": "legit-api" },
+    "attrs": {
+      "host": "api.anthropic.com",
+      "port": 443,
+      "protocol": "https"
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::Tool", "id": "Read" },
+    "attrs": {
+      "name": "Read",
+      "server": "mcp-filesystem"
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::Tool", "id": "Bash" },
+    "attrs": {
+      "name": "Bash",
+      "server": "mcp-shell"
+    },
+    "parents": []
+  },
+  {
+    "uid": { "type": "Agent::Executable", "id": "cargo" },
+    "attrs": {
+      "path": "/usr/bin/cargo"
+    },
+    "parents": []
+  }
+]
