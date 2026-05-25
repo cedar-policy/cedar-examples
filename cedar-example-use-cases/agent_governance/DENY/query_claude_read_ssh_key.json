@@ -1,0 +1,8 @@
+{
+  "principal": "Agent::Principal::\"claude-code-3a2f\"",
+  "action": "Agent::Action::\"open\"",
+  "resource": "Agent::File::\"ssh-key\"",
+  "context": {
+    "mode": "read"
+  }
+}

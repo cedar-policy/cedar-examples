@@ -1,0 +1,8 @@
+{
+  "principal": "Agent::Principal::\"claude-code-3a2f\"",
+  "action": "Agent::Action::\"request_tool\"",
+  "resource": "Agent::Tool::\"Read\"",
+  "context": {
+    "args_hash": "sha256:e4d61f7a09b8cd340f32a6edbdfc20c1a8b329d4bf25e18a11b97c7ebe3d2b9f"
+  }
+}
