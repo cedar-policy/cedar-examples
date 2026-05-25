@@ -1,0 +1,110 @@
+[
+    {
+      "uid": {
+        "type": "User",
+        "id": "alice"
+      },
+      "attrs": {
+        "id": "alice",
+        "name": "Alice Smith",
+        "disabled": false,
+        "shared_folder_ids": [{ "type": "Folder", "id": "administration" }]
+    },
+      "parents": []
+    },
+    {
+      "uid": {
+        "type": "User",
+        "id": "bob"
+      },
+      "attrs": {
+        "id": "bob",
+        "name": "Bob Johnson",
+        "disabled": false
+    },
+      "parents": []
+    },
+    {
+      "uid": {
+        "type": "User",
+        "id": "charlie"
+      },
+      "attrs": {
+        "id": "charlie",
+        "name": "Charlie Brown",
+        "disabled": false
+    },
+      "parents": []
+    },
+    {
+      "uid": {
+        "type": "Thread",
+        "id": "budget_report"
+      },
+      "attrs": {
+        "id": "budget_report",
+        "author_id": {"type": "User", "id": "some_user"},
+        "title": "Budget Report",
+        "user_ids": [{"type": "User", "id": "bob"}],
+        "shared_folder_ids": [{ "type": "Folder", "id": "administration" }],
+        "expanded_user_ids": [{"type": "User", "id": "alice"}],
+        "access_levels": [
+          {
+            "member_id": {"type": "User", "id": "alice"},
+            "level_of_access": "FullAccess"
+          },
+          {
+            "member_id": {"type": "User", "id": "bob"},
+            "level_of_access": "Comment"
+          }
+    ],
+    "parent_folder":{ "type": "Folder", "id": "administration" }
+      },
+      "parents": []
+    },
+    {
+      "uid": {
+        "type": "Thread",
+        "id": "meeting_minutes"
+      },
+      "attrs": {
+        "id": "meeting_minutes",
+        "author_id": {"type": "User", "id": "some_user"},
+        "title": "Meeting Minutes",
+        "shared_folder_ids": [{ "type": "Folder", "id": "administration" }],
+        "expanded_user_ids": [{"type": "User", "id": "alice"}],
+        "access_levels": [
+          {
+            "member_id": {"type": "User", "id": "alice"},
+            "level_of_access": "FullAccess"
+          }
+    ],
+    "parent_folder":{ "type": "Folder", "id": "administration" }
+      },
+      "parents": []
+    },
+    {
+      "uid": {
+        "type": "Thread",
+        "id": "charlies_personal_notes"
+      },
+      "attrs": {
+        "id": "charlies_personal_notes",
+        "author_id": {"type": "User", "id": "charlie"},
+        "title": "Charlie's Personal Notes"
+      },
+      "parents": []
+    },
+    {
+      "uid": {
+        "type": "Folder",
+        "id": "administration"
+      },
+      "attrs": {
+        "id": "administration",
+        "title": "Administration",
+        "creator_id": { "type": "User", "id": "some_user" },
+        "member_ids": [{ "type": "User", "id": "some_user" }, { "type": "User", "id": "alice" }]      },
+      "parents": []
+    }
+  ]
