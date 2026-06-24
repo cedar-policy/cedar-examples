@@ -24,7 +24,7 @@ jobs:
           distribution: 'corretto'
           java-version: '21'
       - name: Checkout cedar-examples
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: cedar-policy/cedar-examples
           ref: ${{ inputs.cedar_examples_ref }}
