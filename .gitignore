@@ -16,7 +16,6 @@
 cedar-java-hello-world/.gradle/*
 cedar-java-hello-world/build/*
 cedar-java-hello-world/bin/*
-cedar-java-hello-world/.jqwik-database
 cedar-java-partial-evaluation/.gradle/*
 cedar-java-partial-evaluation/build/*
 cedar-java-partial-evaluation/app/build/*
