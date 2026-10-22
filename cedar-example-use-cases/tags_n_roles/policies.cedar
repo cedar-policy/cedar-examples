@@ -17,16 +17,14 @@ when
        principal.allowedTagsForRole
          ["Role-A"]
          .production_status
-         .contains
-         (
+         .contains(
            "ALL"
          ) ||
        resource.tags.production_status.contains("ALL") ||
        principal.allowedTagsForRole
          ["Role-A"]
          .production_status
-         .containsAll
-         (
+         .containsAll(
            resource.tags["production_status"]
          )
      else
@@ -49,8 +47,7 @@ when
        principal.allowedTagsForRole
          ["Role-A"]
          .country
-         .containsAll
-         (
+         .containsAll(
            resource.tags["country"]
          )
      else
@@ -73,8 +70,7 @@ when
        principal.allowedTagsForRole
          ["Role-A"]
          .stage
-         .containsAll
-         (
+         .containsAll(
            resource.tags["stage"]
          )
      else
@@ -102,16 +98,14 @@ when
        principal.allowedTagsForRole
          ["Role-B"]
          .production_status
-         .contains
-         (
+         .contains(
            "ALL"
          ) ||
        resource.tags.production_status.contains("ALL") ||
        principal.allowedTagsForRole
          ["Role-B"]
          .production_status
-         .containsAll
-         (
+         .containsAll(
            resource.tags["production_status"]
          )
      else
@@ -133,8 +127,7 @@ when
        principal.allowedTagsForRole
          ["Role-B"]
          .country
-         .containsAll
-         (
+         .containsAll(
            resource.tags["country"]
          )
      else
@@ -156,8 +149,7 @@ when
        principal.allowedTagsForRole
          ["Role-B"]
          .stage
-         .containsAll
-         (
+         .containsAll(
            resource.tags["stage"]
          )
      else
