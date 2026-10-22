@@ -71,12 +71,10 @@ unless
   // compare the result against durations that represent 6:00AM and 9:00PM.
   duration("6h") <= context.now
     .datetime
-    .offset
-    (
+    .offset(
       context.now.localTimeOffset
     )
-    .toTime
-    () &&
+    .toTime() &&
   context.now.datetime.offset(context.now.localTimeOffset).toTime() <= duration(
       "21h"
     )

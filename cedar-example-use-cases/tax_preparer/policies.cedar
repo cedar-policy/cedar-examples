@@ -7,8 +7,7 @@ permit (
 when
 {
   principal.assigned_orgs
-    .contains
-    (
+    .contains(
       {
         organization: resource.owner.organization,
         serviceline: resource.serviceline,
