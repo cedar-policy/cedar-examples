@@ -25,7 +25,7 @@ when
          ["Role-A"]
          .production_status
          .containsAll(
-           resource.tags["production_status"]
+           resource.tags.production_status
          )
      else
        true
@@ -48,7 +48,7 @@ when
          ["Role-A"]
          .country
          .containsAll(
-           resource.tags["country"]
+           resource.tags.country
          )
      else
        true
@@ -71,7 +71,7 @@ when
          ["Role-A"]
          .stage
          .containsAll(
-           resource.tags["stage"]
+           resource.tags.stage
          )
      else
        true
@@ -106,7 +106,7 @@ when
          ["Role-B"]
          .production_status
          .containsAll(
-           resource.tags["production_status"]
+           resource.tags.production_status
          )
      else
        true
@@ -128,7 +128,7 @@ when
          ["Role-B"]
          .country
          .containsAll(
-           resource.tags["country"]
+           resource.tags.country
          )
      else
        true
@@ -150,7 +150,7 @@ when
          ["Role-B"]
          .stage
          .containsAll(
-           resource.tags["stage"]
+           resource.tags.stage
          )
      else
        true
