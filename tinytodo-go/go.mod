@@ -1,10 +1,10 @@
 module github.com/cedar-policy/cedar-examples/tinytodo-go
 
-go 1.22
+go 1.24
 
 require (
 	github.com/cedar-policy/cedar-go v0.3.2
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/stretchr/testify v1.9.0
 )
 
