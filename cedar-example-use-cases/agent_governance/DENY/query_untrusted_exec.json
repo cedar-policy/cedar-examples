@@ -1,0 +1,10 @@
+{
+  "principal": "Agent::Principal::\"untrusted-worker-abc\"",
+  "action": "Agent::Action::\"exec\"",
+  "resource": "Agent::Executable::\"cargo\"",
+  "context": {
+    "command": "cargo",
+    "argv": ["cargo", "build"],
+    "cwd": "/workspace/my-project"
+  }
+}

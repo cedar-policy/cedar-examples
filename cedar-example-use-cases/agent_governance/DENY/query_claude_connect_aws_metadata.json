@@ -1,0 +1,9 @@
+{
+  "principal": "Agent::Principal::\"claude-code-3a2f\"",
+  "action": "Agent::Action::\"connect\"",
+  "resource": "Agent::Endpoint::\"aws-metadata\"",
+  "context": {
+    "tls": false,
+    "method": "GET"
+  }
+}

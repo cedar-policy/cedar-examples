@@ -1,0 +1,79 @@
+// Cedar schema for agent governance example.
+//
+// Four canonical action verbs covering the main authorization boundaries
+// for AI agents: exec, open, connect, request_tool. Matches the community
+// schema at VeritasActa/cedar-agent-schemas with trimmed context for
+// self-contained evaluation.
+
+namespace Agent {
+  entity Principal = {
+    agent_id: String,
+    trust_score: decimal,
+    ring: Long,
+    session_id?: String,
+  };
+
+  entity File = {
+    path: String,
+    owner_uid?: Long,
+  };
+
+  entity Endpoint = {
+    host: String,
+    port: Long,
+    protocol: String,
+  };
+
+  entity Tool = {
+    name: String,
+    server?: String,
+  };
+
+  entity Executable = {
+    path: String,
+    trusted?: Bool,
+  };
+
+  action exec
+    appliesTo {
+      principal: [Principal],
+      resource: [Executable],
+      context: {
+        command: String,
+        argv: Set<String>,
+        cwd?: String,
+        uid?: Long,
+      },
+    };
+
+  action open
+    appliesTo {
+      principal: [Principal],
+      resource: [File],
+      context: {
+        mode: String,
+        size_bytes?: Long,
+      },
+    };
+
+  action connect
+    appliesTo {
+      principal: [Principal],
+      resource: [Endpoint],
+      context: {
+        tls: Bool,
+        method?: String,
+        url?: String,
+      },
+    };
+
+  action request_tool
+    appliesTo {
+      principal: [Principal],
+      resource: [Tool],
+      context: {
+        args_hash: String,
+        transport?: String,
+      },
+    };
+}
